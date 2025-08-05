@@ -432,7 +432,7 @@ export default function Interviews() {
                   {upcomingInterviews.length > 0 ? (
                     <div className="space-y-4">
                       {upcomingInterviews.map((interview) => (
-                        <div key={interview.id} className="border-l-4 border-blue-500 pl-4 py-3 bg-blue-50 rounded-r-lg">
+                        <div key={`upcoming-${interview.id}`} className="border-l-4 border-blue-500 pl-4 py-3 bg-blue-50 rounded-r-lg">
                           <div className="flex justify-between items-start">
                             <div>
                               <div className="flex items-center space-x-2 mb-2">
