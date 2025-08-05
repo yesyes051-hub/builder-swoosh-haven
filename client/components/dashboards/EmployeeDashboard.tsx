@@ -4,15 +4,16 @@ import { EmployeeDashboard as EmployeeDashboardType } from '@shared/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  Calendar, 
-  TrendingUp, 
-  Target, 
-  Users, 
+import {
+  Calendar,
+  TrendingUp,
+  Target,
+  Users,
   Plus,
   Clock,
   CheckCircle,
-  Trophy
+  Trophy,
+  BarChart3
 } from 'lucide-react';
 import DashboardLayout from './DashboardLayout';
 
