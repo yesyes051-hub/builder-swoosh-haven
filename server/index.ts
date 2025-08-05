@@ -41,5 +41,9 @@ export function createServer() {
   app.get("/api/daily-updates/team", authenticateToken, requireRole(['manager', 'admin']), getTeamDailyUpdates);
   app.get("/api/daily-updates/:id", authenticateToken, getDailyUpdateById);
 
+  // Leaderboard routes (protected)
+  app.get("/api/leaderboard", authenticateToken, getLeaderboard);
+  app.get("/api/leaderboard/rank", authenticateToken, getUserRank);
+
   return app;
 }
