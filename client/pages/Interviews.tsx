@@ -336,7 +336,7 @@ export default function Interviews() {
                   {myInterviews.length > 0 ? (
                     <div className="space-y-4">
                       {myInterviews.map((interview) => (
-                        <div key={interview.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div key={`my-${interview.id}`} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                           <div className="flex justify-between items-start mb-3">
                             <div className="flex-1">
                               <div className="flex items-center space-x-2 mb-2">
