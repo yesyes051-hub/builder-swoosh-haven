@@ -102,5 +102,108 @@
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+}
+
+@layer utilities {
+  /* TrackZen gradient backgrounds */
+  .trackzen-gradient {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  }
+
+  .trackzen-gradient-subtle {
+    background: linear-gradient(135deg, #eff6ff 0%, #f3e8ff 100%);
+  }
+
+  /* Performance score colors */
+  .score-excellent {
+    @apply text-green-600 bg-green-50 border-green-200;
+  }
+
+  .score-good {
+    @apply text-blue-600 bg-blue-50 border-blue-200;
+  }
+
+  .score-average {
+    @apply text-orange-600 bg-orange-50 border-orange-200;
+  }
+
+  .score-poor {
+    @apply text-red-600 bg-red-50 border-red-200;
+  }
+
+  /* Animations */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Glass morphism effect */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* Custom shadows */
+  .shadow-trackzen {
+    box-shadow: 0 10px 25px -3px rgba(59, 130, 246, 0.1), 0 4px 6px -2px rgba(59, 130, 246, 0.05);
+  }
+
+  .shadow-trackzen-lg {
+    box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.25);
+  }
+}
+
+/* Role-specific accent colors */
+@layer components {
+  .role-admin {
+    @apply text-red-600 bg-red-50 border-red-200;
+  }
+
+  .role-hr {
+    @apply text-green-600 bg-green-50 border-green-200;
+  }
+
+  .role-manager {
+    @apply text-purple-600 bg-purple-50 border-purple-200;
+  }
+
+  .role-employee {
+    @apply text-blue-600 bg-blue-50 border-blue-200;
+  }
+
+  .role-interviewer {
+    @apply text-orange-600 bg-orange-50 border-orange-200;
   }
 }
