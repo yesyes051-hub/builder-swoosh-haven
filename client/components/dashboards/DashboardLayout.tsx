@@ -108,6 +108,16 @@ export default function DashboardLayout({ user, children }: Props) {
               >
                 Interviews
               </Link>
+              {user.role !== 'admin' && (
+                <Link
+                  to="/pms"
+                  className={`text-sm font-medium transition-colors hover:text-blue-600 ${
+                    location.pathname === '/pms' ? 'text-blue-600' : 'text-gray-600'
+                  }`}
+                >
+                  PMS
+                </Link>
+              )}
               {(user.role === 'manager' || user.role === 'admin') && (
                 <span className="text-sm font-medium text-gray-400 cursor-not-allowed">
                   Team Reports
