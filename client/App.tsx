@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import DailyUpdates from "./pages/DailyUpdates";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
