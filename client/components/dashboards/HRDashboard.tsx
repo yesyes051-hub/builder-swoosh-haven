@@ -104,10 +104,12 @@ export default function HRDashboard({ data }: Props) {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-3">
-              <Button className="bg-green-600 hover:bg-green-700">
-                <Calendar className="h-4 w-4 mr-2" />
-                Schedule Interview
-              </Button>
+              <Link to="/interviews">
+                <Button className="bg-green-600 hover:bg-green-700">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Manage Interviews
+                </Button>
+              </Link>
               <Button variant="outline">
                 <UserPlus className="h-4 w-4 mr-2" />
                 Add Employee
@@ -116,10 +118,12 @@ export default function HRDashboard({ data }: Props) {
                 <FileText className="h-4 w-4 mr-2" />
                 View Reports
               </Button>
-              <Button variant="outline">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Review Feedback
-              </Button>
+              <Link to="/interviews">
+                <Button variant="outline">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Review Feedback
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
