@@ -90,6 +90,11 @@ const App = () => (
                 <Leaderboard />
               </ProtectedRoute>
             } />
+            <Route path="/interviews" element={
+              <ProtectedRoute>
+                <Interviews />
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
