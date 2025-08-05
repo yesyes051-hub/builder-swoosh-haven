@@ -100,11 +100,14 @@ export default function DashboardLayout({ user, children }: Props) {
               >
                 Leaderboard
               </Link>
-              {(user.role === 'hr' || user.role === 'admin') && (
-                <span className="text-sm font-medium text-gray-400 cursor-not-allowed">
-                  Interviews
-                </span>
-              )}
+              <Link
+                to="/interviews"
+                className={`text-sm font-medium transition-colors hover:text-blue-600 ${
+                  location.pathname === '/interviews' ? 'text-blue-600' : 'text-gray-600'
+                }`}
+              >
+                Interviews
+              </Link>
               {(user.role === 'manager' || user.role === 'admin') && (
                 <span className="text-sm font-medium text-gray-400 cursor-not-allowed">
                   Team Reports
