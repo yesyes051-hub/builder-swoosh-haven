@@ -46,5 +46,13 @@ export function createServer() {
   app.get("/api/leaderboard", authenticateToken, getLeaderboard);
   app.get("/api/leaderboard/rank", authenticateToken, getUserRank);
 
+  // Interview routes (protected)
+  app.post("/api/interviews", authenticateToken, requireRole(['hr', 'admin']), scheduleInterview);
+  app.get("/api/interviews", authenticateToken, getInterviews);
+  app.put("/api/interviews/:id/status", authenticateToken, updateInterviewStatus);
+  app.post("/api/interviews/feedback", authenticateToken, submitFeedback);
+  app.get("/api/interviews/:id/feedback", authenticateToken, getInterviewFeedback);
+  app.get("/api/interviews/interviewers", authenticateToken, requireRole(['hr', 'admin']), getAvailableInterviewers);
+
   return app;
 }
