@@ -102,10 +102,12 @@ export default function EmployeeDashboard({ data }: Props) {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-3">
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Submit Daily Update
-              </Button>
+              <Link to="/daily-updates">
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Submit Daily Update
+                </Button>
+              </Link>
               <Button variant="outline">
                 <Calendar className="h-4 w-4 mr-2" />
                 View Calendar
