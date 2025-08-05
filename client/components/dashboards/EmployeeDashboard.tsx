@@ -108,13 +108,15 @@ export default function EmployeeDashboard({ data }: Props) {
                   Submit Daily Update
                 </Button>
               </Link>
+              <Link to="/pms">
+                <Button variant="outline">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  View PMS
+                </Button>
+              </Link>
               <Button variant="outline">
                 <Calendar className="h-4 w-4 mr-2" />
                 View Calendar
-              </Button>
-              <Button variant="outline">
-                <Users className="h-4 w-4 mr-2" />
-                Team Projects
               </Button>
             </div>
           </CardContent>
