@@ -77,6 +77,11 @@ const App = () => (
                 <Dashboard />
               </ProtectedRoute>
             } />
+            <Route path="/daily-updates" element={
+              <ProtectedRoute>
+                <DailyUpdates />
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
