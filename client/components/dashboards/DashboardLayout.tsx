@@ -92,6 +92,14 @@ export default function DashboardLayout({ user, children }: Props) {
                   Daily Updates
                 </Link>
               )}
+              <Link
+                to="/leaderboard"
+                className={`text-sm font-medium transition-colors hover:text-blue-600 ${
+                  location.pathname === '/leaderboard' ? 'text-blue-600' : 'text-gray-600'
+                }`}
+              >
+                Leaderboard
+              </Link>
               {(user.role === 'hr' || user.role === 'admin') && (
                 <span className="text-sm font-medium text-gray-400 cursor-not-allowed">
                   Interviews
