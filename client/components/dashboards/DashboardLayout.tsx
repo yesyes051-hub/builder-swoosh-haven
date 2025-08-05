@@ -72,6 +72,43 @@ export default function DashboardLayout({ user, children }: Props) {
               </div>
             </div>
 
+            {/* Navigation Menu */}
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link
+                to="/dashboard"
+                className={`text-sm font-medium transition-colors hover:text-blue-600 ${
+                  location.pathname === '/dashboard' ? 'text-blue-600' : 'text-gray-600'
+                }`}
+              >
+                Dashboard
+              </Link>
+              {(user.role === 'employee' || user.role === 'manager' || user.role === 'admin') && (
+                <Link
+                  to="/daily-updates"
+                  className={`text-sm font-medium transition-colors hover:text-blue-600 ${
+                    location.pathname === '/daily-updates' ? 'text-blue-600' : 'text-gray-600'
+                  }`}
+                >
+                  Daily Updates
+                </Link>
+              )}
+              {(user.role === 'hr' || user.role === 'admin') && (
+                <span className="text-sm font-medium text-gray-400 cursor-not-allowed">
+                  Interviews
+                </span>
+              )}
+              {(user.role === 'manager' || user.role === 'admin') && (
+                <span className="text-sm font-medium text-gray-400 cursor-not-allowed">
+                  Team Reports
+                </span>
+              )}
+              {user.role === 'admin' && (
+                <span className="text-sm font-medium text-gray-400 cursor-not-allowed">
+                  Admin Panel
+                </span>
+              )}
+            </nav>
+
             {/* User Menu */}
             <div className="flex items-center space-x-4">
               {/* Notifications */}
