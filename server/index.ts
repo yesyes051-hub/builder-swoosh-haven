@@ -55,5 +55,9 @@ export function createServer() {
   app.get("/api/interviews/:id/feedback", authenticateToken, getInterviewFeedback);
   app.get("/api/interviews/interviewers", authenticateToken, requireRole(['hr', 'admin']), getAvailableInterviewers);
 
+  // PMS (Performance Management System) routes (protected)
+  app.get("/api/pms/performance", authenticateToken, requireRole(['employee', 'manager', 'hr']), getUserPerformanceData);
+  app.get("/api/pms/team-overview", authenticateToken, requireRole(['manager', 'hr', 'admin']), getTeamPerformanceOverview);
+
   return app;
 }
