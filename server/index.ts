@@ -6,6 +6,7 @@ import { login, register, getProfile } from "./routes/auth";
 import { getEmployeeDashboard, getManagerDashboard, getHRDashboard, getAdminDashboard } from "./routes/dashboard";
 import { createDailyUpdate, getUserDailyUpdates, getTeamDailyUpdates, getDailyUpdateById } from "./routes/dailyUpdates";
 import { getLeaderboard, getUserRank } from "./routes/leaderboard";
+import { scheduleInterview, getInterviews, updateInterviewStatus, submitFeedback, getInterviewFeedback, getAvailableInterviewers } from "./routes/interviews";
 import { authenticateToken, requireRole } from "./middleware/auth";
 
 export function createServer() {
