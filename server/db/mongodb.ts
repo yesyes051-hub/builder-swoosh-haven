@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = 'mongodb+srv://Nisarg:shah@cluster0.ggpuny2.mongodb.net/trackzen';
+const MONGODB_URI = 'mongodb+srv://Nisarg:Shah@cluster0.ggpuny2.mongodb.net/trackzen';
 
 interface ConnectionCache {
   conn: typeof mongoose | null;
