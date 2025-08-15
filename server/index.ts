@@ -8,6 +8,24 @@ import { createDailyUpdate, getUserDailyUpdates, getTeamDailyUpdates, getDailyUp
 import { getLeaderboard, getUserRank } from "./routes/leaderboard";
 import { scheduleInterview, getInterviews, updateInterviewStatus, submitFeedback, getInterviewFeedback, getAvailableInterviewers } from "./routes/interviews";
 import { getUserPerformanceData, getTeamPerformanceOverview } from "./routes/pms";
+import {
+  getProjectDetails,
+  createProjectDetail,
+  getTickets,
+  createTicket,
+  getStandupCalls,
+  createStandupCall,
+  getTimesheets,
+  createTimesheet,
+  getAccessories,
+  createAccessory,
+  getBirthdays,
+  createBirthday,
+  getInterviewFeedback,
+  createInterviewFeedback,
+  addAdminComments,
+  getTimesheetReminders
+} from "./routes/pmsNew";
 import { authenticateToken, requireRole } from "./middleware/auth";
 
 export function createServer() {
