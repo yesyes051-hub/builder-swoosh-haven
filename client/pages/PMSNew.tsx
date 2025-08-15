@@ -541,75 +541,10 @@ export default function PMSNew() {
 
             {/* Birthday Notifications Tab */}
             <TabsContent value="birthdays" className="space-y-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Cake className="h-5 w-5" />
-                      <span>Birthday Notifications</span>
-                    </CardTitle>
-                    <CardDescription>Employee birthdays and celebrations</CardDescription>
-                  </div>
-                  {(user.role === 'admin' || user.role === 'hr') && (
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Birthday
-                    </Button>
-                  )}
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Today's Birthdays */}
-                  <div>
-                    <h3 className="font-semibold mb-3 text-blue-600">🎉 Today's Birthdays</h3>
-                    {birthdays.upcoming.filter(b => isToday(b.birthday)).length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {birthdays.upcoming.filter(b => isToday(b.birthday)).map((birthday) => (
-                          <div key={birthday._id} className="border-l-4 border-blue-500 pl-4 py-3 bg-blue-50 rounded-r-lg">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h4 className="font-semibold text-blue-900">{birthday.name}</h4>
-                                <p className="text-sm text-blue-700">{birthday.department} • {birthday.role}</p>
-                                <p className="text-sm text-blue-600">{birthday.email}</p>
-                              </div>
-                              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                                Send Wishes 🎂
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500 italic">No birthdays today</p>
-                    )}
-                  </div>
-
-                  {/* Upcoming Birthdays */}
-                  <div>
-                    <h3 className="font-semibold mb-3">📅 Upcoming Birthdays (Next 30 Days)</h3>
-                    {birthdays.upcoming.length > 0 ? (
-                      <div className="space-y-3">
-                        {birthdays.upcoming.filter(b => !isToday(b.birthday)).map((birthday) => (
-                          <div key={birthday._id} className="flex justify-between items-center p-3 border rounded-lg">
-                            <div>
-                              <h4 className="font-medium">{birthday.name}</h4>
-                              <p className="text-sm text-gray-600">{birthday.department} • {birthday.role}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-medium text-purple-600">{getBirthdayDate(birthday.birthday)}</p>
-                              <p className="text-sm text-gray-500">{birthday.email}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        <Cake className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                        <p>No upcoming birthdays</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <BirthdayManager
+                birthdays={birthdays}
+                onRefresh={fetchBirthdays}
+              />
             </TabsContent>
 
             {/* Placeholder tabs for other modules */}
