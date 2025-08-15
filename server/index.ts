@@ -109,5 +109,8 @@ export function createServer() {
   app.post("/api/pms/interview-feedback", authenticateToken, createInterviewFeedback);
   app.post("/api/pms/interview-feedback/admin-comments", authenticateToken, requireRole(['admin']), addAdminComments);
 
+  // Initialize PMS data
+  seedPMSData().catch(console.error);
+
   return app;
 }
