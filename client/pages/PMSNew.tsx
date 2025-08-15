@@ -344,10 +344,9 @@ export default function PMSNew() {
                     <CardDescription>Manage and track all project information</CardDescription>
                   </div>
                   {(user.role === 'admin' || user.role === 'manager') && (
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      New Project
-                    </Button>
+                    <ProjectForm onProjectCreated={(project) => {
+                      setProjects([project, ...projects]);
+                    }} />
                   )}
                 </CardHeader>
                 <CardContent>
