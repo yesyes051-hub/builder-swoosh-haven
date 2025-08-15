@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboards/DashboardLayout';
 import BirthdayManager from '@/components/pms/BirthdayManager';
+import ProjectForm from '@/components/pms/ProjectForm';
 import { ApiResponse } from '@shared/api';
 
 interface ProjectDetail {
