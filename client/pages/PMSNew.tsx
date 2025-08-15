@@ -31,6 +31,7 @@ import {
   Bell
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboards/DashboardLayout';
+import BirthdayManager from '@/components/pms/BirthdayManager';
 import { ApiResponse } from '@shared/api';
 
 interface ProjectDetail {
