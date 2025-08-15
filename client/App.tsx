@@ -98,7 +98,7 @@ const App = () => (
             } />
             <Route path="/pms" element={
               <ProtectedRoute>
-                <PMS />
+                <PMSNew />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
