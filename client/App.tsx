@@ -13,7 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import DailyUpdates from "./pages/DailyUpdates";
 import Leaderboard from "./pages/Leaderboard";
 import Interviews from "./pages/Interviews";
-import PMS from "./pages/PMS";
+import PMSNew from "./pages/PMSNew";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
