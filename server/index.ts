@@ -77,5 +77,36 @@ export function createServer() {
   app.get("/api/pms/performance", authenticateToken, requireRole(['employee', 'manager', 'hr']), getUserPerformanceData);
   app.get("/api/pms/team-overview", authenticateToken, requireRole(['manager', 'hr', 'admin']), getTeamPerformanceOverview);
 
+  // New PMS Module Routes (MongoDB-based)
+  // Project Details
+  app.get("/api/pms/projects", authenticateToken, getProjectDetails);
+  app.post("/api/pms/projects", authenticateToken, requireRole(['admin', 'manager']), createProjectDetail);
+
+  // Ticket Tracking
+  app.get("/api/pms/tickets", authenticateToken, getTickets);
+  app.post("/api/pms/tickets", authenticateToken, createTicket);
+
+  // Standup Call Tracking
+  app.get("/api/pms/standups", authenticateToken, getStandupCalls);
+  app.post("/api/pms/standups", authenticateToken, requireRole(['admin', 'manager']), createStandupCall);
+
+  // Timesheet Status
+  app.get("/api/pms/timesheets", authenticateToken, getTimesheets);
+  app.post("/api/pms/timesheets", authenticateToken, createTimesheet);
+  app.get("/api/pms/timesheet-reminders", authenticateToken, getTimesheetReminders);
+
+  // Accessories Status
+  app.get("/api/pms/accessories", authenticateToken, getAccessories);
+  app.post("/api/pms/accessories", authenticateToken, requireRole(['admin', 'hr']), createAccessory);
+
+  // Birthday Notifications
+  app.get("/api/pms/birthdays", authenticateToken, getBirthdays);
+  app.post("/api/pms/birthdays", authenticateToken, requireRole(['admin', 'hr']), createBirthday);
+
+  // Enhanced Interview Feedback
+  app.get("/api/pms/interview-feedback", authenticateToken, getInterviewFeedback);
+  app.post("/api/pms/interview-feedback", authenticateToken, createInterviewFeedback);
+  app.post("/api/pms/interview-feedback/admin-comments", authenticateToken, requireRole(['admin']), addAdminComments);
+
   return app;
 }
