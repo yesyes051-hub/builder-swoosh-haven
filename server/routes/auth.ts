@@ -1,13 +1,15 @@
 import { RequestHandler } from 'express';
 import bcrypt from 'bcryptjs';
 import { db } from '../db/memory';
-import { generateToken } from '../middleware/auth';
-import { 
-  LoginRequest, 
-  RegisterRequest, 
-  AuthResponse, 
-  ApiResponse 
+import { generateToken, AuthRequest } from '../middleware/auth';
+import {
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
+  ApiResponse
 } from '@shared/api';
+import { connectToDatabase } from '../db/mongodb';
+import { PMSUser } from '../models/pms';
 
 export const login: RequestHandler = async (req, res) => {
   try {
