@@ -570,14 +570,14 @@ export default function PMSNew() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Clock className="h-5 w-5" />
-                    <span>Enhanced Timesheet Management</span>
+                    <span>Timesheet Status</span>
                   </CardTitle>
-                  <CardDescription>
-                    Track time, manage entries, and approve timesheets with role-based access
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <TimesheetForm onRefresh={loadData} />
+                  <div className="text-center py-8 text-gray-500">
+                    <Clock className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>Enhanced timesheet management coming soon...</p>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
