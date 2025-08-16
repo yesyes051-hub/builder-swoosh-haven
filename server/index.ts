@@ -57,6 +57,7 @@ export function createServer() {
   app.post("/api/auth/login", login);
   app.post("/api/auth/register", register);
   app.get("/api/auth/profile", authenticateToken, getProfile);
+  app.post("/api/auth/reset-password", authenticateToken, resetPassword);
 
   // Dashboard routes (protected)
   app.get("/api/dashboard/employee", authenticateToken, requireRole(['employee']), getEmployeeDashboard);
