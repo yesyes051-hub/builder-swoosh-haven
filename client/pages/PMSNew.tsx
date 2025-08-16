@@ -602,20 +602,37 @@ export default function PMSNew() {
             </TabsContent>
 
             <TabsContent value="features" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <MessageSquare className="h-5 w-5" />
-                    <span>Additional Features</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-gray-500">
-                    <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>Additional features module coming soon...</p>
-                  </div>
-                </CardContent>
-              </Card>
+              {user?.role === 'admin' ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <MessageSquare className="h-5 w-5" />
+                      <span>User Management</span>
+                    </CardTitle>
+                    <CardDescription>
+                      Admin-only: Manage employees, assign temporary passwords, and control access
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <UserManagement />
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <MessageSquare className="h-5 w-5" />
+                      <span>Additional Features</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-8 text-gray-500">
+                      <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p>Additional features module coming soon...</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
           </Tabs>
         )}
