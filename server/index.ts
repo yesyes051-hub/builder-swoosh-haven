@@ -24,7 +24,15 @@ import {
   getInterviewFeedback,
   createInterviewFeedback,
   addAdminComments,
-  getTimesheetReminders
+  getTimesheetReminders,
+  createEmployee,
+  getEmployees,
+  resetEmployeePassword,
+  createTimesheetEntry,
+  getTimesheetEntries,
+  updateTimesheetEntry,
+  submitTimesheet,
+  approveTimesheet
 } from "./routes/pmsNew";
 import { authenticateToken, requireRole } from "./middleware/auth";
 import { seedPMSData } from "./db/seedPMS";
