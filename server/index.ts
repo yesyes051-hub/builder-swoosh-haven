@@ -117,6 +117,18 @@ export function createServer() {
   app.post("/api/pms/interview-feedback", authenticateToken, createInterviewFeedback);
   app.post("/api/pms/interview-feedback/admin-comments", authenticateToken, requireRole(['admin']), addAdminComments);
 
+  // User Management (Admin Only)
+  app.post("/api/pms/employees", authenticateToken, requireRole(['admin']), createEmployee);
+  app.get("/api/pms/employees", authenticateToken, requireRole(['admin', 'hr']), getEmployees);
+  app.post("/api/pms/employees/:employeeId/reset-password", authenticateToken, requireRole(['admin']), resetEmployeePassword);
+
+  // Enhanced Timesheet System
+  app.post("/api/pms-new/timesheets", authenticateToken, createTimesheetEntry);
+  app.get("/api/pms-new/timesheets", authenticateToken, getTimesheetEntries);
+  app.put("/api/pms-new/timesheets/:id", authenticateToken, updateTimesheetEntry);
+  app.post("/api/pms-new/timesheets/:id/submit", authenticateToken, submitTimesheet);
+  app.post("/api/pms-new/timesheets/:id/approve", authenticateToken, requireRole(['admin', 'manager']), approveTimesheet);
+
   // Initialize PMS data
   seedPMSData().catch(console.error);
 
