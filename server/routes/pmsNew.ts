@@ -491,3 +491,409 @@ export const getTimesheetReminders: RequestHandler = async (req, res) => {
     } as ApiResponse<never>);
   }
 };
+
+// User Management Routes (Admin Only)
+export const createEmployee: RequestHandler = async (req, res) => {
+  try {
+    await connectToDatabase();
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+
+    // Only admin can create employees
+    if (user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied. Admin role required.'
+      } as ApiResponse<never>);
+    }
+
+    const { email, firstName, lastName, role, department, managerId } = req.body;
+
+    // Check if user already exists
+    const existingUser = await PMSUser.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        error: 'User with this email already exists'
+      } as ApiResponse<never>);
+    }
+
+    // Generate temporary password
+    const tempPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+    const newEmployee = new PMSUser({
+      email,
+      password: hashedPassword,
+      firstName,
+      lastName,
+      role,
+      department,
+      managerId,
+      isActive: true,
+      requiresPasswordReset: true,
+      isTemporaryPassword: true
+    });
+
+    await newEmployee.save();
+
+    // Return user data without password but include temporary password for admin
+    const responseData = {
+      ...newEmployee.toObject(),
+      temporaryPassword: tempPassword
+    };
+    delete responseData.password;
+
+    res.status(201).json({
+      success: true,
+      data: responseData,
+      message: `Employee created successfully. Temporary password: ${tempPassword}`
+    } as ApiResponse<typeof responseData>);
+  } catch (error) {
+    console.error('Create employee error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    } as ApiResponse<never>);
+  }
+};
+
+export const getEmployees: RequestHandler = async (req, res) => {
+  try {
+    await connectToDatabase();
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+
+    // Only admin and HR can view all employees
+    if (user.role !== 'admin' && user.role !== 'hr') {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied'
+      } as ApiResponse<never>);
+    }
+
+    const employees = await PMSUser.find({}, { password: 0 }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: employees
+    } as ApiResponse<typeof employees>);
+  } catch (error) {
+    console.error('Get employees error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    } as ApiResponse<never>);
+  }
+};
+
+export const resetEmployeePassword: RequestHandler = async (req, res) => {
+  try {
+    await connectToDatabase();
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+    const { employeeId } = req.params;
+
+    // Only admin can reset passwords
+    if (user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied. Admin role required.'
+      } as ApiResponse<never>);
+    }
+
+    const employee = await PMSUser.findById(employeeId);
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        error: 'Employee not found'
+      } as ApiResponse<never>);
+    }
+
+    // Generate new temporary password
+    const tempPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+    employee.password = hashedPassword;
+    employee.requiresPasswordReset = true;
+    employee.isTemporaryPassword = true;
+    await employee.save();
+
+    res.json({
+      success: true,
+      data: { temporaryPassword: tempPassword },
+      message: `Password reset successfully. New temporary password: ${tempPassword}`
+    } as ApiResponse<{ temporaryPassword: string }>);
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    } as ApiResponse<never>);
+  }
+};
+
+// Enhanced Timesheet Routes
+export const createTimesheetEntry: RequestHandler = async (req, res) => {
+  try {
+    await connectToDatabase();
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+
+    const { projectId, date, startTime, endTime, taskDescription, category, billable } = req.body;
+
+    // Get project details
+    const project = await ProjectDetail.findById(projectId);
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        error: 'Project not found'
+      } as ApiResponse<never>);
+    }
+
+    // Calculate hours worked
+    const start = new Date(`${date}T${startTime}`);
+    const end = new Date(`${date}T${endTime}`);
+    const hoursWorked = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+
+    if (hoursWorked <= 0 || hoursWorked > 24) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid time range'
+      } as ApiResponse<never>);
+    }
+
+    const timesheet = new Timesheet({
+      userId: user.id,
+      userName: `${user.firstName} ${user.lastName}`,
+      userEmail: user.email,
+      projectId,
+      projectName: project.projectName,
+      date: new Date(date),
+      startTime,
+      endTime,
+      hoursWorked,
+      taskDescription,
+      category: category || 'Development',
+      billable: billable !== false,
+      overtime: hoursWorked > 8,
+      status: 'Draft'
+    });
+
+    await timesheet.save();
+
+    res.status(201).json({
+      success: true,
+      data: timesheet
+    } as ApiResponse<typeof timesheet>);
+  } catch (error) {
+    console.error('Create timesheet entry error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    } as ApiResponse<never>);
+  }
+};
+
+export const getTimesheetEntries: RequestHandler = async (req, res) => {
+  try {
+    await connectToDatabase();
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+
+    let query: any = {};
+
+    if (user.role === 'admin') {
+      // Admin can see all timesheets
+    } else if (user.role === 'manager') {
+      // Project managers can see timesheets for their projects
+      const managedProjects = await ProjectDetail.find({ projectManager: user.id });
+      const projectIds = managedProjects.map(p => p._id.toString());
+
+      query = {
+        $or: [
+          { userId: user.id }, // Their own timesheets
+          { projectId: { $in: projectIds } } // Timesheets for projects they manage
+        ]
+      };
+    } else {
+      // Employees can only see their own timesheets
+      query = { userId: user.id };
+    }
+
+    const timesheets = await Timesheet.find(query).sort({ date: -1, createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: timesheets
+    } as ApiResponse<typeof timesheets>);
+  } catch (error) {
+    console.error('Get timesheet entries error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    } as ApiResponse<never>);
+  }
+};
+
+export const updateTimesheetEntry: RequestHandler = async (req, res) => {
+  try {
+    await connectToDatabase();
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+    const { id } = req.params;
+
+    const timesheet = await Timesheet.findById(id);
+    if (!timesheet) {
+      return res.status(404).json({
+        success: false,
+        error: 'Timesheet entry not found'
+      } as ApiResponse<never>);
+    }
+
+    // Only owner can edit draft timesheets, admins can edit any
+    if (timesheet.userId !== user.id && user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied'
+      } as ApiResponse<never>);
+    }
+
+    // Can't edit approved/submitted timesheets unless admin
+    if (timesheet.status !== 'Draft' && user.role !== 'admin') {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot edit submitted timesheet'
+      } as ApiResponse<never>);
+    }
+
+    const updates = req.body;
+
+    // Recalculate hours if time changed
+    if (updates.startTime || updates.endTime) {
+      const date = updates.date || timesheet.date;
+      const startTime = updates.startTime || timesheet.startTime;
+      const endTime = updates.endTime || timesheet.endTime;
+
+      const start = new Date(`${date}T${startTime}`);
+      const end = new Date(`${date}T${endTime}`);
+      const hoursWorked = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+
+      updates.hoursWorked = hoursWorked;
+      updates.overtime = hoursWorked > 8;
+    }
+
+    Object.assign(timesheet, updates);
+    await timesheet.save();
+
+    res.json({
+      success: true,
+      data: timesheet
+    } as ApiResponse<typeof timesheet>);
+  } catch (error) {
+    console.error('Update timesheet entry error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    } as ApiResponse<never>);
+  }
+};
+
+export const submitTimesheet: RequestHandler = async (req, res) => {
+  try {
+    await connectToDatabase();
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+    const { id } = req.params;
+
+    const timesheet = await Timesheet.findById(id);
+    if (!timesheet) {
+      return res.status(404).json({
+        success: false,
+        error: 'Timesheet entry not found'
+      } as ApiResponse<never>);
+    }
+
+    if (timesheet.userId !== user.id) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied'
+      } as ApiResponse<never>);
+    }
+
+    if (timesheet.status !== 'Draft') {
+      return res.status(400).json({
+        success: false,
+        error: 'Timesheet already submitted'
+      } as ApiResponse<never>);
+    }
+
+    timesheet.status = 'Submitted';
+    await timesheet.save();
+
+    res.json({
+      success: true,
+      data: timesheet,
+      message: 'Timesheet submitted successfully'
+    } as ApiResponse<typeof timesheet>);
+  } catch (error) {
+    console.error('Submit timesheet error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    } as ApiResponse<never>);
+  }
+};
+
+export const approveTimesheet: RequestHandler = async (req, res) => {
+  try {
+    await connectToDatabase();
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+    const { id } = req.params;
+
+    // Only admins and managers can approve timesheets
+    if (user.role !== 'admin' && user.role !== 'manager') {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied'
+      } as ApiResponse<never>);
+    }
+
+    const timesheet = await Timesheet.findById(id);
+    if (!timesheet) {
+      return res.status(404).json({
+        success: false,
+        error: 'Timesheet entry not found'
+      } as ApiResponse<never>);
+    }
+
+    // Managers can only approve timesheets for their projects
+    if (user.role === 'manager') {
+      const project = await ProjectDetail.findById(timesheet.projectId);
+      if (!project || project.projectManager !== user.id) {
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied. You can only approve timesheets for your projects.'
+        } as ApiResponse<never>);
+      }
+    }
+
+    timesheet.status = 'Approved';
+    timesheet.approvedBy = user.id;
+    timesheet.approvedAt = new Date();
+    await timesheet.save();
+
+    res.json({
+      success: true,
+      data: timesheet,
+      message: 'Timesheet approved successfully'
+    } as ApiResponse<typeof timesheet>);
+  } catch (error) {
+    console.error('Approve timesheet error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    } as ApiResponse<never>);
+  }
+};
