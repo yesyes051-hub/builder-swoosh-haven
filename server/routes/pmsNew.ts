@@ -1,14 +1,16 @@
 import { RequestHandler } from 'express';
 import { connectToDatabase } from '../db/mongodb';
-import { 
-  ProjectDetail, 
-  Ticket, 
-  StandupCall, 
-  Timesheet, 
-  Accessory, 
+import {
+  ProjectDetail,
+  Ticket,
+  StandupCall,
+  Timesheet,
+  Accessory,
   Birthday,
-  InterviewFeedbackEnhanced 
+  InterviewFeedbackEnhanced,
+  PMSUser
 } from '../models/pms';
+import bcrypt from 'bcryptjs';
 import { AuthRequest } from '../middleware/auth';
 import { ApiResponse } from '@shared/api';
 
