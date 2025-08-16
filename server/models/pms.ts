@@ -129,14 +129,22 @@ const StandupCallSchema = new Schema<IStandupCall>({
 // Timesheet Status Schema
 export interface ITimesheet extends Document {
   userId: string;
+  userName: string;
+  userEmail: string;
   projectId: string;
+  projectName: string;
   date: Date;
+  startTime: string;
+  endTime: string;
   hoursWorked: number;
   taskDescription: string;
+  category: 'Development' | 'Testing' | 'Meeting' | 'Documentation' | 'Support' | 'Other';
   status: 'Draft' | 'Submitted' | 'Approved' | 'Rejected';
   approvedBy?: string;
+  approvedAt?: Date;
   rejectionReason?: string;
   billable: boolean;
+  overtime: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
