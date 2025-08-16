@@ -132,3 +132,81 @@ export const getProfile: RequestHandler = async (req, res) => {
     } as ApiResponse<never>);
   }
 };
+
+export const resetPassword: RequestHandler = async (req, res) => {
+  try {
+    await connectToDatabase();
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        error: 'Current password and new password are required'
+      } as ApiResponse<never>);
+    }
+
+    // Find user in PMS database
+    const pmsUser = await PMSUser.findOne({ email: user.email });
+    if (!pmsUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      } as ApiResponse<never>);
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, pmsUser.password);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        error: 'Current password is incorrect'
+      } as ApiResponse<never>);
+    }
+
+    // Validate new password strength
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(newPassword);
+    const hasLowerCase = /[a-z]/.test(newPassword);
+    const hasNumbers = /\d/.test(newPassword);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
+
+    if (newPassword.length < minLength || !hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character'
+      } as ApiResponse<never>);
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user password and reset flags
+    pmsUser.password = hashedNewPassword;
+    pmsUser.requiresPasswordReset = false;
+    pmsUser.isTemporaryPassword = false;
+    pmsUser.lastPasswordChange = new Date();
+
+    await pmsUser.save();
+
+    // Also update in memory database if exists
+    const memoryUser = await db.getUserByEmail(user.email);
+    if (memoryUser) {
+      await db.updateUser(memoryUser.id, {
+        password: hashedNewPassword
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Password updated successfully'
+    } as ApiResponse<{ message: string }>);
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    } as ApiResponse<never>);
+  }
+};
