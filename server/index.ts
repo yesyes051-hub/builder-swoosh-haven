@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
-import { login, register, getProfile } from "./routes/auth";
+import { login, register, getProfile, resetPassword } from "./routes/auth";
 import { getEmployeeDashboard, getManagerDashboard, getHRDashboard, getAdminDashboard } from "./routes/dashboard";
 import { createDailyUpdate, getUserDailyUpdates, getTeamDailyUpdates, getDailyUpdateById } from "./routes/dailyUpdates";
 import { getLeaderboard, getUserRank } from "./routes/leaderboard";
