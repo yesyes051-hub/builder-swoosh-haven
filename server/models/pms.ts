@@ -261,6 +261,7 @@ const InterviewFeedbackEnhancedSchema = new Schema<IInterviewFeedbackEnhanced>({
 }, { timestamps: true });
 
 // Export models
+export const PMSUser = mongoose.models.PMSUser || mongoose.model<IPMSUser>('PMSUser', PMSUserSchema);
 export const ProjectDetail = mongoose.models.ProjectDetail || mongoose.model<IProjectDetail>('ProjectDetail', ProjectDetailSchema);
 export const Ticket = mongoose.models.Ticket || mongoose.model<ITicket>('Ticket', TicketSchema);
 export const StandupCall = mongoose.models.StandupCall || mongoose.model<IStandupCall>('StandupCall', StandupCallSchema);
