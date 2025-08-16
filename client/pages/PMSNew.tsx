@@ -33,8 +33,6 @@ import {
 import DashboardLayout from '@/components/dashboards/DashboardLayout';
 import BirthdayManager from '@/components/pms/BirthdayManager';
 import ProjectForm from '@/components/pms/ProjectForm';
-import TimesheetForm from '@/components/pms/TimesheetForm';
-import UserManagement from '@/components/pms/UserManagement';
 import { ApiResponse } from '@shared/api';
 
 interface ProjectDetail {
