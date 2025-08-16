@@ -151,14 +151,22 @@ export interface ITimesheet extends Document {
 
 const TimesheetSchema = new Schema<ITimesheet>({
   userId: { type: String, required: true },
+  userName: { type: String, required: true },
+  userEmail: { type: String, required: true },
   projectId: { type: String, required: true },
+  projectName: { type: String, required: true },
   date: { type: Date, required: true },
+  startTime: { type: String, required: true },
+  endTime: { type: String, required: true },
   hoursWorked: { type: Number, required: true, min: 0, max: 24 },
   taskDescription: { type: String, required: true },
+  category: { type: String, enum: ['Development', 'Testing', 'Meeting', 'Documentation', 'Support', 'Other'], default: 'Development' },
   status: { type: String, enum: ['Draft', 'Submitted', 'Approved', 'Rejected'], default: 'Draft' },
   approvedBy: { type: String },
+  approvedAt: { type: Date },
   rejectionReason: { type: String },
   billable: { type: Boolean, default: true },
+  overtime: { type: Boolean, default: false },
 }, { timestamps: true });
 
 // Accessories Status Schema
