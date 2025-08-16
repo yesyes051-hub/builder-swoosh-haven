@@ -1,5 +1,36 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+// User Schema for PMS (Enhanced with password reset tracking)
+export interface IPMSUser extends Document {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  role: 'admin' | 'hr' | 'manager' | 'employee' | 'interviewer';
+  department: string;
+  managerId?: string;
+  isActive: boolean;
+  requiresPasswordReset: boolean;
+  isTemporaryPassword: boolean;
+  lastPasswordChange?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const PMSUserSchema = new Schema<IPMSUser>({
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  role: { type: String, enum: ['admin', 'hr', 'manager', 'employee', 'interviewer'], required: true },
+  department: { type: String, required: true },
+  managerId: { type: String },
+  isActive: { type: Boolean, default: true },
+  requiresPasswordReset: { type: Boolean, default: false },
+  isTemporaryPassword: { type: Boolean, default: false },
+  lastPasswordChange: { type: Date },
+}, { timestamps: true });
+
 // Project Details Schema
 export interface IProjectDetail extends Document {
   projectName: string;
