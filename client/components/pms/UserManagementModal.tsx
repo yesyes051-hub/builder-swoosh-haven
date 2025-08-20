@@ -72,6 +72,7 @@ export default function UserManagementModal({ isOpen, onClose }: UserManagementM
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchUsers = async () => {
     if (!token) return;
