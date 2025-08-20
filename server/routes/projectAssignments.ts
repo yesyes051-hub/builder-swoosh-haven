@@ -97,9 +97,10 @@ export const getRecentAssignments: RequestHandler = async (req, res) => {
 
     console.log('✅ Found assignments:', assignments.length);
 
+    // Return empty array if no assignments found (this is normal for new managers)
     return res.json({
       success: true,
-      data: assignments
+      data: assignments || []
     });
   } catch (error) {
     console.error('❌ Error fetching recent assignments:', error);
