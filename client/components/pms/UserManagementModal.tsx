@@ -130,6 +130,7 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
     fetchUsers(); // Refresh the users list
     setIsEditModalOpen(false);
     setSelectedUser(null);
+    onUserChanged?.(); // Trigger dashboard stats refresh
   };
 
   const formatDate = (dateString: string) => {
