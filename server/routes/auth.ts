@@ -51,8 +51,12 @@ export const login: RequestHandler = async (req, res) => {
       isActive: true
     };
 
+    console.log('🔍 Login - User object for token:', userForToken);
+
     const token = generateToken(userForToken);
     const { password: _, ...userWithoutPassword } = user.toObject();
+
+    console.log('✅ Login successful for user:', user.email, 'ID:', user._id.toString());
 
     res.json({
       success: true,
