@@ -114,6 +114,10 @@ export default function Dashboard() {
     case 'manager':
       return <ManagerDashboard data={dashboardData as ManagerDashboardType} />;
     case 'hr':
+      // For users with admin-like permissions (HR role in new system), show admin dashboard
+      if (user.email === 'admin@trackzen.com') {
+        return <AdminDashboard data={dashboardData as AdminDashboardType} />;
+      }
       return <HRDashboard data={dashboardData as HRDashboardType} />;
     case 'admin':
       return <AdminDashboard data={dashboardData as AdminDashboardType} />;
