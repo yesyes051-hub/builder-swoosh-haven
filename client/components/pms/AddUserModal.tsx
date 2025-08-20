@@ -41,6 +41,7 @@ interface AddUserModalProps {
 
 export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserModalProps) {
   const { toast } = useToast();
+  const { token } = useAuth();
   const [formData, setFormData] = useState<UserFormData>({
     firstName: '',
     lastName: '',
