@@ -203,10 +203,15 @@ export default function AdminDashboard({ data }: Props) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                {statsLoading ? '...' : (userStats?.totalUsers ?? data.systemStats.totalUsers)}
+                {statsLoading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full mr-2"></div>
+                    Loading...
+                  </div>
+                ) : (userStats?.totalUsers ?? data.systemStats.totalUsers)}
               </div>
               <p className="text-xs text-muted-foreground">
-                Registered accounts
+                Registered accounts {userStats === null ? '(using fallback data)' : ''}
               </p>
             </CardContent>
           </Card>
