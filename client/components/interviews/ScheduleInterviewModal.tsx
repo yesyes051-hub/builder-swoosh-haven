@@ -19,13 +19,14 @@ import {
 import { format } from 'date-fns';
 import { ScheduleInterviewRequest, ApiResponse, MockInterview } from '@shared/api';
 
-interface InterviewerOption {
+interface EmployeeOption {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
   department?: string;
   role: string;
+  jobStatus: string;
 }
 
 interface Props {
