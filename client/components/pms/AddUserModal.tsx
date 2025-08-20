@@ -102,9 +102,6 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
 
     setIsLoading(true);
     try {
-      // Get auth token from localStorage
-      const token = localStorage.getItem('token');
-
       const response = await fetch('/api/users', {
         method: 'POST',
         headers: {
