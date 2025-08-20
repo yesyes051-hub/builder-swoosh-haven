@@ -203,7 +203,7 @@ export default function AdminDashboard({ data }: Props) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 dynamic-content">
               <div className="text-center p-4 border rounded-lg">
                 <UserPlus className="h-8 w-8 mx-auto mb-2 text-blue-600" />
                 <div className="text-2xl font-bold text-blue-600">
