@@ -277,6 +277,15 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
                             <Edit className="h-3 w-3 mr-1" />
                             Edit
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteUser(user)}
+                            className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            Delete
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
