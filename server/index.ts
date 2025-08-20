@@ -34,6 +34,7 @@ import {
   submitTimesheet,
   approveTimesheet
 } from "./routes/pmsNew";
+import { createUser, getAllUsers } from "./routes/users";
 import { authenticateToken, requireRole } from "./middleware/auth";
 import { seedPMSData } from "./db/seedPMS";
 
