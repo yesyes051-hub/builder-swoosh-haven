@@ -48,6 +48,7 @@ export const getUserStats: RequestHandler = async (req, res) => {
       }
     };
 
+    console.log('✅ User stats compiled successfully:', stats);
     res.json({
       success: true,
       data: stats
