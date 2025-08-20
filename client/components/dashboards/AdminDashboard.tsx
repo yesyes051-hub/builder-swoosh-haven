@@ -113,7 +113,7 @@ export default function AdminDashboard({ data }: Props) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                {statsLoading ? '...' : userStats?.totalUsers || data.systemStats.totalUsers}
+                {statsLoading ? '...' : (userStats?.totalUsers ?? data.systemStats.totalUsers)}
               </div>
               <p className="text-xs text-muted-foreground">
                 Registered accounts
