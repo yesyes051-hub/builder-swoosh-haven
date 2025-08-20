@@ -256,7 +256,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
               </Alert>
             )}
 
-            {loadingInterviewers ? (
+            {loadingEmployees ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
                 <span className="ml-2">Loading available personnel...</span>
