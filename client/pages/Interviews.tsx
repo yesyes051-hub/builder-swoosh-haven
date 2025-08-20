@@ -50,7 +50,7 @@ export default function Interviews() {
   const { user, token } = useAuth();
   const [interviews, setInterviews] = useState<InterviewWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showScheduleForm, setShowScheduleForm] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showFeedbackForm, setShowFeedbackForm] = useState<string | null>(null);
   const [error, setError] = useState('');
 
