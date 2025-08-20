@@ -183,6 +183,31 @@
   .shadow-trackzen-lg {
     box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.25);
   }
+
+  /* Modal stability improvements */
+  .fixed-size-modal {
+    will-change: auto;
+    contain: layout style;
+    min-width: 320px;
+    box-sizing: border-box;
+  }
+
+  /* Prevent layout shifts in modals */
+  .fixed-size-modal * {
+    box-sizing: border-box;
+  }
+
+  /* Reduce reflows in table components */
+  .table-container {
+    contain: layout style;
+    overflow-anchor: none;
+  }
+
+  /* Improve rendering performance for dynamic content */
+  .dynamic-content {
+    contain: layout;
+    will-change: auto;
+  }
 }
 
 /* Role-specific accent colors */
