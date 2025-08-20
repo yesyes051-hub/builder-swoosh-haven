@@ -18,12 +18,19 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
+  console.log('🔍 Auth middleware - URL:', req.url);
+  console.log('🔍 Auth header:', authHeader);
+  console.log('🔍 Extracted token length:', token ? token.length : 'N/A');
+
   if (!token) {
+    console.log('❌ No token provided');
     return res.status(401).json({ success: false, error: 'Access token required' });
   }
 
   try {
+    console.log('🔍 Verifying token with secret length:', JWT_SECRET.length);
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+    console.log('✅ Token decoded successfully:', { userId: decoded.userId, email: decoded.email, role: decoded.role });
 
     // Set minimal user object with the correct ID
     req.user = {
@@ -39,7 +46,8 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
 
     next();
   } catch (error) {
-    console.error('Token verification error:', error);
+    console.error('❌ Token verification error for URL:', req.url, 'Error:', error);
+    console.log('🔍 Token that failed:', token?.substring(0, 20) + '...');
     return res.status(403).json({ success: false, error: 'Invalid or expired token' });
   }
 };
