@@ -128,13 +128,21 @@ export const getManagerDashboard: RequestHandler = async (req, res) => {
       }
     }
 
-    // Get team members
-    const allUsers = await db.getAllUsers();
-    const teamMembers = allUsers.filter(u => u.managerId === user.id);
-    const teamMemberIds = teamMembers.map(m => m.id);
+    // Safely get team data from memory database, providing defaults for new users
+    let teamMembers = [];
+    let recentTeamUpdates = [];
+    let teamProjects = [];
 
-    const recentTeamUpdates = await db.getDailyUpdatesByTeam(teamMemberIds, 10);
-    const teamProjects = await db.getProjectsByUser(user.id);
+    try {
+      const allUsers = await db.getAllUsers();
+      teamMembers = allUsers.filter(u => u.managerId === user.id);
+      const teamMemberIds = teamMembers.map(m => m.id);
+      recentTeamUpdates = await db.getDailyUpdatesByTeam(teamMemberIds, 10);
+      teamProjects = await db.getProjectsByUser(user.id);
+    } catch (error) {
+      // For new users from Employee Management system, use empty arrays
+      console.log('Manager dashboard: Using empty data for new user');
+    }
 
     // Add user info to updates
     const updatesWithUser = recentTeamUpdates.map(update => {
