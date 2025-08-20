@@ -111,10 +111,6 @@ export default function HRDashboard({ data }: Props) {
                 </Button>
               </Link>
               <Button variant="outline">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add Employee
-              </Button>
-              <Button variant="outline">
                 <FileText className="h-4 w-4 mr-2" />
                 View Reports
               </Button>
