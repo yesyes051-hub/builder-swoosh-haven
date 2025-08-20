@@ -112,15 +112,25 @@ class ResizeObserverErrorSuppressor {
   }
 
   private isResizeObserverError(message: string): boolean {
+    if (!message || typeof message !== 'string') {
+      return false;
+    }
+
     const resizeObserverPatterns = [
       'ResizeObserver loop limit exceeded',
       'ResizeObserver loop completed with undelivered notifications',
-      'ResizeObserver',
-      'ResizeObserverError'
+      'resizeobserver loop',
+      'resize observer',
+      'ResizeObserverError',
+      'ResizeObserver callback',
+      'ResizeObserver entry',
+      'resizeobserver.js',
+      'ResizeObserver.observe'
     ];
 
-    return resizeObserverPatterns.some(pattern => 
-      message.toLowerCase().includes(pattern.toLowerCase())
+    const lowerMessage = message.toLowerCase();
+    return resizeObserverPatterns.some(pattern =>
+      lowerMessage.includes(pattern.toLowerCase())
     );
   }
 
