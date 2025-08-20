@@ -53,6 +53,7 @@ export default function ManagerDashboard({ data }: Props) {
   const [isLoading, setIsLoading] = useState(true);
 
   const formatDate = (date: Date) => {
+    // Format date for display
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric'
