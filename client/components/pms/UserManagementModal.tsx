@@ -237,6 +237,16 @@ export default function UserManagementModal({ isOpen, onClose }: UserManagementM
           </Button>
         </div>
       </DialogContent>
+
+      <EditUserModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser}
+        onUserUpdated={handleUserUpdated}
+      />
     </Dialog>
   );
 }
