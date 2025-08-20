@@ -127,7 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
-      const response = await fetch('/api/auth/login', {
+      const response = await nativeFetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
