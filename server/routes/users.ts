@@ -75,7 +75,7 @@ export const createUser: RequestHandler = async (req, res) => {
       gender,
       contactNumber: contactNumber?.trim(),
       jobStatus,
-      role: role.toLowerCase(),
+      role: role.toLowerCase() as 'hr' | 'manager' | 'employee',
       department: 'General', // Default department, can be updated later
       isActive: true,
       requiresPasswordReset: true,
