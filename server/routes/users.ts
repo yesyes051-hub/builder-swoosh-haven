@@ -1,7 +1,6 @@
 import { RequestHandler } from 'express';
 import bcrypt from 'bcryptjs';
-import { connectToDatabase } from '../db/mongodb';
-import { PMSUser } from '../models/pms';
+import { EmployeeUser } from '../models/employeeManagement';
 import { ApiResponse } from '@shared/api';
 
 interface CreateUserRequest {
