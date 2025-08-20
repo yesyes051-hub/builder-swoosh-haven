@@ -254,20 +254,22 @@ export default function AdminDashboard({ data }: Props) {
                 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Admin Users:</span>
-                    <Badge variant="secondary">1</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">HR Users:</span>
-                    <Badge variant="secondary">1</Badge>
+                    <Badge variant="secondary">
+                      {statsLoading ? '...' : userStats?.roleBreakdown.hr || 1}
+                    </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Managers:</span>
-                    <Badge variant="secondary">1</Badge>
+                    <Badge variant="secondary">
+                      {statsLoading ? '...' : userStats?.roleBreakdown.manager || 1}
+                    </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Employees:</span>
-                    <Badge variant="secondary">{data.systemStats.totalUsers - 3}</Badge>
+                    <Badge variant="secondary">
+                      {statsLoading ? '...' : userStats?.roleBreakdown.employee || (data.systemStats.totalUsers - 3)}
+                    </Badge>
                   </div>
                 </div>
               </div>
