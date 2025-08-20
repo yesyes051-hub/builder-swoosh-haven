@@ -4,6 +4,32 @@ import "./global.css";
 import { initializeResizeObserverSuppression } from '@/lib/resizeObserverSuppress';
 initializeResizeObserverSuppression();
 
+// Additional aggressive suppression for ResizeObserver errors
+if (typeof window !== 'undefined') {
+  // Override the global error handler
+  const originalOnError = window.onerror;
+  window.onerror = (message, source, lineno, colno, error) => {
+    const msg = String(message || '');
+    if (msg.toLowerCase().includes('resizeobserver')) {
+      return true; // Prevent default error handling
+    }
+    return originalOnError ? originalOnError(message, source, lineno, colno, error) : false;
+  };
+
+  // Override unhandled rejection handler
+  const originalOnUnhandledRejection = window.onunhandledrejection;
+  window.onunhandledrejection = (event) => {
+    const msg = String(event.reason?.message || event.reason || '');
+    if (msg.toLowerCase().includes('resizeobserver')) {
+      event.preventDefault();
+      return;
+    }
+    if (originalOnUnhandledRejection) {
+      originalOnUnhandledRejection(event);
+    }
+  };
+}
+
 import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
