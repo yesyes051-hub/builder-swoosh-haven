@@ -73,14 +73,12 @@ export default function ManagerDashboard({ data }: Props) {
   const fetchTeamMembers = async () => {
     try {
       const token = localStorage.getItem('token');
-
+      
       if (!token) {
         console.error('❌ No authentication token found');
         return;
       }
-
-      console.log('🔍 Fetching team members...');
-
+      
       const response = await fetch('/api/project-assignments/team-members', {
         method: 'GET',
         headers: {
@@ -88,25 +86,21 @@ export default function ManagerDashboard({ data }: Props) {
           'Content-Type': 'application/json',
         },
       });
-
-      console.log('📡 Team members response status:', response.status);
-
+      
       if (response.status === 401 || response.status === 403) {
         console.error('❌ Authentication failed - token may be expired');
         toast.error('Session expired. Please log in again.');
-        // Optionally redirect to login
         return;
       }
-
+      
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ Team members fetch failed:', response.status, errorText);
         return;
       }
-
+      
       const result = await response.json();
-      console.log('✅ Team members result:', result);
-
+      
       if (result.success) {
         setTeamMembers(result.data);
       } else {
@@ -120,14 +114,12 @@ export default function ManagerDashboard({ data }: Props) {
   const fetchRecentAssignments = async () => {
     try {
       const token = localStorage.getItem('token');
-
+      
       if (!token) {
         console.error('❌ No authentication token found');
         return;
       }
-
-      console.log('🔍 Fetching recent assignments...');
-
+      
       const response = await fetch('/api/project-assignments/recent?limit=5', {
         method: 'GET',
         headers: {
@@ -135,24 +127,21 @@ export default function ManagerDashboard({ data }: Props) {
           'Content-Type': 'application/json',
         },
       });
-
-      console.log('📡 Recent assignments response status:', response.status);
-
+      
       if (response.status === 401 || response.status === 403) {
         console.error('❌ Authentication failed - token may be expired');
         toast.error('Session expired. Please log in again.');
         return;
       }
-
+      
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ Recent assignments fetch failed:', response.status, errorText);
         return;
       }
-
+      
       const result = await response.json();
-      console.log('✅ Recent assignments result:', result);
-
+      
       if (result.success) {
         setRecentAssignments(result.data);
       } else {
@@ -248,10 +237,10 @@ export default function ManagerDashboard({ data }: Props) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-600">
-                {data.teamPerformanceStats.activeProjects}
+                {recentAssignments.length}
               </div>
               <p className="text-xs text-muted-foreground">
-                In progress
+                Assigned projects
               </p>
             </CardContent>
           </Card>
@@ -303,14 +292,14 @@ export default function ManagerDashboard({ data }: Props) {
               <div className="space-y-4">
                 {isLoading ? (
                   <div className="text-center py-8 text-gray-500">
-                    <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <Users className="h-12 w-12 mx-auto mb-4 text-gray-300 animate-pulse" />
                     <p>Loading team members...</p>
                   </div>
                 ) : teamMembers.length > 0 ? (
                   teamMembers.map((member) => (
                     <div 
                       key={member._id} 
-                      className="group relative flex items-center space-x-4 p-3 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="group relative flex items-center space-x-4 p-4 border rounded-lg hover:bg-gray-50 hover:shadow-md transition-all duration-200 cursor-pointer"
                     >
                       <div className="bg-blue-100 p-2 rounded-lg">
                         <UserCheck className="h-4 w-4 text-blue-600" />
@@ -331,7 +320,7 @@ export default function ManagerDashboard({ data }: Props) {
                         >
                           {member.isActive ? "Active" : "Inactive"}
                         </Badge>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 capitalize">
                           {member.role}
                         </span>
                       </div>
@@ -340,7 +329,7 @@ export default function ManagerDashboard({ data }: Props) {
                       <div className="absolute inset-0 bg-purple-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <Button
                           size="sm"
-                          className="bg-purple-600 hover:bg-purple-700"
+                          className="bg-purple-600 hover:bg-purple-700 shadow-lg"
                           onClick={() => handleAssignProject(member)}
                         >
                           <Plus className="h-4 w-4 mr-1" />
@@ -352,8 +341,8 @@ export default function ManagerDashboard({ data }: Props) {
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>No team members</p>
-                    <p className="text-sm">Team members will appear here</p>
+                    <p>No team members found</p>
+                    <p className="text-sm">Team members will appear here when available</p>
                   </div>
                 )}
               </div>
@@ -375,15 +364,15 @@ export default function ManagerDashboard({ data }: Props) {
               <div className="space-y-4">
                 {isLoading ? (
                   <div className="text-center py-8 text-gray-500">
-                    <CheckCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <CheckCircle className="h-12 w-12 mx-auto mb-4 text-gray-300 animate-pulse" />
                     <p>Loading recent updates...</p>
                   </div>
                 ) : recentAssignments.length > 0 ? (
                   recentAssignments.map((assignment) => (
-                    <div key={assignment._id} className="border-l-4 border-purple-500 pl-4">
+                    <div key={assignment._id} className="border-l-4 border-purple-500 pl-4 py-2">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <p className="font-medium">{assignment.employeeName}</p>
+                          <p className="font-medium text-gray-900">{assignment.employeeName}</p>
                           <p className="text-sm text-gray-500 flex items-center">
                             <Clock className="h-3 w-3 mr-1" />
                             {formatTimeAgo(assignment.assignedAt)}
@@ -396,7 +385,7 @@ export default function ManagerDashboard({ data }: Props) {
                           {assignment.priority}
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mb-1">
+                      <p className="text-sm text-gray-700 mb-1">
                         <strong>Project:</strong> {assignment.projectName}
                       </p>
                       <p className="text-sm text-gray-600">
@@ -409,35 +398,11 @@ export default function ManagerDashboard({ data }: Props) {
                       )}
                     </div>
                   ))
-                ) : data.recentTeamUpdates.length > 0 ? (
-                  data.recentTeamUpdates.slice(0, 4).map((update) => (
-                    <div key={update.id} className="border-l-4 border-purple-500 pl-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <p className="font-medium">
-                            {update.user.firstName} {update.user.lastName}
-                          </p>
-                          <p className="text-sm text-gray-500">{formatDate(update.date)}</p>
-                        </div>
-                        <Badge variant="secondary">
-                          {update.progressScore}/10
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-1">
-                        <strong>Tasks:</strong> {update.tasks.slice(0, 2).join(', ')}
-                        {update.tasks.length > 2 && '...'}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        <strong>Progress:</strong> {update.accomplishments.slice(0, 1).join(', ')}
-                        {update.accomplishments.length > 1 && '...'}
-                      </p>
-                    </div>
-                  ))
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     <CheckCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>No recent updates</p>
-                    <p className="text-sm">Team updates will appear here</p>
+                    <p>No recent project assignments</p>
+                    <p className="text-sm">Assigned projects will appear here</p>
                   </div>
                 )}
               </div>
@@ -460,7 +425,7 @@ export default function ManagerDashboard({ data }: Props) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {data.teamProjects.length > 0 ? (
                 data.teamProjects.map((project) => (
-                  <div key={project.id} className="border rounded-lg p-4">
+                  <div key={project.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="font-semibold">{project.name}</h3>
                       <Badge 
