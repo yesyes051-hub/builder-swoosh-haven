@@ -67,7 +67,7 @@ const getJobStatusBadgeColor = (status?: string) => {
   }
 };
 
-export default function UserManagementModal({ isOpen, onClose }: UserManagementModalProps) {
+export default function UserManagementModal({ isOpen, onClose, onUserChanged }: UserManagementModalProps) {
   const { toast } = useToast();
   const { token } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
