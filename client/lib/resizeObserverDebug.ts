@@ -41,20 +41,20 @@ class ResizeObserverDebugger {
     }
 
     const OriginalResizeObserver = window.ResizeObserver;
-    const debugger = this;
+    const debugInstance = this;
 
     window.ResizeObserver = class extends OriginalResizeObserver {
       private elementInfo: string;
 
       constructor(callback: ResizeObserverCallback) {
         super((entries, observer) => {
-          if (debugger.options.enabled) {
-            debugger.observationCount++;
+          if (debugInstance.options.enabled) {
+            debugInstance.observationCount++;
             
-            if (debugger.observationCount % debugger.options.logFrequency === 0 && 
-                debugger.logCount < debugger.options.maxLogs) {
+            if (debugInstance.observationCount % debugInstance.options.logFrequency === 0 && 
+                debugInstance.logCount < debugInstance.options.maxLogs) {
               
-              console.group(`📏 ResizeObserver Activity #${debugger.observationCount}`);
+              console.group(`📏 ResizeObserver Activity #${debugInstance.observationCount}`);
               console.log('Entries:', entries.length);
               
               entries.forEach((entry, index) => {
@@ -71,14 +71,14 @@ class ResizeObserverDebugger {
               });
               
               console.groupEnd();
-              debugger.logCount++;
+              debugInstance.logCount++;
             }
           }
 
           try {
             callback(entries, observer);
           } catch (error) {
-            if (debugger.options.enabled && error instanceof Error) {
+            if (debugInstance.options.enabled && error instanceof Error) {
               console.warn('🔴 ResizeObserver callback error:', error.message);
             }
             // Don't re-throw ResizeObserver errors
@@ -92,11 +92,11 @@ class ResizeObserverDebugger {
       }
 
       observe(target: Element, options?: ResizeObserverOptions): void {
-        if (debugger.options.enabled) {
+        if (debugInstance.options.enabled) {
           const elementInfo = `${target.tagName}${target.id ? '#' + target.id : ''}${target.className ? '.' + target.className.split(' ').join('.') : ''}`;
           this.elementInfo = elementInfo;
           
-          if (debugger.logCount < debugger.options.maxLogs) {
+          if (debugInstance.logCount < debugInstance.options.maxLogs) {
             console.log(`👀 ResizeObserver observing: ${elementInfo}`);
           }
         }
@@ -105,7 +105,7 @@ class ResizeObserverDebugger {
       }
 
       unobserve(target: Element): void {
-        if (debugger.options.enabled && debugger.logCount < debugger.options.maxLogs) {
+        if (debugInstance.options.enabled && debugInstance.logCount < debugInstance.options.maxLogs) {
           const elementInfo = `${target.tagName}${target.id ? '#' + target.id : ''}${target.className ? '.' + target.className.split(' ').join('.') : ''}`;
           console.log(`👁️‍🗨️ ResizeObserver unobserving: ${elementInfo}`);
         }
