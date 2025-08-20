@@ -130,6 +130,7 @@ export function createServer() {
   // User Management for Admin Dashboard
   app.post("/api/users", authenticateToken, requireRole(['admin', 'hr']), createUser);
   app.get("/api/users", authenticateToken, requireRole(['admin', 'hr']), getAllUsers);
+  app.put("/api/users/:id", authenticateToken, requireRole(['admin', 'hr']), updateUser);
 
   // User Statistics and Management
   app.get("/api/user-stats", authenticateToken, requireRole(['admin', 'hr']), getUserStats);
