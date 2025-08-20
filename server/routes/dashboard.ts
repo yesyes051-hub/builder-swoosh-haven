@@ -169,12 +169,36 @@ export const getHRDashboard: RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
 
-    const fullUser = await db.getUserById(user.id);
+    // Try to get user from new Employee Management system first
+    let fullUser;
+    try {
+      const employeeUser = await EmployeeUser.findById(user.id).select('-password');
+      if (employeeUser) {
+        fullUser = {
+          id: employeeUser._id.toString(),
+          email: employeeUser.email,
+          firstName: employeeUser.firstName,
+          lastName: employeeUser.lastName,
+          role: employeeUser.role.toLowerCase(),
+          department: 'General',
+          isActive: true,
+          createdAt: employeeUser.createdAt,
+          updatedAt: employeeUser.createdAt
+        };
+      }
+    } catch (error) {
+      console.log('User not found in Employee Management system, trying memory database');
+    }
+
+    // Fallback to memory database
     if (!fullUser) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      } as ApiResponse<never>);
+      fullUser = await db.getUserById(user.id);
+      if (!fullUser) {
+        return res.status(404).json({
+          success: false,
+          error: 'User not found'
+        } as ApiResponse<never>);
+      }
     }
 
     const scheduledInterviews = await db.getInterviewsByUser(user.id);
