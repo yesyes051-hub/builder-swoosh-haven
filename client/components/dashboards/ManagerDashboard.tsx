@@ -73,18 +73,34 @@ export default function ManagerDashboard({ data }: Props) {
   const fetchTeamMembers = async () => {
     try {
       const token = localStorage.getItem('token');
+      console.log('🔍 Fetching team members...');
+
       const response = await fetch('/api/project-assignments/team-members', {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
-      
+
+      console.log('📡 Team members response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Team members fetch failed:', response.status, errorText);
+        return;
+      }
+
       const result = await response.json();
+      console.log('✅ Team members result:', result);
+
       if (result.success) {
         setTeamMembers(result.data);
+      } else {
+        console.error('❌ Team members API error:', result.error);
       }
     } catch (error) {
-      console.error('Error fetching team members:', error);
+      console.error('❌ Error fetching team members:', error);
     }
   };
 
