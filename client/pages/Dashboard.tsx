@@ -31,7 +31,15 @@ export default function Dashboard() {
 
     try {
       setLoading(true);
-      const endpoint = `/api/dashboard/${user.role}`;
+      // Determine the correct dashboard endpoint
+      let dashboardType = user.role;
+
+      // Special handling for admin functionality in HR role
+      if (user.role === 'hr' && user.email === 'admin@trackzen.com') {
+        dashboardType = 'admin';
+      }
+
+      const endpoint = `/api/dashboard/${dashboardType}`;
 
       const response = await fetch(endpoint, {
         headers: {
