@@ -197,7 +197,10 @@ export default function AdminDashboard({ data }: Props) {
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="border rounded-lg p-3 text-center hover:bg-gray-50 cursor-pointer">
+                  <div
+                    className="border rounded-lg p-3 text-center hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setIsAddUserModalOpen(true)}
+                  >
                     <UserPlus className="h-6 w-6 mx-auto mb-2 text-blue-600" />
                     <p className="text-sm font-medium">Add User</p>
                   </div>
