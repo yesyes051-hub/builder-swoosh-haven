@@ -15,7 +15,14 @@ export interface UserStats {
 
 export const getUserStats: RequestHandler = async (req, res) => {
   console.log('📊 GET /api/user-stats - Request received');
+  console.log('🔐 User:', req.user?.email, 'Role:', req.user?.role);
+
   try {
+    // Test database connection first
+    console.log('🔌 Testing database connection...');
+    await EmployeeUser.db.db.admin().ping();
+    console.log('✅ Database connection successful');
+
     // Get total users count
     console.log('🔍 Counting total users...');
     const totalUsers = await EmployeeUser.countDocuments();
