@@ -1,50 +1,8 @@
 import "./global.css";
 
-// Suppress ResizeObserver warnings globally
-const originalError = console.error;
-console.error = (...args: any[]) => {
-  if (typeof args[0] === 'string' && (
-    args[0].includes('ResizeObserver') ||
-    args[0].includes('ResizeObserver loop limit exceeded') ||
-    args[0].includes('ResizeObserver loop completed with undelivered notifications')
-  )) {
-    return;
-  }
-  originalError.apply(console, args);
-};
-
-// Also suppress ResizeObserver warnings through window error events
-window.addEventListener('error', (e) => {
-  if (e.message && (
-    e.message.includes('ResizeObserver') ||
-    e.message.includes('ResizeObserver loop limit exceeded') ||
-    e.message.includes('ResizeObserver loop completed with undelivered notifications')
-  )) {
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    return false;
-  }
-});
-
-// Polyfill for ResizeObserver to prevent issues
-if (typeof window !== 'undefined' && window.ResizeObserver) {
-  const OriginalResizeObserver = window.ResizeObserver;
-  window.ResizeObserver = class extends OriginalResizeObserver {
-    constructor(callback: ResizeObserverCallback) {
-      super((entries, observer) => {
-        try {
-          callback(entries, observer);
-        } catch (error) {
-          // Silently catch ResizeObserver errors
-          if (error instanceof Error && error.message.includes('ResizeObserver')) {
-            return;
-          }
-          throw error;
-        }
-      });
-    }
-  };
-}
+// Initialize ResizeObserver error suppression
+import { initializeResizeObserverSuppression } from '@/lib/resizeObserverSuppress';
+initializeResizeObserverSuppression();
 
 import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
