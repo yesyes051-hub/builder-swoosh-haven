@@ -21,15 +21,17 @@ export const login: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    const user = await db.getUserByEmail(email);
-    if (!user || !user.isActive) {
+    // Find user in ROLES collection
+    const user = await EmployeeUser.findOne({ email: email.toLowerCase() });
+    if (!user) {
       return res.status(401).json({
         success: false,
         error: 'Invalid credentials'
       } as ApiResponse<never>);
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password!);
+    // Compare password with hashed password
+    const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({
         success: false,
@@ -37,14 +39,28 @@ export const login: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    const token = generateToken(user);
-    const { password: _, ...userWithoutPassword } = user;
+    // Create user object for token (converting role to lowercase for consistency)
+    const userForToken = {
+      id: user._id.toString(),
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role.toLowerCase(),
+      isActive: true
+    };
+
+    const token = generateToken(userForToken);
+    const { password: _, ...userWithoutPassword } = user.toObject();
 
     res.json({
       success: true,
       data: {
         token,
-        user: userWithoutPassword
+        user: {
+          ...userWithoutPassword,
+          id: userWithoutPassword._id,
+          role: userWithoutPassword.role.toLowerCase() // Convert to lowercase for frontend compatibility
+        }
       }
     } as ApiResponse<AuthResponse>);
   } catch (error) {
