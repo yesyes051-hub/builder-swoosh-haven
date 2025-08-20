@@ -18,7 +18,7 @@ import {
   User,
   Star
 } from 'lucide-react';
-import ScheduleInterviewForm from '@/components/interviews/ScheduleInterviewForm';
+import ScheduleInterviewModal from '@/components/interviews/ScheduleInterviewModal';
 import InterviewFeedbackForm from '@/components/interviews/InterviewFeedbackForm';
 import DashboardLayout from '@/components/dashboards/DashboardLayout';
 import { MockInterview, ApiResponse } from '@shared/api';
