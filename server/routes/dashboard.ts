@@ -47,9 +47,18 @@ export const getEmployeeDashboard: RequestHandler = async (req, res) => {
       }
     }
 
-    const recentUpdates = await db.getDailyUpdatesByUser(user.id, 5);
-    const upcomingInterviews = await db.getInterviewsByUser(user.id);
-    const currentProjects = await db.getProjectsByUser(user.id);
+    // Safely get data from memory database, providing defaults for new users
+    let recentUpdates, upcomingInterviews, currentProjects;
+    try {
+      recentUpdates = await db.getDailyUpdatesByUser(user.id, 5);
+      upcomingInterviews = await db.getInterviewsByUser(user.id);
+      currentProjects = await db.getProjectsByUser(user.id);
+    } catch (error) {
+      // For new users from Employee Management system, provide empty arrays
+      recentUpdates = [];
+      upcomingInterviews = [];
+      currentProjects = [];
+    }
 
     // Calculate performance stats
     const avgProgressScore = recentUpdates.length > 0
