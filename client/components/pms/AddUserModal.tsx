@@ -87,17 +87,41 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
 
     setIsLoading(true);
     try {
+      // Get auth token from localStorage
+      const token = localStorage.getItem('token');
+
       const response = await fetch('/api/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
         },
         body: JSON.stringify(formData),
       });
 
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        // For non-JSON error responses, get text
+        let errorMessage = 'Failed to add user';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // If JSON parsing fails, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+        return;
+      }
+
       const result = await response.json();
 
-      if (response.ok && result.success) {
+      if (result.success) {
         toast({
           title: 'Success',
           description: 'User added successfully',
