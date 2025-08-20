@@ -38,6 +38,7 @@ import { createUser, getAllUsers } from "./routes/users";
 import { getUserStats, getAllUsersForManagement } from "./routes/userStats";
 import { updateUser } from "./routes/updateUser";
 import { deleteUser } from "./routes/deleteUser";
+import { createProjectAssignment, getRecentAssignments, getTeamMembers, getEmployeeAssignments, updateAssignmentStatus } from "./routes/projectAssignments";
 import { authenticateToken, requireRole } from "./middleware/auth";
 import { seedPMSData } from "./db/seedPMS";
 import { seedEmployeeManagementData } from "./db/seedEmployeeManagement";
