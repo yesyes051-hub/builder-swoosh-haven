@@ -19,11 +19,14 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
   if (!token) {
+    console.log('❌ No token provided in request');
     return res.status(401).json({ success: false, error: 'Access token required' });
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+    console.log('🔍 Token decoded successfully:', decoded);
+
     // In a real app, you'd fetch the full user from database
     req.user = {
       id: decoded.userId,
@@ -35,8 +38,11 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
       updatedAt: new Date(),
       isActive: true
     };
+
+    console.log('✅ User set in request:', req.user);
     next();
   } catch (error) {
+    console.log('❌ Token verification failed:', error);
     return res.status(403).json({ success: false, error: 'Invalid or expired token' });
   }
 };
