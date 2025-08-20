@@ -56,7 +56,7 @@ export const createProjectAssignment: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating project assignment:', error);
-    
+
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -65,7 +65,7 @@ export const createProjectAssignment: RequestHandler = async (req, res) => {
       });
     }
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: "Failed to create project assignment"
     });
@@ -153,7 +153,7 @@ export const getEmployeeAssignments: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching employee assignments:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: "Failed to fetch employee assignments"
     });
@@ -194,7 +194,7 @@ export const updateAssignmentStatus: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating assignment status:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: "Failed to update assignment status"
     });
