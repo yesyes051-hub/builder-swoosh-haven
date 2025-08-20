@@ -39,6 +39,7 @@ interface UserStats {
 export default function AdminDashboard({ data }: Props) {
   const { token } = useAuth();
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [isUserManagementModalOpen, setIsUserManagementModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
