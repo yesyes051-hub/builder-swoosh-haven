@@ -292,6 +292,24 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
               </SelectContent>
             </Select>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password *</Label>
+            <Input
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => handleInputChange('password', e.target.value)}
+              placeholder="Enter a secure password"
+              className={errors.password ? 'border-red-500' : ''}
+            />
+            {errors.password && (
+              <p className="text-sm text-red-500">{errors.password}</p>
+            )}
+            <p className="text-xs text-gray-500">
+              Password must be at least 8 characters with uppercase, lowercase, number, and special character.
+            </p>
+          </div>
         </div>
 
         <DialogFooter>
