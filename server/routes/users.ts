@@ -124,9 +124,7 @@ export const createUser: RequestHandler = async (req, res) => {
 
 export const getAllUsers: RequestHandler = async (req, res) => {
   try {
-    await connectToDatabase();
-
-    const users = await PMSUser.find({ isActive: true })
+    const users = await EmployeeUser.find({})
       .select('-password')
       .sort({ createdAt: -1 });
 
