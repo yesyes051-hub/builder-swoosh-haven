@@ -29,6 +29,12 @@ const userSchema = z.object({
   contactNumber: z.string().regex(/^\d{10,15}$/, 'Contact number must be 10-15 digits'),
   jobStatus: z.enum(['Intern', 'Full-Time', 'On-Job Training', 'Part-Time']),
   role: z.enum(['HR', 'Manager', 'Employee']),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/\d/, 'Password must contain at least one number')
+    .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least one special character'),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
