@@ -16,6 +16,7 @@ const createAssignmentSchema = z.object({
 // Create new project assignment
 export const createProjectAssignment: RequestHandler = async (req, res) => {
   try {
+    await connectToDatabase();
     const validatedData = createAssignmentSchema.parse(req.body);
     const managerId = req.user?.id;
 
@@ -74,6 +75,7 @@ export const createProjectAssignment: RequestHandler = async (req, res) => {
 // Get recent project assignments for a manager
 export const getRecentAssignments: RequestHandler = async (req, res) => {
   try {
+    await connectToDatabase();
     const managerId = req.user?.id;
     const limit = parseInt(req.query.limit as string) || 10;
 
@@ -104,6 +106,7 @@ export const getRecentAssignments: RequestHandler = async (req, res) => {
 // Get team members for a manager
 export const getTeamMembers: RequestHandler = async (req, res) => {
   try {
+    await connectToDatabase();
     const managerId = req.user?.id;
 
     if (!managerId) {
@@ -136,6 +139,7 @@ export const getTeamMembers: RequestHandler = async (req, res) => {
 // Get assignments for a specific employee
 export const getEmployeeAssignments: RequestHandler = async (req, res) => {
   try {
+    await connectToDatabase();
     const { employeeId } = req.params;
     const limit = parseInt(req.query.limit as string) || 10;
 
@@ -159,6 +163,7 @@ export const getEmployeeAssignments: RequestHandler = async (req, res) => {
 // Update assignment status
 export const updateAssignmentStatus: RequestHandler = async (req, res) => {
   try {
+    await connectToDatabase();
     const { assignmentId } = req.params;
     const { status } = req.body;
 
