@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { Edit, Trash2, Loader2, Users } from 'lucide-react';
-import EditUserModal from './EditUserModal';
-import DeleteConfirmationDialog from './DeleteConfirmationDialog';
+} from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { Edit, Trash2, Loader2, Users } from "lucide-react";
+import EditUserModal from "./EditUserModal";
+import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 
 interface User {
   id: string;
@@ -42,33 +42,37 @@ interface UserManagementModalProps {
 
 const getRoleBadgeColor = (role: string) => {
   switch (role.toLowerCase()) {
-    case 'hr':
-      return 'bg-green-100 text-green-800 border-green-200';
-    case 'manager':
-      return 'bg-purple-100 text-purple-800 border-purple-200';
-    case 'employee':
-      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case "hr":
+      return "bg-green-100 text-green-800 border-green-200";
+    case "manager":
+      return "bg-purple-100 text-purple-800 border-purple-200";
+    case "employee":
+      return "bg-blue-100 text-blue-800 border-blue-200";
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return "bg-gray-100 text-gray-800 border-gray-200";
   }
 };
 
 const getJobStatusBadgeColor = (status?: string) => {
   switch (status) {
-    case 'Full-Time':
-      return 'bg-green-100 text-green-800 border-green-200';
-    case 'Part-Time':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    case 'Intern':
-      return 'bg-orange-100 text-orange-800 border-orange-200';
-    case 'On-Job Training':
-      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case "Full-Time":
+      return "bg-green-100 text-green-800 border-green-200";
+    case "Part-Time":
+      return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    case "Intern":
+      return "bg-orange-100 text-orange-800 border-orange-200";
+    case "On-Job Training":
+      return "bg-blue-100 text-blue-800 border-blue-200";
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return "bg-gray-100 text-gray-800 border-gray-200";
   }
 };
 
-export default function UserManagementModal({ isOpen, onClose, onUserChanged }: UserManagementModalProps) {
+export default function UserManagementModal({
+  isOpen,
+  onClose,
+  onUserChanged,
+}: UserManagementModalProps) {
   const { toast } = useToast();
   const { token } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
@@ -84,14 +88,14 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
 
     try {
       setLoading(true);
-      const response = await fetch('/api/users/management', {
+      const response = await fetch("/api/users/management", {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
-        let errorMessage = 'Failed to fetch users';
+        let errorMessage = "Failed to fetch users";
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
@@ -105,14 +109,15 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
       if (result.success) {
         setUsers(result.data);
       } else {
-        throw new Error(result.error || 'Failed to fetch users');
+        throw new Error(result.error || "Failed to fetch users");
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to load users',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to load users",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -148,14 +153,14 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
     setIsDeleting(true);
     try {
       const response = await fetch(`/api/users/${userToDelete.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
-        let errorMessage = 'Failed to delete user';
+        let errorMessage = "Failed to delete user";
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
@@ -168,20 +173,21 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
       const result = await response.json();
       if (result.success) {
         toast({
-          title: 'Success',
-          description: 'User deleted successfully',
+          title: "Success",
+          description: "User deleted successfully",
         });
         fetchUsers(); // Refresh the users list
         onUserChanged?.(); // Trigger dashboard stats refresh
       } else {
-        throw new Error(result.error || 'Failed to delete user');
+        throw new Error(result.error || "Failed to delete user");
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.error("Error deleting user:", error);
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete user',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to delete user",
+        variant: "destructive",
       });
     } finally {
       setIsDeleting(false);
@@ -192,16 +198,16 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto fixed-size-modal">
+      <DialogContent className="max-w-6xl fixed-size-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Users className="h-5 w-5" />
@@ -252,7 +258,9 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
                       </TableCell>
                       <TableCell>
                         {user.jobStatus ? (
-                          <Badge className={getJobStatusBadgeColor(user.jobStatus)}>
+                          <Badge
+                            className={getJobStatusBadgeColor(user.jobStatus)}
+                          >
                             {user.jobStatus}
                           </Badge>
                         ) : (
@@ -260,10 +268,14 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
                         )}
                       </TableCell>
                       <TableCell>
-                        {user.gender || <span className="text-gray-400">-</span>}
+                        {user.gender || (
+                          <span className="text-gray-400">-</span>
+                        )}
                       </TableCell>
                       <TableCell>
-                        {user.contactNumber || <span className="text-gray-400">-</span>}
+                        {user.contactNumber || (
+                          <span className="text-gray-400">-</span>
+                        )}
                       </TableCell>
                       <TableCell>{formatDate(user.createdAt)}</TableCell>
                       <TableCell className="text-right">
@@ -298,7 +310,7 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
 
         <div className="flex justify-between items-center mt-6">
           <div className="text-sm text-gray-500">
-            Total: {users.length} user{users.length !== 1 ? 's' : ''}
+            Total: {users.length} user{users.length !== 1 ? "s" : ""}
           </div>
           <Button variant="outline" onClick={onClose}>
             Close

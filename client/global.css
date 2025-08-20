@@ -102,7 +102,9 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 
   /* Custom scrollbar */
@@ -156,7 +158,8 @@
   }
 
   @keyframes float {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0px);
     }
     50% {
@@ -177,7 +180,9 @@
 
   /* Custom shadows */
   .shadow-trackzen {
-    box-shadow: 0 10px 25px -3px rgba(59, 130, 246, 0.1), 0 4px 6px -2px rgba(59, 130, 246, 0.05);
+    box-shadow:
+      0 10px 25px -3px rgba(59, 130, 246, 0.1),
+      0 4px 6px -2px rgba(59, 130, 246, 0.05);
   }
 
   .shadow-trackzen-lg {
@@ -190,8 +195,6 @@
     contain: layout style;
     min-width: 320px;
     box-sizing: border-box;
-    /* Prevent content jumping */
-    min-height: 400px;
     /* Stabilize positioning */
     transform: translateZ(0);
   }
