@@ -266,6 +266,12 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
                 {/* Candidate Selection */}
                 <div className="space-y-2">
                   <Label htmlFor="candidate">Candidate (Employee)</Label>
+                  <Input
+                    placeholder="Search candidates..."
+                    value={candidateSearch}
+                    onChange={(e) => setCandidateSearch(e.target.value)}
+                    className="mb-2"
+                  />
                   <Select value={candidateId} onValueChange={setCandidateId}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select candidate" />
