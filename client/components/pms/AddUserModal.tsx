@@ -52,6 +52,19 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
   const [errors, setErrors] = useState<Partial<Record<keyof UserFormData, string>>>({});
   const [isLoading, setIsLoading] = useState(false);
 
+  // Suppress ResizeObserver warnings
+  useEffect(() => {
+    const suppressResizeObserverError = (e: ErrorEvent) => {
+      if (e.message?.includes('ResizeObserver loop limit exceeded') ||
+          e.message?.includes('ResizeObserver loop completed with undelivered notifications')) {
+        e.stopImmediatePropagation();
+      }
+    };
+
+    window.addEventListener('error', suppressResizeObserverError);
+    return () => window.removeEventListener('error', suppressResizeObserverError);
+  }, []);
+
   const handleInputChange = (field: keyof UserFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
