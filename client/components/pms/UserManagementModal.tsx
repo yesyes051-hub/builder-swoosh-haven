@@ -36,6 +36,7 @@ interface User {
 interface UserManagementModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onUserChanged?: () => void;
 }
 
 const getRoleBadgeColor = (role: string) => {
