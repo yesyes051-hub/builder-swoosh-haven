@@ -63,18 +63,6 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Suppress ResizeObserver warnings
-  useEffect(() => {
-    const suppressResizeObserverError = (e: ErrorEvent) => {
-      if (e.message?.includes('ResizeObserver loop limit exceeded') ||
-          e.message?.includes('ResizeObserver loop completed with undelivered notifications')) {
-        e.stopImmediatePropagation();
-      }
-    };
-
-    window.addEventListener('error', suppressResizeObserverError);
-    return () => window.removeEventListener('error', suppressResizeObserverError);
-  }, []);
 
   const handleInputChange = (field: keyof UserFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
