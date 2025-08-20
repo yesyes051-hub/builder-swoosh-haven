@@ -129,7 +129,7 @@ export const getTeamMembers: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching team members:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: "Failed to fetch team members"
     });
