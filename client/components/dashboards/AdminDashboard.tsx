@@ -380,6 +380,7 @@ export default function AdminDashboard({ data }: Props) {
       <UserManagementModal
         isOpen={isUserManagementModalOpen}
         onClose={() => setIsUserManagementModalOpen(false)}
+        onUserChanged={handleUserAdded}
       />
     </DashboardLayout>
   );
