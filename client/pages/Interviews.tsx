@@ -331,6 +331,13 @@ export default function Interviews() {
             </TabsContent>
           </Tabs>
         )}
+
+        {/* Schedule Interview Modal */}
+        <ScheduleInterviewModal
+          isOpen={showScheduleModal}
+          onClose={() => setShowScheduleModal(false)}
+          onSuccess={handleScheduleSuccess}
+        />
       </div>
     </DashboardLayout>
   );
