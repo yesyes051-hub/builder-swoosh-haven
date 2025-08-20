@@ -146,6 +146,13 @@ export function createServer() {
   app.post("/api/pms-new/timesheets/:id/submit", authenticateToken, submitTimesheet);
   app.post("/api/pms-new/timesheets/:id/approve", authenticateToken, requireRole(['admin', 'manager']), approveTimesheet);
 
+  // Project Assignment routes (Manager Only)
+  app.post("/api/project-assignments", authenticateToken, requireRole(['manager']), createProjectAssignment);
+  app.get("/api/project-assignments/recent", authenticateToken, requireRole(['manager']), getRecentAssignments);
+  app.get("/api/project-assignments/team-members", authenticateToken, requireRole(['manager']), getTeamMembers);
+  app.get("/api/project-assignments/employee/:employeeId", authenticateToken, getEmployeeAssignments);
+  app.put("/api/project-assignments/:assignmentId/status", authenticateToken, updateAssignmentStatus);
+
   // Initialize PMS data
   seedPMSData().catch(console.error);
 
