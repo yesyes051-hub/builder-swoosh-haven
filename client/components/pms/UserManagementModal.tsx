@@ -18,8 +18,9 @@ import {
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Edit, Eye, Loader2, Users } from 'lucide-react';
+import { Edit, Trash2, Loader2, Users } from 'lucide-react';
 import EditUserModal from './EditUserModal';
+import DeleteConfirmationDialog from './DeleteConfirmationDialog';
 
 interface User {
   id: string;
