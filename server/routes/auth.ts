@@ -119,22 +119,52 @@ export const getProfile: RequestHandler = async (req, res) => {
     const authReq = req as any;
     const user = authReq.user;
 
+    console.log('🔍 Profile request - User from token:', user);
+
     if (!user) {
+      console.log('❌ No user in request (auth middleware failed)');
       return res.status(401).json({
         success: false,
         error: 'Not authenticated'
       } as ApiResponse<never>);
     }
 
+    console.log(`🔍 Looking for user with ID: ${user.id}`);
+
     // Get full user details from ROLES collection
     const fullUser = await EmployeeUser.findById(user.id).select('-password');
+    console.log('🔍 Database lookup result:', fullUser ? 'User found' : 'User not found');
+
     if (!fullUser) {
+      console.log(`❌ User with ID ${user.id} not found in database`);
+
+      // Try to find by email as fallback
+      console.log(`🔍 Trying to find user by email: ${user.email}`);
+      const userByEmail = await EmployeeUser.findOne({ email: user.email }).select('-password');
+
+      if (userByEmail) {
+        console.log('✅ Found user by email, using this instead');
+        const userWithoutPassword = {
+          ...userByEmail.toObject(),
+          id: userByEmail._id,
+          role: userByEmail.role.toLowerCase()
+        };
+
+        return res.json({
+          success: true,
+          data: userWithoutPassword
+        } as ApiResponse<typeof userWithoutPassword>);
+      } else {
+        console.log('❌ User not found by email either');
+      }
+
       return res.status(404).json({
         success: false,
         error: 'User not found'
       } as ApiResponse<never>);
     }
 
+    console.log('✅ User found successfully');
     const userWithoutPassword = {
       ...fullUser.toObject(),
       id: fullUser._id,
