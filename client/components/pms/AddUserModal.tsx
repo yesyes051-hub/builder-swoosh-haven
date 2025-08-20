@@ -60,6 +60,7 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
   });
   const [errors, setErrors] = useState<Partial<Record<keyof UserFormData, string>>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Suppress ResizeObserver warnings
   useEffect(() => {
