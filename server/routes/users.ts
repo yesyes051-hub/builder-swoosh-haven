@@ -16,8 +16,6 @@ interface CreateUserRequest {
 
 export const createUser: RequestHandler = async (req, res) => {
   try {
-    await connectToDatabase();
-    
     const {
       firstName,
       lastName,
@@ -25,14 +23,15 @@ export const createUser: RequestHandler = async (req, res) => {
       email,
       contactNumber,
       jobStatus,
-      role
+      role,
+      password
     }: CreateUserRequest = req.body;
 
     // Validate required fields
-    if (!firstName || !lastName || !email || !role) {
+    if (!firstName || !lastName || !email || !role || !password || !gender || !jobStatus) {
       return res.status(400).json({
         success: false,
-        error: 'First name, last name, email, and role are required'
+        error: 'All required fields must be provided'
       } as ApiResponse<never>);
     }
 
