@@ -1,27 +1,29 @@
 import "./global.css";
 
 // Initialize ResizeObserver error suppression
-import { initializeResizeObserverSuppression } from '@/lib/resizeObserverSuppress';
-import '@/lib/resizeObserverTest'; // Make test utility available globally
+import { initializeResizeObserverSuppression } from "@/lib/resizeObserverSuppress";
+import "@/lib/resizeObserverTest"; // Make test utility available globally
 initializeResizeObserverSuppression();
 
 // Additional aggressive suppression for ResizeObserver errors
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   // Override the global error handler
   const originalOnError = window.onerror;
   window.onerror = (message, source, lineno, colno, error) => {
-    const msg = String(message || '');
-    if (msg.toLowerCase().includes('resizeobserver')) {
+    const msg = String(message || "");
+    if (msg.toLowerCase().includes("resizeobserver")) {
       return true; // Prevent default error handling
     }
-    return originalOnError ? originalOnError(message, source, lineno, colno, error) : false;
+    return originalOnError
+      ? originalOnError(message, source, lineno, colno, error)
+      : false;
   };
 
   // Override unhandled rejection handler
   const originalOnUnhandledRejection = window.onunhandledrejection;
   window.onunhandledrejection = (event) => {
-    const msg = String(event.reason?.message || event.reason || '');
-    if (msg.toLowerCase().includes('resizeobserver')) {
+    const msg = String(event.reason?.message || event.reason || "");
+    if (msg.toLowerCase().includes("resizeobserver")) {
       event.preventDefault();
       return;
     }
@@ -60,8 +62,26 @@ const AppContent = () => {
           <div className="text-center">
             <div className="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4">
               <svg viewBox="0 0 50 50">
-                <circle className="opacity-30" cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="5" fill="none" />
-                <circle className="text-blue-600" cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="5" fill="none" strokeDasharray="100" strokeDashoffset="75" />
+                <circle
+                  className="opacity-30"
+                  cx="25"
+                  cy="25"
+                  r="20"
+                  stroke="currentColor"
+                  strokeWidth="5"
+                  fill="none"
+                />
+                <circle
+                  className="text-blue-600"
+                  cx="25"
+                  cy="25"
+                  r="20"
+                  stroke="currentColor"
+                  strokeWidth="5"
+                  fill="none"
+                  strokeDasharray="100"
+                  strokeDashoffset="75"
+                />
               </svg>
             </div>
             <p className="text-gray-600">Loading...</p>
@@ -82,8 +102,26 @@ const AppContent = () => {
           <div className="text-center">
             <div className="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4">
               <svg viewBox="0 0 50 50">
-                <circle className="opacity-30" cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="5" fill="none" />
-                <circle className="text-blue-600" cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="5" fill="none" strokeDasharray="100" strokeDashoffset="75" />
+                <circle
+                  className="opacity-30"
+                  cx="25"
+                  cy="25"
+                  r="20"
+                  stroke="currentColor"
+                  strokeWidth="5"
+                  fill="none"
+                />
+                <circle
+                  className="text-blue-600"
+                  cx="25"
+                  cy="25"
+                  r="20"
+                  stroke="currentColor"
+                  strokeWidth="5"
+                  fill="none"
+                  strokeDasharray="100"
+                  strokeDashoffset="75"
+                />
               </svg>
             </div>
             <p className="text-gray-600">Loading...</p>
@@ -99,36 +137,54 @@ const AppContent = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/login" element={
-          <PublicRoute>
-            <Login />
-          </PublicRoute>
-        } />
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/daily-updates" element={
-          <ProtectedRoute>
-            <DailyUpdates />
-          </ProtectedRoute>
-        } />
-        <Route path="/leaderboard" element={
-          <ProtectedRoute>
-            <Leaderboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/interviews" element={
-          <ProtectedRoute>
-            <Interviews />
-          </ProtectedRoute>
-        } />
-        <Route path="/pms" element={
-          <ProtectedRoute>
-            <PMSNew />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/daily-updates"
+          element={
+            <ProtectedRoute>
+              <DailyUpdates />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaderboard"
+          element={
+            <ProtectedRoute>
+              <Leaderboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/interviews"
+          element={
+            <ProtectedRoute>
+              <Interviews />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pms"
+          element={
+            <ProtectedRoute>
+              <PMSNew />
+            </ProtectedRoute>
+          }
+        />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
