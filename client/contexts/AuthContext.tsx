@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, AuthResponse, LoginRequest, ApiResponse } from '@shared/api';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { User, AuthResponse, LoginRequest, ApiResponse } from "@shared/api";
 
 // Store native fetch to avoid interference from browser extensions or third-party scripts
 const nativeFetch = window.fetch.bind(window);
@@ -17,7 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -33,7 +39,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     // Check for stored token on mount
-    const storedToken = localStorage.getItem('trackzen_token');
+    const storedToken = localStorage.getItem("trackzen_token");
     if (storedToken) {
       setToken(storedToken);
       fetchProfile(storedToken);
@@ -54,12 +60,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-          response = await nativeFetch('/api/auth/profile', {
+          response = await nativeFetch("/api/auth/profile", {
             headers: {
-              'Authorization': `Bearer ${authToken}`,
-              'Content-Type': 'application/json'
+              Authorization: `Bearer ${authToken}`,
+              "Content-Type": "application/json",
             },
-            signal: controller.signal
+            signal: controller.signal,
           });
 
           clearTimeout(timeoutId);
@@ -68,14 +74,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           lastError = fetchError;
           if (attempt < 3) {
             // Wait before retry (exponential backoff)
-            await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+            await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
             console.log(`Fetch attempt ${attempt} failed, retrying...`);
           }
         }
       }
 
       if (!response) {
-        throw lastError || new Error('Failed to fetch after multiple attempts');
+        throw lastError || new Error("Failed to fetch after multiple attempts");
       }
 
       if (response.ok) {
@@ -84,35 +90,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUser(data.data);
         } else {
           // Invalid response format, clear token
-          console.warn('Invalid response format from profile endpoint');
-          localStorage.removeItem('trackzen_token');
+          console.warn("Invalid response format from profile endpoint");
+          localStorage.removeItem("trackzen_token");
           setToken(null);
         }
       } else if (response.status === 401) {
         // Invalid token, clear it
-        console.log('Token expired or invalid, clearing auth');
-        localStorage.removeItem('trackzen_token');
+        console.log("Token expired or invalid, clearing auth");
+        localStorage.removeItem("trackzen_token");
         setToken(null);
       } else {
         // Other HTTP error
         console.error(`Profile fetch failed with status: ${response.status}`);
-        localStorage.removeItem('trackzen_token');
+        localStorage.removeItem("trackzen_token");
         setToken(null);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error("Error fetching profile:", error);
 
       // Don't clear token on network errors - user might be offline temporarily
-      if (error instanceof Error && (
-        error.name === 'AbortError' ||
-        error.message.includes('Failed to fetch') ||
-        error.message.includes('NetworkError')
-      )) {
-        console.log('Network error detected, keeping token for retry later');
+      if (
+        error instanceof Error &&
+        (error.name === "AbortError" ||
+          error.message.includes("Failed to fetch") ||
+          error.message.includes("NetworkError"))
+      ) {
+        console.log("Network error detected, keeping token for retry later");
         // Keep the token but don't set user - this allows retry on next app load
       } else {
         // Clear token for other errors
-        localStorage.removeItem('trackzen_token');
+        localStorage.removeItem("trackzen_token");
         setToken(null);
       }
     } finally {
@@ -127,19 +134,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
-      const response = await nativeFetch('/api/auth/login', {
-        method: 'POST',
+      const response = await nativeFetch("/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(credentials),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        let errorMessage = 'Login failed';
+        let errorMessage = "Login failed";
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
@@ -153,24 +160,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const data: ApiResponse<AuthResponse> = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Login failed');
+        throw new Error(data.error || "Login failed");
       }
 
       if (data.data) {
         const { token: authToken, user: userData } = data.data;
         setToken(authToken);
         setUser(userData);
-        localStorage.setItem('trackzen_token', authToken);
+        localStorage.setItem("trackzen_token", authToken);
       } else {
-        throw new Error('Invalid login response format');
+        throw new Error("Invalid login response format");
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
 
       // Clear any existing auth state on login failure
       setToken(null);
       setUser(null);
-      localStorage.removeItem('trackzen_token');
+      localStorage.removeItem("trackzen_token");
 
       throw error;
     } finally {
@@ -181,7 +188,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('trackzen_token');
+    localStorage.removeItem("trackzen_token");
   };
 
   const value: AuthContextType = {
@@ -189,12 +196,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     token,
     login,
     logout,
-    loading
+    loading,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

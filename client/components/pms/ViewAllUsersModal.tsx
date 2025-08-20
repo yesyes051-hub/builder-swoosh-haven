@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+} from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { Loader2, Users, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface User {
   id: string;
@@ -37,33 +37,36 @@ interface ViewAllUsersModalProps {
 
 const getRoleBadgeColor = (role: string) => {
   switch (role.toLowerCase()) {
-    case 'hr':
-      return 'bg-green-100 text-green-800 border-green-200';
-    case 'manager':
-      return 'bg-purple-100 text-purple-800 border-purple-200';
-    case 'employee':
-      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case "hr":
+      return "bg-green-100 text-green-800 border-green-200";
+    case "manager":
+      return "bg-purple-100 text-purple-800 border-purple-200";
+    case "employee":
+      return "bg-blue-100 text-blue-800 border-blue-200";
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return "bg-gray-100 text-gray-800 border-gray-200";
   }
 };
 
 const getJobStatusBadgeColor = (status?: string) => {
   switch (status) {
-    case 'Full-Time':
-      return 'bg-green-100 text-green-800 border-green-200';
-    case 'Part-Time':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    case 'Intern':
-      return 'bg-orange-100 text-orange-800 border-orange-200';
-    case 'On-Job Training':
-      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case "Full-Time":
+      return "bg-green-100 text-green-800 border-green-200";
+    case "Part-Time":
+      return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    case "Intern":
+      return "bg-orange-100 text-orange-800 border-orange-200";
+    case "On-Job Training":
+      return "bg-blue-100 text-blue-800 border-blue-200";
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return "bg-gray-100 text-gray-800 border-gray-200";
   }
 };
 
-export default function ViewAllUsersModal({ isOpen, onClose }: ViewAllUsersModalProps) {
+export default function ViewAllUsersModal({
+  isOpen,
+  onClose,
+}: ViewAllUsersModalProps) {
   const { toast } = useToast();
   const { token } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
@@ -76,14 +79,14 @@ export default function ViewAllUsersModal({ isOpen, onClose }: ViewAllUsersModal
 
     try {
       setLoading(true);
-      const response = await fetch('/api/users/management', {
+      const response = await fetch("/api/users/management", {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
-        let errorMessage = 'Failed to fetch users';
+        let errorMessage = "Failed to fetch users";
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
@@ -97,14 +100,15 @@ export default function ViewAllUsersModal({ isOpen, onClose }: ViewAllUsersModal
       if (result.success) {
         setUsers(result.data);
       } else {
-        throw new Error(result.error || 'Failed to fetch users');
+        throw new Error(result.error || "Failed to fetch users");
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to load users',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to load users",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -120,10 +124,10 @@ export default function ViewAllUsersModal({ isOpen, onClose }: ViewAllUsersModal
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -186,8 +190,12 @@ export default function ViewAllUsersModal({ isOpen, onClose }: ViewAllUsersModal
                   <TableBody>
                     {currentUsers.map((user) => (
                       <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.firstName}</TableCell>
-                        <TableCell className="font-medium">{user.lastName}</TableCell>
+                        <TableCell className="font-medium">
+                          {user.firstName}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {user.lastName}
+                        </TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
                           <Badge className={getRoleBadgeColor(user.role)}>
@@ -196,7 +204,9 @@ export default function ViewAllUsersModal({ isOpen, onClose }: ViewAllUsersModal
                         </TableCell>
                         <TableCell>
                           {user.jobStatus ? (
-                            <Badge className={getJobStatusBadgeColor(user.jobStatus)}>
+                            <Badge
+                              className={getJobStatusBadgeColor(user.jobStatus)}
+                            >
                               {user.jobStatus}
                             </Badge>
                           ) : (
@@ -214,7 +224,8 @@ export default function ViewAllUsersModal({ isOpen, onClose }: ViewAllUsersModal
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-gray-500">
-                    Showing {startIndex + 1} to {Math.min(endIndex, users.length)} of {users.length} users
+                    Showing {startIndex + 1} to{" "}
+                    {Math.min(endIndex, users.length)} of {users.length} users
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button
@@ -247,7 +258,7 @@ export default function ViewAllUsersModal({ isOpen, onClose }: ViewAllUsersModal
 
         <div className="flex justify-between items-center mt-6">
           <div className="text-sm text-gray-500">
-            Total: {users.length} user{users.length !== 1 ? 's' : ''}
+            Total: {users.length} user{users.length !== 1 ? "s" : ""}
           </div>
           <Button variant="outline" onClick={onClose}>
             Close
