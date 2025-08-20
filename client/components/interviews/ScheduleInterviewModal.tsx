@@ -391,7 +391,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
               <Button 
                 type="submit" 
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
-                disabled={loading || loadingInterviewers}
+                disabled={loading || loadingEmployees}
               >
                 {loading ? (
                   <>
