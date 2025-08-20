@@ -201,7 +201,7 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl fixed-size-modal">
+      <DialogContent className="max-w-6xl fixed-size-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Users className="h-5 w-5" />
