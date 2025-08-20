@@ -86,7 +86,7 @@ export default function Interviews() {
 
   const handleScheduleSuccess = (newInterview: MockInterview) => {
     fetchInterviews(); // Refresh the list
-    setShowScheduleForm(false);
+    setShowScheduleModal(false);
   };
 
   const handleFeedbackSuccess = () => {
