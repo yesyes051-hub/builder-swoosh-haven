@@ -50,48 +50,90 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+const AppContent = () => {
+  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    const { user, loading } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4">
-            <svg viewBox="0 0 50 50">
-              <circle className="opacity-30" cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="5" fill="none" />
-              <circle className="text-blue-600" cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="5" fill="none" strokeDasharray="100" strokeDashoffset="75" />
-            </svg>
+    if (loading) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4">
+              <svg viewBox="0 0 50 50">
+                <circle className="opacity-30" cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="5" fill="none" />
+                <circle className="text-blue-600" cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="5" fill="none" strokeDasharray="100" strokeDashoffset="75" />
+              </svg>
+            </div>
+            <p className="text-gray-600">Loading...</p>
           </div>
-          <p className="text-gray-600">Loading...</p>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  return user ? <>{children}</> : <Navigate to="/login" replace />;
-};
+    return user ? <>{children}</> : <Navigate to="/login" replace />;
+  };
 
-const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+    const { user, loading } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4">
-            <svg viewBox="0 0 50 50">
-              <circle className="opacity-30" cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="5" fill="none" />
-              <circle className="text-blue-600" cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="5" fill="none" strokeDasharray="100" strokeDashoffset="75" />
-            </svg>
+    if (loading) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4">
+              <svg viewBox="0 0 50 50">
+                <circle className="opacity-30" cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="5" fill="none" />
+                <circle className="text-blue-600" cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="5" fill="none" strokeDasharray="100" strokeDashoffset="75" />
+              </svg>
+            </div>
+            <p className="text-gray-600">Loading...</p>
           </div>
-          <p className="text-gray-600">Loading...</p>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  return user ? <Navigate to="/dashboard" replace /> : <>{children}</>;
+    return user ? <Navigate to="/dashboard" replace /> : <>{children}</>;
+  };
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        } />
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/daily-updates" element={
+          <ProtectedRoute>
+            <DailyUpdates />
+          </ProtectedRoute>
+        } />
+        <Route path="/leaderboard" element={
+          <ProtectedRoute>
+            <Leaderboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/interviews" element={
+          <ProtectedRoute>
+            <Interviews />
+          </ProtectedRoute>
+        } />
+        <Route path="/pms" element={
+          <ProtectedRoute>
+            <PMSNew />
+          </ProtectedRoute>
+        } />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
 };
 
 const App = () => (
@@ -101,43 +143,7 @@ const App = () => (
       <Sonner />
       <ResizeObserverErrorBoundary>
         <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            } />
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/daily-updates" element={
-              <ProtectedRoute>
-                <DailyUpdates />
-              </ProtectedRoute>
-            } />
-            <Route path="/leaderboard" element={
-              <ProtectedRoute>
-                <Leaderboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/interviews" element={
-              <ProtectedRoute>
-                <Interviews />
-              </ProtectedRoute>
-            } />
-            <Route path="/pms" element={
-              <ProtectedRoute>
-                <PMSNew />
-              </ProtectedRoute>
-            } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+          <AppContent />
         </AuthProvider>
       </ResizeObserverErrorBoundary>
     </TooltipProvider>
