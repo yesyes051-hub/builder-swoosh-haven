@@ -173,7 +173,7 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] sm:w-full sm:max-w-[500px] max-h-[90vh] overflow-y-auto fixed-size-modal">
+      <DialogContent className="sm:max-w-[500px] fixed-size-modal">
         <DialogHeader>
           <DialogTitle>Add New User</DialogTitle>
           <DialogDescription>
