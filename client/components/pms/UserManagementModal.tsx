@@ -224,7 +224,7 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
               <p className="text-gray-500">No users found</p>
             </div>
           ) : (
-            <div className="border rounded-lg">
+            <div className="border rounded-lg table-container">
               <Table>
                 <TableHeader>
                   <TableRow>
