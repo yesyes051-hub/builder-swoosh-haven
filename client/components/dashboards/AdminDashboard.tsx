@@ -46,6 +46,21 @@ export default function AdminDashboard({ data }: Props) {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
+  const testServerConnectivity = async () => {
+    try {
+      console.log('🔗 Testing server connectivity...');
+      const response = await fetch('/api/ping', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      console.log('📡 Ping response:', response.status, response.statusText);
+      return response.ok;
+    } catch (error) {
+      console.error('❌ Server connectivity test failed:', error);
+      return false;
+    }
+  };
+
   const fetchUserStats = async (retryCount = 0) => {
     if (!token) {
       console.warn('No token available for fetching user stats');
@@ -56,6 +71,15 @@ export default function AdminDashboard({ data }: Props) {
     try {
       setStatsLoading(true);
       console.log(`Attempting to fetch user stats (attempt ${retryCount + 1})`);
+      console.log('Token preview:', token.substring(0, 20) + '...');
+
+      // Test connectivity first on initial attempt
+      if (retryCount === 0) {
+        const isConnected = await testServerConnectivity();
+        if (!isConnected) {
+          throw new Error('Server connectivity test failed');
+        }
+      }
 
       // Add timeout to the fetch request
       const controller = new AbortController();
