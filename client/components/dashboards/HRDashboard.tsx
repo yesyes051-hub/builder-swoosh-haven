@@ -87,8 +87,12 @@ export default function HRDashboard({ data }: Props) {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {data.departmentStats.totalEmployees}
+              <div className="text-2xl font-bold text-green-600 flex items-center">
+                {loading ? (
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                ) : (
+                  employeeCount
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 Active workforce
