@@ -41,30 +41,72 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const fetchProfile = async (authToken: string) => {
     try {
-      const response = await fetch('/api/auth/profile', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
+      // Add retry logic for network issues
+      let response;
+      let lastError;
+
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          response = await fetch('/api/auth/profile', {
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json'
+            },
+            // Add signal for timeout
+            signal: AbortSignal.timeout(10000) // 10 second timeout
+          });
+          break; // Success, exit retry loop
+        } catch (fetchError) {
+          lastError = fetchError;
+          if (attempt < 3) {
+            // Wait before retry (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+            console.log(`Fetch attempt ${attempt} failed, retrying...`);
+          }
         }
-      });
+      }
+
+      if (!response) {
+        throw lastError || new Error('Failed to fetch after multiple attempts');
+      }
 
       if (response.ok) {
         const data: ApiResponse<User> = await response.json();
         if (data.success && data.data) {
           setUser(data.data);
         } else {
-          // Invalid token, clear it
+          // Invalid response format, clear token
+          console.warn('Invalid response format from profile endpoint');
           localStorage.removeItem('trackzen_token');
           setToken(null);
         }
-      } else {
+      } else if (response.status === 401) {
         // Invalid token, clear it
+        console.log('Token expired or invalid, clearing auth');
+        localStorage.removeItem('trackzen_token');
+        setToken(null);
+      } else {
+        // Other HTTP error
+        console.error(`Profile fetch failed with status: ${response.status}`);
         localStorage.removeItem('trackzen_token');
         setToken(null);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
-      localStorage.removeItem('trackzen_token');
-      setToken(null);
+
+      // Don't clear token on network errors - user might be offline temporarily
+      if (error instanceof Error && (
+        error.name === 'AbortError' ||
+        error.message.includes('Failed to fetch') ||
+        error.message.includes('NetworkError')
+      )) {
+        console.log('Network error detected, keeping token for retry later');
+        // Keep the token but don't set user - this allows retry on next app load
+      } else {
+        // Clear token for other errors
+        localStorage.removeItem('trackzen_token');
+        setToken(null);
+      }
     } finally {
       setLoading(false);
     }
