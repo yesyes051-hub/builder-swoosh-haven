@@ -38,10 +38,12 @@ interface Props {
 export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: Props) {
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [loadingInterviewers, setLoadingInterviewers] = useState(true);
+  const [loadingEmployees, setLoadingEmployees] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [interviewers, setInterviewers] = useState<InterviewerOption[]>([]);
+  const [employees, setEmployees] = useState<EmployeeOption[]>([]);
+  const [candidateSearch, setCandidateSearch] = useState('');
+  const [interviewerSearch, setInterviewerSearch] = useState('');
 
   // Form state
   const [candidateId, setCandidateId] = useState('');
