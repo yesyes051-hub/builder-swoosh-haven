@@ -194,11 +194,26 @@
     min-height: 400px;
     /* Stabilize positioning */
     transform: translateZ(0);
+    /* Ensure modal stays within viewport bounds */
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 2rem);
   }
 
   /* Prevent layout shifts in modals */
   .fixed-size-modal * {
     box-sizing: border-box;
+  }
+
+  /* Ensure dialogs are properly centered and responsive */
+  [data-radix-dialog-content] {
+    /* Override default positioning to ensure better centering */
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    /* Ensure responsive sizing */
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 2rem);
   }
 
   /* Reduce reflows in table components */
