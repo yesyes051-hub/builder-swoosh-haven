@@ -52,9 +52,22 @@ export const getUserStats: RequestHandler = async (req, res) => {
 
   } catch (error) {
     console.error('Get user stats error:', error);
+
+    // Provide more specific error information
+    let errorMessage = 'Internal server error';
+    if (error instanceof Error) {
+      if (error.message.includes('connection')) {
+        errorMessage = 'Database connection error';
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'Database query timeout';
+      } else {
+        errorMessage = `Database error: ${error.message}`;
+      }
+    }
+
     res.status(500).json({
       success: false,
-      error: 'Internal server error'
+      error: errorMessage
     } as ApiResponse<never>);
   }
 };
