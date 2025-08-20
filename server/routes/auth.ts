@@ -8,8 +8,7 @@ import {
   AuthResponse,
   ApiResponse
 } from '@shared/api';
-import { connectToDatabase } from '../db/mongodb';
-import { PMSUser } from '../models/pms';
+import { EmployeeUser } from '../models/employeeManagement';
 
 export const login: RequestHandler = async (req, res) => {
   try {
