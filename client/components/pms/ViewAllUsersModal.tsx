@@ -171,7 +171,7 @@ export default function ViewAllUsersModal({ isOpen, onClose }: ViewAllUsersModal
             </div>
           ) : (
             <>
-              <div className="border rounded-lg">
+              <div className="border rounded-lg table-container">
                 <Table>
                   <TableHeader>
                     <TableRow>
