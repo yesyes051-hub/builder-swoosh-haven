@@ -55,7 +55,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
 
   useEffect(() => {
     if (isOpen) {
-      fetchInterviewers();
+      fetchEmployees();
       // Reset form when modal opens
       resetForm();
     }
