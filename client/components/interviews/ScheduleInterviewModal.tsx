@@ -72,27 +72,27 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
     setSuccess('');
   };
 
-  const fetchInterviewers = async () => {
+  const fetchEmployees = async () => {
     try {
-      setLoadingInterviewers(true);
-      const response = await fetch('/api/interviews/interviewers', {
+      setLoadingEmployees(true);
+      const response = await fetch('/api/employees', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      const data: ApiResponse<InterviewerOption[]> = await response.json();
+      const data: ApiResponse<EmployeeOption[]> = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to fetch interviewers');
+        throw new Error(data.error || 'Failed to fetch employees');
       }
 
-      setInterviewers(data.data || []);
+      setEmployees(data.data || []);
     } catch (err) {
-      console.error('Fetch interviewers error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load interviewers');
+      console.error('Fetch employees error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load employees');
     } finally {
-      setLoadingInterviewers(false);
+      setLoadingEmployees(false);
     }
   };
 
