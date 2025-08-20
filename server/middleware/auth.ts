@@ -14,7 +14,7 @@ export interface JwtPayload {
   role: UserRole;
 }
 
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
@@ -24,7 +24,8 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-    // In a real app, you'd fetch the full user from database
+
+    // Set minimal user object with the correct ID
     req.user = {
       id: decoded.userId,
       email: decoded.email,
@@ -35,8 +36,10 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
       updatedAt: new Date(),
       isActive: true
     };
+
     next();
   } catch (error) {
+    console.error('Token verification error:', error);
     return res.status(403).json({ success: false, error: 'Invalid or expired token' });
   }
 };
