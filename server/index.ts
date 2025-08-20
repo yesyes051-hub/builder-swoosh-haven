@@ -124,6 +124,10 @@ export function createServer() {
   app.get("/api/pms/employees", authenticateToken, requireRole(['admin', 'hr']), getEmployees);
   app.post("/api/pms/employees/:employeeId/reset-password", authenticateToken, requireRole(['admin']), resetEmployeePassword);
 
+  // User Management for Admin Dashboard
+  app.post("/api/users", authenticateToken, requireRole(['admin']), createUser);
+  app.get("/api/users", authenticateToken, requireRole(['admin', 'hr']), getAllUsers);
+
   // Enhanced Timesheet System
   app.post("/api/pms-new/timesheets", authenticateToken, createTimesheetEntry);
   app.get("/api/pms-new/timesheets", authenticateToken, getTimesheetEntries);
