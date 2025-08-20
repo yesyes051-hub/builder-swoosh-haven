@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { ProjectAssignment } from "../models/projectAssignment";
 import { PMSUser } from "../models/pms";
+import { connectToDatabase } from "../db/mongodb";
 import { z } from "zod";
 
 // Validation schemas
