@@ -47,23 +47,36 @@ export default function AdminDashboard({ data }: Props) {
   const [statsLoading, setStatsLoading] = useState(true);
 
   const fetchUserStats = async () => {
-    if (!token) return;
+    if (!token) {
+      console.warn('No token available for fetching user stats');
+      setStatsLoading(false);
+      return;
+    }
 
     try {
       setStatsLoading(true);
+
+      // Add timeout to the fetch request
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch('/api/user-stats', {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        let errorMessage = 'Failed to fetch user statistics';
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
         } catch {
-          errorMessage = `${response.status} ${response.statusText}` || errorMessage;
+          // Keep the HTTP status message if JSON parsing fails
         }
         throw new Error(errorMessage);
       }
@@ -71,11 +84,22 @@ export default function AdminDashboard({ data }: Props) {
       const result = await response.json();
       if (result.success) {
         setUserStats(result.data);
+        console.log('User stats fetched successfully:', result.data);
       } else {
-        throw new Error(result.error || 'Failed to fetch user statistics');
+        throw new Error(result.error || 'API returned unsuccessful response');
       }
     } catch (error) {
       console.error('Error fetching user stats:', error);
+
+      // Provide more specific error information
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          console.error('Request timed out after 10 seconds');
+        } else if (error.message.includes('Failed to fetch')) {
+          console.error('Network error - check if server is running and accessible');
+        }
+      }
+
       // Fallback to showing the original dashboard data on error
       setUserStats(null);
     } finally {
