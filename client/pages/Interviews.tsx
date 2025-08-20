@@ -160,29 +160,6 @@ export default function Interviews() {
     return null;
   }
 
-  if (showScheduleForm) {
-    return (
-      <DashboardLayout user={user}>
-        <div className="space-y-6">
-          <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowScheduleForm(false)}
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back to Interviews</span>
-            </Button>
-            <h1 className="text-2xl font-bold">Schedule Interview</h1>
-          </div>
-          <ScheduleInterviewForm 
-            onSuccess={handleScheduleSuccess}
-            onCancel={() => setShowScheduleForm(false)}
-          />
-        </div>
-      </DashboardLayout>
-    );
-  }
 
   if (showFeedbackForm) {
     return (
