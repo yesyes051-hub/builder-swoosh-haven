@@ -74,28 +74,35 @@ export const createProjectAssignment: RequestHandler = async (req, res) => {
 
 // Get recent project assignments for a manager
 export const getRecentAssignments: RequestHandler = async (req, res) => {
+  console.log('🔍 getRecentAssignments called, managerId:', req.user?.id);
+
   try {
     await connectToDatabase();
     const managerId = req.user?.id;
     const limit = parseInt(req.query.limit as string) || 10;
 
     if (!managerId) {
+      console.log('❌ No manager ID found for assignments');
       return res.status(401).json({
         success: false,
         error: "Manager authentication required"
       });
     }
 
+    console.log('🔍 Searching for assignments with managerId:', managerId, 'limit:', limit);
+
     const assignments = await ProjectAssignment.find({ assignedBy: managerId })
       .sort({ assignedAt: -1 })
       .limit(limit);
 
-    res.json({
+    console.log('✅ Found assignments:', assignments.length);
+
+    return res.json({
       success: true,
       data: assignments
     });
   } catch (error) {
-    console.error('Error fetching recent assignments:', error);
+    console.error('❌ Error fetching recent assignments:', error);
     return res.status(500).json({
       success: false,
       error: "Failed to fetch recent assignments"
