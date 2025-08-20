@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -16,25 +16,25 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { CalendarIcon, Loader2, User } from 'lucide-react';
-import { toast } from 'sonner';
+} from "@/components/ui/select";
+import { CalendarIcon, Loader2, User } from "lucide-react";
+import { toast } from "sonner";
 
 // Form validation schema
 const projectAssignmentSchema = z.object({
-  projectName: z.string().min(1, 'Project name is required'),
-  deadline: z.string().min(1, 'Deadline is required'),
-  priority: z.enum(['High', 'Medium', 'Low']).default('Medium'),
+  projectName: z.string().min(1, "Project name is required"),
+  deadline: z.string().min(1, "Deadline is required"),
+  priority: z.enum(["High", "Medium", "Low"]).default("Medium"),
   notes: z.string().optional(),
 });
 
@@ -67,10 +67,10 @@ export default function ProjectAssignmentForm({
   const form = useForm<ProjectAssignmentFormData>({
     resolver: zodResolver(projectAssignmentSchema),
     defaultValues: {
-      projectName: '',
-      deadline: '',
-      priority: 'Medium',
-      notes: '',
+      projectName: "",
+      deadline: "",
+      priority: "Medium",
+      notes: "",
     },
   });
 
@@ -79,12 +79,12 @@ export default function ProjectAssignmentForm({
 
     setIsSubmitting(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/project-assignments', {
-        method: 'POST',
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/project-assignments", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           employeeId: employee._id,
@@ -95,16 +95,16 @@ export default function ProjectAssignmentForm({
       const result = await response.json();
 
       if (result.success) {
-        toast.success('Project assignment created successfully!');
+        toast.success("Project assignment created successfully!");
         form.reset();
         onClose();
         onSuccess();
       } else {
-        toast.error(result.error || 'Failed to create project assignment');
+        toast.error(result.error || "Failed to create project assignment");
       }
     } catch (error) {
-      console.error('Error creating project assignment:', error);
-      toast.error('Failed to create project assignment');
+      console.error("Error creating project assignment:", error);
+      toast.error("Failed to create project assignment");
     } finally {
       setIsSubmitting(false);
     }
@@ -116,7 +116,7 @@ export default function ProjectAssignmentForm({
   };
 
   // Format today's date as YYYY-MM-DD for input min value
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split("T")[0];
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -129,7 +129,7 @@ export default function ProjectAssignmentForm({
           <DialogDescription>
             {employee && (
               <span>
-                Assign a new project to{' '}
+                Assign a new project to{" "}
                 <strong>
                   {employee.firstName} {employee.lastName}
                 </strong>
@@ -153,7 +153,9 @@ export default function ProjectAssignmentForm({
                     </p>
                     <p className="text-sm text-gray-600">{employee.email}</p>
                     {employee.department && (
-                      <p className="text-sm text-gray-500">{employee.department}</p>
+                      <p className="text-sm text-gray-500">
+                        {employee.department}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -284,7 +286,7 @@ export default function ProjectAssignmentForm({
                     Assigning...
                   </>
                 ) : (
-                  'Assign Project'
+                  "Assign Project"
                 )}
               </Button>
             </div>

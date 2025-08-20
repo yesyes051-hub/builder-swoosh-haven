@@ -8,8 +8,10 @@ import { z } from "zod";
 const createAssignmentSchema = z.object({
   employeeId: z.string().min(1, "Employee ID is required"),
   projectName: z.string().min(1, "Project name is required"),
-  deadline: z.string().refine((date) => !isNaN(Date.parse(date)), "Invalid deadline format"),
-  priority: z.enum(['High', 'Medium', 'Low']).default('Medium'),
+  deadline: z
+    .string()
+    .refine((date) => !isNaN(Date.parse(date)), "Invalid deadline format"),
+  priority: z.enum(["High", "Medium", "Low"]).default("Medium"),
   notes: z.string().optional(),
 });
 
@@ -23,7 +25,7 @@ export const createProjectAssignment: RequestHandler = async (req, res) => {
     if (!managerId) {
       return res.status(401).json({
         success: false,
-        error: "Manager authentication required"
+        error: "Manager authentication required",
       });
     }
 
@@ -32,7 +34,7 @@ export const createProjectAssignment: RequestHandler = async (req, res) => {
     if (!employee) {
       return res.status(404).json({
         success: false,
-        error: "Employee not found"
+        error: "Employee not found",
       });
     }
 
@@ -52,29 +54,29 @@ export const createProjectAssignment: RequestHandler = async (req, res) => {
     res.status(201).json({
       success: true,
       data: assignment,
-      message: "Project assignment created successfully"
+      message: "Project assignment created successfully",
     });
   } catch (error) {
-    console.error('Error creating project assignment:', error);
+    console.error("Error creating project assignment:", error);
 
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
         error: "Validation error",
-        details: error.errors
+        details: error.errors,
       });
     }
 
     return res.status(500).json({
       success: false,
-      error: "Failed to create project assignment"
+      error: "Failed to create project assignment",
     });
   }
 };
 
 // Get recent project assignments for a manager
 export const getRecentAssignments: RequestHandler = async (req, res) => {
-  console.log('🔍 getRecentAssignments called, managerId:', req.user?.id);
+  console.log("🔍 getRecentAssignments called, managerId:", req.user?.id);
 
   try {
     await connectToDatabase();
@@ -82,100 +84,107 @@ export const getRecentAssignments: RequestHandler = async (req, res) => {
     const limit = parseInt(req.query.limit as string) || 10;
 
     if (!managerId) {
-      console.log('❌ No manager ID found for assignments');
+      console.log("❌ No manager ID found for assignments");
       return res.status(401).json({
         success: false,
-        error: "Manager authentication required"
+        error: "Manager authentication required",
       });
     }
 
-    console.log('🔍 Searching for assignments with managerId:', managerId, 'limit:', limit);
+    console.log(
+      "🔍 Searching for assignments with managerId:",
+      managerId,
+      "limit:",
+      limit,
+    );
 
     const assignments = await ProjectAssignment.find({ assignedBy: managerId })
       .sort({ assignedAt: -1 })
       .limit(limit);
 
-    console.log('✅ Found assignments:', assignments.length);
+    console.log("✅ Found assignments:", assignments.length);
 
     // Return empty array if no assignments found (this is normal for new managers)
     return res.json({
       success: true,
-      data: assignments || []
+      data: assignments || [],
     });
   } catch (error) {
-    console.error('❌ Error fetching recent assignments:', error);
+    console.error("❌ Error fetching recent assignments:", error);
     return res.status(500).json({
       success: false,
-      error: "Failed to fetch recent assignments"
+      error: "Failed to fetch recent assignments",
     });
   }
 };
 
 // Get team members for a manager
 export const getTeamMembers: RequestHandler = async (req, res) => {
-  console.log('🔍 getTeamMembers called, managerId:', req.user?.id);
+  console.log("🔍 getTeamMembers called, managerId:", req.user?.id);
 
   try {
     await connectToDatabase();
     const managerId = req.user?.id;
 
     if (!managerId) {
-      console.log('❌ No manager ID found');
+      console.log("❌ No manager ID found");
       return res.status(401).json({
         success: false,
-        error: "Manager authentication required"
+        error: "Manager authentication required",
       });
     }
 
-    console.log('🔍 Searching for team members with managerId:', managerId);
+    console.log("🔍 Searching for team members with managerId:", managerId);
 
     // First, try PMSUser (which has managerId field)
     let teamMembers = await PMSUser.find({
       managerId: managerId,
       isActive: true,
-      role: { $in: ['employee', 'interviewer'] }
-    }).select('-password');
+      role: { $in: ["employee", "interviewer"] },
+    }).select("-password");
 
-    console.log('✅ Found PMSUser team members:', teamMembers.length);
+    console.log("✅ Found PMSUser team members:", teamMembers.length);
 
     // If no PMSUser records found, return mock data for development
     if (teamMembers.length === 0) {
-      console.log('🔍 No PMSUser team members found, returning mock data for development');
+      console.log(
+        "🔍 No PMSUser team members found, returning mock data for development",
+      );
 
       // Return some mock employees for development/testing
       teamMembers = [
         {
-          _id: 'mock-emp-1',
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john.doe@company.com',
-          department: 'Engineering',
-          role: 'employee',
+          _id: "mock-emp-1",
+          firstName: "John",
+          lastName: "Doe",
+          email: "john.doe@company.com",
+          department: "Engineering",
+          role: "employee",
           isActive: true,
-          managerId: managerId
+          managerId: managerId,
         },
         {
-          _id: 'mock-emp-2',
-          firstName: 'Jane',
-          lastName: 'Smith',
-          email: 'jane.smith@company.com',
-          department: 'Engineering',
-          role: 'employee',
+          _id: "mock-emp-2",
+          firstName: "Jane",
+          lastName: "Smith",
+          email: "jane.smith@company.com",
+          department: "Engineering",
+          role: "employee",
           isActive: true,
-          managerId: managerId
-        }
+          managerId: managerId,
+        },
       ];
     }
 
     return res.json({
       success: true,
-      data: teamMembers
+      data: teamMembers,
     });
   } catch (error) {
-    console.error('❌ Error fetching team members:', error);
+    console.error("❌ Error fetching team members:", error);
     return res.status(500).json({
       success: false,
-      error: "Failed to fetch team members"
+      error: "Failed to fetch team members",
     });
   }
 };
@@ -193,13 +202,13 @@ export const getEmployeeAssignments: RequestHandler = async (req, res) => {
 
     res.json({
       success: true,
-      data: assignments
+      data: assignments,
     });
   } catch (error) {
-    console.error('Error fetching employee assignments:', error);
+    console.error("Error fetching employee assignments:", error);
     return res.status(500).json({
       success: false,
-      error: "Failed to fetch employee assignments"
+      error: "Failed to fetch employee assignments",
     });
   }
 };
@@ -211,36 +220,38 @@ export const updateAssignmentStatus: RequestHandler = async (req, res) => {
     const { assignmentId } = req.params;
     const { status } = req.body;
 
-    if (!['Assigned', 'In Progress', 'Completed', 'Cancelled'].includes(status)) {
+    if (
+      !["Assigned", "In Progress", "Completed", "Cancelled"].includes(status)
+    ) {
       return res.status(400).json({
         success: false,
-        error: "Invalid status"
+        error: "Invalid status",
       });
     }
 
     const assignment = await ProjectAssignment.findByIdAndUpdate(
       assignmentId,
       { status },
-      { new: true }
+      { new: true },
     );
 
     if (!assignment) {
       return res.status(404).json({
         success: false,
-        error: "Assignment not found"
+        error: "Assignment not found",
       });
     }
 
     res.json({
       success: true,
       data: assignment,
-      message: "Assignment status updated successfully"
+      message: "Assignment status updated successfully",
     });
   } catch (error) {
-    console.error('Error updating assignment status:', error);
+    console.error("Error updating assignment status:", error);
     return res.status(500).json({
       success: false,
-      error: "Failed to update assignment status"
+      error: "Failed to update assignment status",
     });
   }
 };
