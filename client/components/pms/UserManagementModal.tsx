@@ -19,6 +19,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Edit, Eye, Loader2, Users } from 'lucide-react';
+import EditUserModal from './EditUserModal';
 
 interface User {
   id: string;
