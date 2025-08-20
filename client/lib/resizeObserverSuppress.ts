@@ -33,12 +33,22 @@ class ResizeObserverErrorSuppressor {
 
   private suppressConsoleErrors(): void {
     const originalError = console.error;
+    const originalWarn = console.warn;
+
     console.error = (...args: any[]) => {
-      const message = args[0];
-      if (typeof message === 'string' && this.isResizeObserverError(message)) {
+      const message = String(args[0] || '');
+      if (this.isResizeObserverError(message)) {
         return; // Suppress the error
       }
       originalError.apply(console, args);
+    };
+
+    console.warn = (...args: any[]) => {
+      const message = String(args[0] || '');
+      if (this.isResizeObserverError(message)) {
+        return; // Suppress the warning
+      }
+      originalWarn.apply(console, args);
     };
   }
 
