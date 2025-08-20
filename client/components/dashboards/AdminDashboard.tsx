@@ -205,7 +205,10 @@ export default function AdminDashboard({ data }: Props) {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-3">
-              <Button className="bg-red-600 hover:bg-red-700">
+              <Button
+                className="bg-red-600 hover:bg-red-700"
+                onClick={() => setIsUserManagementModalOpen(true)}
+              >
                 <Users className="h-4 w-4 mr-2" />
                 Manage Users
               </Button>
