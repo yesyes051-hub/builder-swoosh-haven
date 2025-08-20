@@ -24,6 +24,14 @@ interface Props {
 }
 
 export default function AdminDashboard({ data }: Props) {
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleUserAdded = () => {
+    // Trigger a refresh of user data
+    setRefreshTrigger(prev => prev + 1);
+    // In a real app, you might want to refetch the dashboard data here
+  };
   return (
     <DashboardLayout user={data.user}>
       <div className="space-y-6">
