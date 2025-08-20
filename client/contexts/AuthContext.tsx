@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-          response = await fetch('/api/auth/profile', {
+          response = await nativeFetch('/api/auth/profile', {
             headers: {
               'Authorization': `Bearer ${authToken}`,
               'Content-Type': 'application/json'
