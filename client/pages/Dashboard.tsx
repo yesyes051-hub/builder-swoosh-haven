@@ -32,16 +32,30 @@ export default function Dashboard() {
     try {
       setLoading(true);
       const endpoint = `/api/dashboard/${user.role}`;
-      
+
       const response = await fetch(endpoint, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        // For non-JSON error responses, get text or use status text
+        let errorMessage = 'Failed to fetch dashboard data';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // If JSON parsing fails, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
       const data: ApiResponse<any> = await response.json();
 
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.error || 'Failed to fetch dashboard data');
       }
 
