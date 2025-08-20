@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ManagerDashboard as ManagerDashboardType } from '@shared/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,20 +11,132 @@ import {
   Calendar,
   CheckCircle,
   UserCheck,
-  BarChart3
+  BarChart3,
+  Plus,
+  Clock
 } from 'lucide-react';
 import DashboardLayout from './DashboardLayout';
+import ProjectAssignmentForm from '@/components/forms/ProjectAssignmentForm';
+import { toast } from 'sonner';
 
 interface Props {
   data: ManagerDashboardType;
 }
 
+interface Employee {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  department?: string;
+  role: string;
+  isActive: boolean;
+}
+
+interface ProjectAssignment {
+  _id: string;
+  employeeId: string;
+  employeeName: string;
+  projectName: string;
+  deadline: string;
+  priority: 'High' | 'Medium' | 'Low';
+  notes?: string;
+  assignedAt: string;
+  status: 'Assigned' | 'In Progress' | 'Completed' | 'Cancelled';
+}
+
 export default function ManagerDashboard({ data }: Props) {
+  const [teamMembers, setTeamMembers] = useState<Employee[]>([]);
+  const [recentAssignments, setRecentAssignments] = useState<ProjectAssignment[]>([]);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [isAssignmentFormOpen, setIsAssignmentFormOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes} mins ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
+    return `${Math.floor(diffInMinutes / 1440)} days ago`;
+  };
+
+  const fetchTeamMembers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/project-assignments/team-members', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        setTeamMembers(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+    }
+  };
+
+  const fetchRecentAssignments = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/project-assignments/recent?limit=5', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        setRecentAssignments(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching recent assignments:', error);
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      await Promise.all([fetchTeamMembers(), fetchRecentAssignments()]);
+      setIsLoading(false);
+    };
+    
+    loadData();
+  }, []);
+
+  const handleAssignProject = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsAssignmentFormOpen(true);
+  };
+
+  const handleAssignmentSuccess = () => {
+    fetchRecentAssignments();
+    toast.success('Project assigned successfully!');
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'High':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'Medium':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'Low':
+        return 'bg-green-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
   };
 
   return (
@@ -36,7 +148,7 @@ export default function ManagerDashboard({ data }: Props) {
             Team Dashboard - {data.user.firstName} {data.user.lastName}
           </h1>
           <p className="text-purple-100">
-            Monitor your team's progress and performance
+            Monitor your team's progress and assign new projects
           </p>
         </div>
 
@@ -49,7 +161,7 @@ export default function ManagerDashboard({ data }: Props) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-purple-600">
-                {data.teamPerformanceStats.teamSize}
+                {teamMembers.length}
               </div>
               <p className="text-xs text-muted-foreground">
                 Direct reports
@@ -127,14 +239,22 @@ export default function ManagerDashboard({ data }: Props) {
                 <span>Team Members</span>
               </CardTitle>
               <CardDescription>
-                Your direct reports
+                Your direct reports - hover to assign projects
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.teamMembers.length > 0 ? (
-                  data.teamMembers.map((member) => (
-                    <div key={member.id} className="flex items-center space-x-4 p-3 border rounded-lg">
+                {isLoading ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>Loading team members...</p>
+                  </div>
+                ) : teamMembers.length > 0 ? (
+                  teamMembers.map((member) => (
+                    <div 
+                      key={member._id} 
+                      className="group relative flex items-center space-x-4 p-3 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
                       <div className="bg-blue-100 p-2 rounded-lg">
                         <UserCheck className="h-4 w-4 text-blue-600" />
                       </div>
@@ -158,6 +278,18 @@ export default function ManagerDashboard({ data }: Props) {
                           {member.role}
                         </span>
                       </div>
+                      
+                      {/* Hover overlay with + icon */}
+                      <div className="absolute inset-0 bg-purple-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Button
+                          size="sm"
+                          className="bg-purple-600 hover:bg-purple-700"
+                          onClick={() => handleAssignProject(member)}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Assign Project
+                        </Button>
+                      </div>
                     </div>
                   ))
                 ) : (
@@ -179,12 +311,48 @@ export default function ManagerDashboard({ data }: Props) {
                 <span>Recent Team Updates</span>
               </CardTitle>
               <CardDescription>
-                Latest progress from your team
+                Latest project assignments and progress
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.recentTeamUpdates.length > 0 ? (
+                {isLoading ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <CheckCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>Loading recent updates...</p>
+                  </div>
+                ) : recentAssignments.length > 0 ? (
+                  recentAssignments.map((assignment) => (
+                    <div key={assignment._id} className="border-l-4 border-purple-500 pl-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="font-medium">{assignment.employeeName}</p>
+                          <p className="text-sm text-gray-500 flex items-center">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {formatTimeAgo(assignment.assignedAt)}
+                          </p>
+                        </div>
+                        <Badge 
+                          className={`text-xs ${getPriorityColor(assignment.priority)}`}
+                          variant="outline"
+                        >
+                          {assignment.priority}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Project:</strong> {assignment.projectName}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <strong>Deadline:</strong> {formatDate(new Date(assignment.deadline))}
+                      </p>
+                      {assignment.notes && (
+                        <p className="text-sm text-gray-500 mt-1 italic">
+                          "{assignment.notes}"
+                        </p>
+                      )}
+                    </div>
+                  ))
+                ) : data.recentTeamUpdates.length > 0 ? (
                   data.recentTeamUpdates.slice(0, 4).map((update) => (
                     <div key={update.id} className="border-l-4 border-purple-500 pl-4">
                       <div className="flex justify-between items-start mb-2">
@@ -277,6 +445,14 @@ export default function ManagerDashboard({ data }: Props) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Project Assignment Modal */}
+      <ProjectAssignmentForm
+        isOpen={isAssignmentFormOpen}
+        onClose={() => setIsAssignmentFormOpen(false)}
+        employee={selectedEmployee}
+        onSuccess={handleAssignmentSuccess}
+      />
     </DashboardLayout>
   );
 }
