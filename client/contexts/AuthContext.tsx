@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthResponse, LoginRequest, ApiResponse } from '@shared/api';
 
+// Store native fetch to avoid interference from browser extensions or third-party scripts
+const nativeFetch = window.fetch.bind(window);
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
