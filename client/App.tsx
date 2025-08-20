@@ -2,6 +2,7 @@ import "./global.css";
 
 // Initialize ResizeObserver error suppression
 import { initializeResizeObserverSuppression } from '@/lib/resizeObserverSuppress';
+import '@/lib/resizeObserverTest'; // Make test utility available globally
 initializeResizeObserverSuppression();
 
 // Additional aggressive suppression for ResizeObserver errors
