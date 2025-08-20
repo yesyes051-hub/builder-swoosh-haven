@@ -105,30 +105,37 @@ export const getRecentAssignments: RequestHandler = async (req, res) => {
 
 // Get team members for a manager
 export const getTeamMembers: RequestHandler = async (req, res) => {
+  console.log('🔍 getTeamMembers called, managerId:', req.user?.id);
+
   try {
     await connectToDatabase();
     const managerId = req.user?.id;
 
     if (!managerId) {
+      console.log('❌ No manager ID found');
       return res.status(401).json({
         success: false,
         error: "Manager authentication required"
       });
     }
 
+    console.log('🔍 Searching for team members with managerId:', managerId);
+
     // Find all employees reporting to this manager
-    const teamMembers = await PMSUser.find({ 
+    const teamMembers = await PMSUser.find({
       managerId: managerId,
       isActive: true,
       role: { $in: ['employee', 'interviewer'] } // Exclude other managers/admins
     }).select('-password');
 
-    res.json({
+    console.log('✅ Found team members:', teamMembers.length);
+
+    return res.json({
       success: true,
       data: teamMembers
     });
   } catch (error) {
-    console.error('Error fetching team members:', error);
+    console.error('❌ Error fetching team members:', error);
     return res.status(500).json({
       success: false,
       error: "Failed to fetch team members"
