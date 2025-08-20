@@ -57,14 +57,27 @@ export default function AdminDashboard({ data }: Props) {
         }
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          setUserStats(result.data);
+      if (!response.ok) {
+        let errorMessage = 'Failed to fetch user statistics';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = `${response.status} ${response.statusText}` || errorMessage;
         }
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        setUserStats(result.data);
+      } else {
+        throw new Error(result.error || 'Failed to fetch user statistics');
       }
     } catch (error) {
       console.error('Error fetching user stats:', error);
+      // Fallback to showing the original dashboard data on error
+      setUserStats(null);
     } finally {
       setStatsLoading(false);
     }
