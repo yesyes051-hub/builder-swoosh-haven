@@ -14,9 +14,12 @@ export interface UserStats {
 }
 
 export const getUserStats: RequestHandler = async (req, res) => {
+  console.log('📊 GET /api/user-stats - Request received');
   try {
     // Get total users count
+    console.log('🔍 Counting total users...');
     const totalUsers = await EmployeeUser.countDocuments();
+    console.log('👥 Total users found:', totalUsers);
 
     // For now, consider all users as active (since we don't have an isActive field in new schema)
     const activeUsers = totalUsers;
