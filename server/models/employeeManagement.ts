@@ -47,5 +47,18 @@ const employeeManagementConnection = mongoose.createConnection(
   'mongodb+srv://Nisarg:Shah@cluster0.ggpuny2.mongodb.net/employemanagement'
 );
 
+// Add connection event listeners
+employeeManagementConnection.on('connected', () => {
+  console.log('✅ Connected to Employee Management MongoDB database');
+});
+
+employeeManagementConnection.on('error', (err) => {
+  console.error('❌ Employee Management MongoDB connection error:', err);
+});
+
+employeeManagementConnection.on('disconnected', () => {
+  console.log('🔌 Employee Management MongoDB disconnected');
+});
+
 // Export the model using the specific connection and collection name
 export const EmployeeUser = employeeManagementConnection.model<IEmployeeUser>('ROLES', EmployeeUserSchema);
