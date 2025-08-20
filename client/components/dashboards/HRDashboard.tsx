@@ -27,6 +27,36 @@ interface EmployeeCount {
 }
 
 export default function HRDashboard({ data }: Props) {
+  const { token } = useAuth();
+  const [employeeCount, setEmployeeCount] = useState<number>(data.departmentStats.totalEmployees);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchEmployeeCount();
+  }, []);
+
+  const fetchEmployeeCount = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/employees/count', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result: ApiResponse<EmployeeCount> = await response.json();
+
+      if (response.ok && result.success && result.data) {
+        setEmployeeCount(result.data.totalEmployees);
+      }
+    } catch (error) {
+      console.error('Failed to fetch employee count:', error);
+      // Keep the original count from props if fetch fails
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatDateTime = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
