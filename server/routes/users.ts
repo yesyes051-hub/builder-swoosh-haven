@@ -6,11 +6,12 @@ import { ApiResponse } from '@shared/api';
 interface CreateUserRequest {
   firstName: string;
   lastName: string;
-  gender?: 'Male' | 'Female' | 'Other';
+  gender: 'Male' | 'Female' | 'Other';
   email: string;
   contactNumber?: string;
-  jobStatus?: 'Intern' | 'Full-Time' | 'On-Job Training' | 'Part-Time';
-  role: 'hr' | 'manager' | 'employee';
+  jobStatus: 'Intern' | 'Full-Time' | 'On-Job Training' | 'Part-Time';
+  role: 'HR' | 'Manager' | 'Employee';
+  password: string;
 }
 
 export const createUser: RequestHandler = async (req, res) => {
