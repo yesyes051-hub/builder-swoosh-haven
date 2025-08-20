@@ -1,5 +1,14 @@
 import "./global.css";
 
+// Suppress ResizeObserver warnings globally
+const originalError = console.error;
+console.error = (...args: any[]) => {
+  if (typeof args[0] === 'string' && args[0].includes('ResizeObserver')) {
+    return;
+  }
+  originalError.apply(console, args);
+};
+
 import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
