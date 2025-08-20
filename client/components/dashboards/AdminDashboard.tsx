@@ -183,7 +183,7 @@ export default function AdminDashboard({ data }: Props) {
               <div className="text-center p-4 border rounded-lg">
                 <UserPlus className="h-8 w-8 mx-auto mb-2 text-blue-600" />
                 <div className="text-2xl font-bold text-blue-600">
-                  {statsLoading ? '...' : userStats?.newUsersLast30Days || data.recentActivity.newUsers}
+                  {statsLoading ? '...' : (userStats?.newUsersLast30Days ?? data.recentActivity.newUsers)}
                 </div>
                 <p className="text-sm text-gray-600">New Users (30 days)</p>
               </div>
