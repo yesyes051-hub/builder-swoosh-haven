@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AdminDashboard as AdminDashboardType } from '@shared/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  Users, 
-  Activity, 
-  BarChart3, 
+import {
+  Users,
+  Activity,
+  BarChart3,
   Settings,
   Shield,
   Database,
@@ -17,6 +17,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import DashboardLayout from './DashboardLayout';
+import AddUserModal from '@/components/pms/AddUserModal';
 
 interface Props {
   data: AdminDashboardType;
