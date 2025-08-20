@@ -56,6 +56,7 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
     contactNumber: '',
     jobStatus: 'Full-Time',
     role: 'Employee',
+    password: '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof UserFormData, string>>>({});
   const [isLoading, setIsLoading] = useState(false);
