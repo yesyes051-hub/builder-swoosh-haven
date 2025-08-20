@@ -579,7 +579,7 @@ export default function PMSNew() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <TimesheetForm onRefresh={loadData} />
+                  <TimesheetForm onRefresh={fetchAllData} />
                 </CardContent>
               </Card>
             </TabsContent>
