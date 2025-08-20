@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminDashboard as AdminDashboardType } from '@shared/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  Users, 
-  Activity, 
-  BarChart3, 
+import {
+  Users,
+  Activity,
+  BarChart3,
   Settings,
   Shield,
   Database,
@@ -17,12 +17,170 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import DashboardLayout from './DashboardLayout';
+import AddUserModal from '@/components/pms/AddUserModal';
+import UserManagementModal from '@/components/pms/UserManagementModal';
+import ViewAllUsersModal from '@/components/pms/ViewAllUsersModal';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Props {
   data: AdminDashboardType;
 }
 
+interface UserStats {
+  totalUsers: number;
+  activeUsers: number;
+  newUsersLast30Days: number;
+  roleBreakdown: {
+    hr: number;
+    manager: number;
+    employee: number;
+  };
+}
+
 export default function AdminDashboard({ data }: Props) {
+  const { token } = useAuth();
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [isUserManagementModalOpen, setIsUserManagementModalOpen] = useState(false);
+  const [isViewAllUsersModalOpen, setIsViewAllUsersModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  const testServerConnectivity = async () => {
+    try {
+      console.log('🔗 Testing server connectivity...');
+      const response = await fetch('/api/ping', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      console.log('📡 Ping response:', response.status, response.statusText);
+      return response.ok;
+    } catch (error) {
+      console.error('❌ Server connectivity test failed:', error);
+      return false;
+    }
+  };
+
+  const fetchUserStats = async (retryCount = 0) => {
+    if (!token) {
+      console.warn('No token available for fetching user stats');
+      setStatsLoading(false);
+      return;
+    }
+
+    try {
+      setStatsLoading(true);
+      console.log(`Attempting to fetch user stats (attempt ${retryCount + 1})`);
+      console.log('Token preview:', token.substring(0, 20) + '...');
+
+      // Test connectivity first on initial attempt
+      if (retryCount === 0) {
+        const isConnected = await testServerConnectivity();
+        if (!isConnected) {
+          throw new Error('Server connectivity test failed');
+        }
+      }
+
+      // Add timeout to the fetch request
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
+      const response = await fetch('/api/user-stats', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+      console.log('Response received:', response.status, response.statusText);
+
+      if (!response.ok) {
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // Keep the HTTP status message if JSON parsing fails
+        }
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        setUserStats(result.data);
+        console.log('User stats fetched successfully:', result.data);
+      } else {
+        throw new Error(result.error || 'API returned unsuccessful response');
+      }
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+
+      // Provide more specific error information and retry logic
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          console.error('Request timed out after 8 seconds');
+        } else if (error.message.includes('Failed to fetch')) {
+          console.error('Network error - server may be unreachable');
+
+          // Retry up to 2 times with exponential backoff
+          if (retryCount < 2) {
+            const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s delays
+            console.log(`Retrying in ${delay}ms...`);
+            setTimeout(() => fetchUserStats(retryCount + 1), delay);
+            return;
+          }
+        }
+      }
+
+      // Fallback to showing the original dashboard data on error
+      setUserStats(null);
+    } finally {
+      if (retryCount === 0) {
+        setStatsLoading(false);
+      }
+    }
+  };
+
+  const testAuth = async () => {
+    if (!token) return false;
+
+    try {
+      console.log('🔐 Testing authentication...');
+      const response = await fetch('/api/auth/profile', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      console.log('👤 Auth test response:', response.status);
+      return response.ok;
+    } catch (error) {
+      console.error('❌ Auth test failed:', error);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    const initializeData = async () => {
+      if (token) {
+        const authValid = await testAuth();
+        if (authValid) {
+          fetchUserStats();
+        } else {
+          console.error('❌ Authentication failed, cannot fetch user stats');
+          setStatsLoading(false);
+        }
+      }
+    };
+
+    initializeData();
+  }, [token, refreshTrigger]);
+
+  const handleUserAdded = () => {
+    // Trigger a refresh of user data
+    setRefreshTrigger(prev => prev + 1);
+  };
   return (
     <DashboardLayout user={data.user}>
       <div className="space-y-6">
@@ -37,7 +195,7 @@ export default function AdminDashboard({ data }: Props) {
         </div>
 
         {/* System Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 dynamic-content">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -45,10 +203,15 @@ export default function AdminDashboard({ data }: Props) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                {data.systemStats.totalUsers}
+                {statsLoading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full mr-2"></div>
+                    Loading...
+                  </div>
+                ) : (userStats?.totalUsers ?? data.systemStats.totalUsers)}
               </div>
               <p className="text-xs text-muted-foreground">
-                Registered accounts
+                Registered accounts {userStats === null ? '(using fallback data)' : ''}
               </p>
             </CardContent>
           </Card>
@@ -60,7 +223,7 @@ export default function AdminDashboard({ data }: Props) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {data.systemStats.activeUsers}
+                {statsLoading ? '...' : (userStats?.activeUsers ?? data.systemStats.activeUsers)}
               </div>
               <p className="text-xs text-muted-foreground">
                 Currently active
@@ -111,13 +274,13 @@ export default function AdminDashboard({ data }: Props) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 dynamic-content">
               <div className="text-center p-4 border rounded-lg">
                 <UserPlus className="h-8 w-8 mx-auto mb-2 text-blue-600" />
                 <div className="text-2xl font-bold text-blue-600">
-                  {data.recentActivity.newUsers}
+                  {statsLoading ? '...' : (userStats?.newUsersLast30Days ?? data.recentActivity.newUsers)}
                 </div>
-                <p className="text-sm text-gray-600">New Users</p>
+                <p className="text-sm text-gray-600">New Users (30 days)</p>
               </div>
               
               <div className="text-center p-4 border rounded-lg">
@@ -152,7 +315,10 @@ export default function AdminDashboard({ data }: Props) {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-3">
-              <Button className="bg-red-600 hover:bg-red-700">
+              <Button
+                className="bg-red-600 hover:bg-red-700"
+                onClick={() => setIsUserManagementModalOpen(true)}
+              >
                 <Users className="h-4 w-4 mr-2" />
                 Manage Users
               </Button>
@@ -188,11 +354,17 @@ export default function AdminDashboard({ data }: Props) {
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="border rounded-lg p-3 text-center hover:bg-gray-50 cursor-pointer">
+                  <div
+                    className="border rounded-lg p-3 text-center hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setIsAddUserModalOpen(true)}
+                  >
                     <UserPlus className="h-6 w-6 mx-auto mb-2 text-blue-600" />
                     <p className="text-sm font-medium">Add User</p>
                   </div>
-                  <div className="border rounded-lg p-3 text-center hover:bg-gray-50 cursor-pointer">
+                  <div
+                    className="border rounded-lg p-3 text-center hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setIsViewAllUsersModalOpen(true)}
+                  >
                     <Users className="h-6 w-6 mx-auto mb-2 text-green-600" />
                     <p className="text-sm font-medium">View All Users</p>
                   </div>
@@ -200,20 +372,22 @@ export default function AdminDashboard({ data }: Props) {
                 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Admin Users:</span>
-                    <Badge variant="secondary">1</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">HR Users:</span>
-                    <Badge variant="secondary">1</Badge>
+                    <Badge variant="secondary">
+                      {statsLoading ? '...' : (userStats?.roleBreakdown.hr ?? 1)}
+                    </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Managers:</span>
-                    <Badge variant="secondary">1</Badge>
+                    <Badge variant="secondary">
+                      {statsLoading ? '...' : (userStats?.roleBreakdown.manager ?? 1)}
+                    </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Employees:</span>
-                    <Badge variant="secondary">{data.systemStats.totalUsers - 3}</Badge>
+                    <Badge variant="secondary">
+                      {statsLoading ? '...' : (userStats?.roleBreakdown.employee ?? (data.systemStats.totalUsers - 3))}
+                    </Badge>
                   </div>
                 </div>
               </div>
@@ -309,6 +483,23 @@ export default function AdminDashboard({ data }: Props) {
           </CardContent>
         </Card>
       </div>
+
+      <AddUserModal
+        isOpen={isAddUserModalOpen}
+        onClose={() => setIsAddUserModalOpen(false)}
+        onUserAdded={handleUserAdded}
+      />
+
+      <UserManagementModal
+        isOpen={isUserManagementModalOpen}
+        onClose={() => setIsUserManagementModalOpen(false)}
+        onUserChanged={handleUserAdded}
+      />
+
+      <ViewAllUsersModal
+        isOpen={isViewAllUsersModalOpen}
+        onClose={() => setIsViewAllUsersModalOpen(false)}
+      />
     </DashboardLayout>
   );
 }

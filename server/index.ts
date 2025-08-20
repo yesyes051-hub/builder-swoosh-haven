@@ -34,8 +34,13 @@ import {
   submitTimesheet,
   approveTimesheet
 } from "./routes/pmsNew";
+import { createUser, getAllUsers } from "./routes/users";
+import { getUserStats, getAllUsersForManagement } from "./routes/userStats";
+import { updateUser } from "./routes/updateUser";
+import { deleteUser } from "./routes/deleteUser";
 import { authenticateToken, requireRole } from "./middleware/auth";
 import { seedPMSData } from "./db/seedPMS";
+import { seedEmployeeManagementData } from "./db/seedEmployeeManagement";
 
 export function createServer() {
   const app = express();
@@ -63,7 +68,7 @@ export function createServer() {
   app.get("/api/dashboard/employee", authenticateToken, requireRole(['employee']), getEmployeeDashboard);
   app.get("/api/dashboard/manager", authenticateToken, requireRole(['manager']), getManagerDashboard);
   app.get("/api/dashboard/hr", authenticateToken, requireRole(['hr']), getHRDashboard);
-  app.get("/api/dashboard/admin", authenticateToken, requireRole(['admin']), getAdminDashboard);
+  app.get("/api/dashboard/admin", authenticateToken, requireRole(['admin', 'hr']), getAdminDashboard);
 
   // Daily Update routes (protected)
   app.post("/api/daily-updates", authenticateToken, requireRole(['employee', 'manager', 'admin']), createDailyUpdate);
@@ -123,6 +128,16 @@ export function createServer() {
   app.get("/api/pms/employees", authenticateToken, requireRole(['admin', 'hr']), getEmployees);
   app.post("/api/pms/employees/:employeeId/reset-password", authenticateToken, requireRole(['admin']), resetEmployeePassword);
 
+  // User Management for Admin Dashboard
+  app.post("/api/users", authenticateToken, requireRole(['admin', 'hr']), createUser);
+  app.get("/api/users", authenticateToken, requireRole(['admin', 'hr']), getAllUsers);
+  app.put("/api/users/:id", authenticateToken, requireRole(['admin', 'hr']), updateUser);
+  app.delete("/api/users/:id", authenticateToken, requireRole(['admin', 'hr']), deleteUser);
+
+  // User Statistics and Management
+  app.get("/api/user-stats", authenticateToken, requireRole(['admin', 'hr']), getUserStats);
+  app.get("/api/users/management", authenticateToken, requireRole(['admin', 'hr']), getAllUsersForManagement);
+
   // Enhanced Timesheet System
   app.post("/api/pms-new/timesheets", authenticateToken, createTimesheetEntry);
   app.get("/api/pms-new/timesheets", authenticateToken, getTimesheetEntries);
@@ -132,6 +147,9 @@ export function createServer() {
 
   // Initialize PMS data
   seedPMSData().catch(console.error);
+
+  // Initialize Employee Management data
+  seedEmployeeManagementData().catch(console.error);
 
   return app;
 }

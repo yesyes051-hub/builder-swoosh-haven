@@ -1,5 +1,36 @@
 import "./global.css";
 
+// Initialize ResizeObserver error suppression
+import { initializeResizeObserverSuppression } from '@/lib/resizeObserverSuppress';
+import '@/lib/resizeObserverTest'; // Make test utility available globally
+initializeResizeObserverSuppression();
+
+// Additional aggressive suppression for ResizeObserver errors
+if (typeof window !== 'undefined') {
+  // Override the global error handler
+  const originalOnError = window.onerror;
+  window.onerror = (message, source, lineno, colno, error) => {
+    const msg = String(message || '');
+    if (msg.toLowerCase().includes('resizeobserver')) {
+      return true; // Prevent default error handling
+    }
+    return originalOnError ? originalOnError(message, source, lineno, colno, error) : false;
+  };
+
+  // Override unhandled rejection handler
+  const originalOnUnhandledRejection = window.onunhandledrejection;
+  window.onunhandledrejection = (event) => {
+    const msg = String(event.reason?.message || event.reason || '');
+    if (msg.toLowerCase().includes('resizeobserver')) {
+      event.preventDefault();
+      return;
+    }
+    if (originalOnUnhandledRejection) {
+      originalOnUnhandledRejection(event);
+    }
+  };
+}
+
 import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -7,6 +38,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import ResizeObserverErrorBoundary from "./components/ResizeObserverErrorBoundary";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -67,7 +99,8 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <AuthProvider>
+      <ResizeObserverErrorBoundary>
+        <AuthProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
@@ -105,7 +138,8 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </AuthProvider>
+        </AuthProvider>
+      </ResizeObserverErrorBoundary>
     </TooltipProvider>
   </QueryClientProvider>
 );

@@ -1,12 +1,13 @@
 import { RequestHandler } from 'express';
 import { db } from '../db/memory';
+import { EmployeeUser } from '../models/employeeManagement';
 import { AuthRequest } from '../middleware/auth';
-import { 
-  EmployeeDashboard, 
-  ManagerDashboard, 
-  HRDashboard, 
+import {
+  EmployeeDashboard,
+  ManagerDashboard,
+  HRDashboard,
   AdminDashboard,
-  ApiResponse 
+  ApiResponse
 } from '@shared/api';
 
 export const getEmployeeDashboard: RequestHandler = async (req, res) => {
@@ -14,21 +15,54 @@ export const getEmployeeDashboard: RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
 
-    const fullUser = await db.getUserById(user.id);
-    if (!fullUser) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      } as ApiResponse<never>);
+    // Try to get user from new Employee Management system first
+    let fullUser;
+    try {
+      const employeeUser = await EmployeeUser.findById(user.id).select('-password');
+      if (employeeUser) {
+        fullUser = {
+          id: employeeUser._id.toString(),
+          email: employeeUser.email,
+          firstName: employeeUser.firstName,
+          lastName: employeeUser.lastName,
+          role: employeeUser.role.toLowerCase(),
+          department: 'General', // Default department
+          isActive: true,
+          createdAt: employeeUser.createdAt,
+          updatedAt: employeeUser.createdAt
+        };
+      }
+    } catch (error) {
+      console.log('User not found in Employee Management system, trying memory database');
     }
 
-    const recentUpdates = await db.getDailyUpdatesByUser(user.id, 5);
-    const upcomingInterviews = await db.getInterviewsByUser(user.id);
-    const currentProjects = await db.getProjectsByUser(user.id);
+    // Fallback to memory database for existing users
+    if (!fullUser) {
+      fullUser = await db.getUserById(user.id);
+      if (!fullUser) {
+        return res.status(404).json({
+          success: false,
+          error: 'User not found'
+        } as ApiResponse<never>);
+      }
+    }
+
+    // Safely get data from memory database, providing defaults for new users
+    let recentUpdates, upcomingInterviews, currentProjects;
+    try {
+      recentUpdates = await db.getDailyUpdatesByUser(user.id, 5);
+      upcomingInterviews = await db.getInterviewsByUser(user.id);
+      currentProjects = await db.getProjectsByUser(user.id);
+    } catch (error) {
+      // For new users from Employee Management system, provide empty arrays
+      recentUpdates = [];
+      upcomingInterviews = [];
+      currentProjects = [];
+    }
 
     // Calculate performance stats
-    const avgProgressScore = recentUpdates.length > 0 
-      ? recentUpdates.reduce((sum, update) => sum + update.progressScore, 0) / recentUpdates.length 
+    const avgProgressScore = recentUpdates.length > 0
+      ? recentUpdates.reduce((sum, update) => sum + update.progressScore, 0) / recentUpdates.length
       : 0;
 
     const dashboardData: EmployeeDashboard = {
@@ -62,21 +96,53 @@ export const getManagerDashboard: RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
 
-    const fullUser = await db.getUserById(user.id);
-    if (!fullUser) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      } as ApiResponse<never>);
+    // Try to get user from new Employee Management system first
+    let fullUser;
+    try {
+      const employeeUser = await EmployeeUser.findById(user.id).select('-password');
+      if (employeeUser) {
+        fullUser = {
+          id: employeeUser._id.toString(),
+          email: employeeUser.email,
+          firstName: employeeUser.firstName,
+          lastName: employeeUser.lastName,
+          role: employeeUser.role.toLowerCase(),
+          department: 'General',
+          isActive: true,
+          createdAt: employeeUser.createdAt,
+          updatedAt: employeeUser.createdAt
+        };
+      }
+    } catch (error) {
+      console.log('User not found in Employee Management system, trying memory database');
     }
 
-    // Get team members
-    const allUsers = await db.getAllUsers();
-    const teamMembers = allUsers.filter(u => u.managerId === user.id);
-    const teamMemberIds = teamMembers.map(m => m.id);
+    // Fallback to memory database
+    if (!fullUser) {
+      fullUser = await db.getUserById(user.id);
+      if (!fullUser) {
+        return res.status(404).json({
+          success: false,
+          error: 'User not found'
+        } as ApiResponse<never>);
+      }
+    }
 
-    const recentTeamUpdates = await db.getDailyUpdatesByTeam(teamMemberIds, 10);
-    const teamProjects = await db.getProjectsByUser(user.id);
+    // Safely get team data from memory database, providing defaults for new users
+    let teamMembers = [];
+    let recentTeamUpdates = [];
+    let teamProjects = [];
+
+    try {
+      const allUsers = await db.getAllUsers();
+      teamMembers = allUsers.filter(u => u.managerId === user.id);
+      const teamMemberIds = teamMembers.map(m => m.id);
+      recentTeamUpdates = await db.getDailyUpdatesByTeam(teamMemberIds, 10);
+      teamProjects = await db.getProjectsByUser(user.id);
+    } catch (error) {
+      // For new users from Employee Management system, use empty arrays
+      console.log('Manager dashboard: Using empty data for new user');
+    }
 
     // Add user info to updates
     const updatesWithUser = recentTeamUpdates.map(update => {
@@ -120,16 +186,49 @@ export const getHRDashboard: RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
 
-    const fullUser = await db.getUserById(user.id);
-    if (!fullUser) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      } as ApiResponse<never>);
+    // Try to get user from new Employee Management system first
+    let fullUser;
+    try {
+      const employeeUser = await EmployeeUser.findById(user.id).select('-password');
+      if (employeeUser) {
+        fullUser = {
+          id: employeeUser._id.toString(),
+          email: employeeUser.email,
+          firstName: employeeUser.firstName,
+          lastName: employeeUser.lastName,
+          role: employeeUser.role.toLowerCase(),
+          department: 'General',
+          isActive: true,
+          createdAt: employeeUser.createdAt,
+          updatedAt: employeeUser.createdAt
+        };
+      }
+    } catch (error) {
+      console.log('User not found in Employee Management system, trying memory database');
     }
 
-    const scheduledInterviews = await db.getInterviewsByUser(user.id);
-    const allUsers = await db.getAllUsers();
+    // Fallback to memory database
+    if (!fullUser) {
+      fullUser = await db.getUserById(user.id);
+      if (!fullUser) {
+        return res.status(404).json({
+          success: false,
+          error: 'User not found'
+        } as ApiResponse<never>);
+      }
+    }
+
+    // Safely get data from memory database, providing defaults for new users
+    let scheduledInterviews = [];
+    let allUsers = [];
+
+    try {
+      scheduledInterviews = await db.getInterviewsByUser(user.id);
+      allUsers = await db.getAllUsers();
+    } catch (error) {
+      // For new users from Employee Management system, use empty arrays
+      console.log('HR dashboard: Using empty data for new user');
+    }
 
     const dashboardData: HRDashboard = {
       user: fullUser,
@@ -160,15 +259,47 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
 
-    const fullUser = await db.getUserById(user.id);
-    if (!fullUser) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      } as ApiResponse<never>);
+    // Try to get user from new Employee Management system first
+    let fullUser;
+    try {
+      const employeeUser = await EmployeeUser.findById(user.id).select('-password');
+      if (employeeUser) {
+        fullUser = {
+          id: employeeUser._id.toString(),
+          email: employeeUser.email,
+          firstName: employeeUser.firstName,
+          lastName: employeeUser.lastName,
+          role: employeeUser.role.toLowerCase(),
+          department: 'General',
+          isActive: true,
+          createdAt: employeeUser.createdAt,
+          updatedAt: employeeUser.createdAt
+        };
+      }
+    } catch (error) {
+      console.log('User not found in Employee Management system, trying memory database');
     }
 
-    const allUsers = await db.getAllUsers();
+    // Fallback to memory database
+    if (!fullUser) {
+      fullUser = await db.getUserById(user.id);
+      if (!fullUser) {
+        return res.status(404).json({
+          success: false,
+          error: 'User not found'
+        } as ApiResponse<never>);
+      }
+    }
+
+    // Safely get data from memory database, providing defaults for new users
+    let allUsers = [];
+
+    try {
+      allUsers = await db.getAllUsers();
+    } catch (error) {
+      // For new users from Employee Management system, use empty arrays
+      console.log('Admin dashboard: Using empty data for new user');
+    }
 
     const dashboardData: AdminDashboard = {
       user: fullUser,

@@ -31,17 +31,39 @@ export default function Dashboard() {
 
     try {
       setLoading(true);
-      const endpoint = `/api/dashboard/${user.role}`;
-      
+      // Determine the correct dashboard endpoint
+      let dashboardType = user.role;
+
+      // Special handling for admin functionality in HR role
+      if (user.role === 'hr' && user.email === 'admin@trackzen.com') {
+        dashboardType = 'admin';
+      }
+
+      const endpoint = `/api/dashboard/${dashboardType}`;
+
       const response = await fetch(endpoint, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        // For non-JSON error responses, get text or use status text
+        let errorMessage = 'Failed to fetch dashboard data';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // If JSON parsing fails, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
       const data: ApiResponse<any> = await response.json();
 
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.error || 'Failed to fetch dashboard data');
       }
 
@@ -100,6 +122,10 @@ export default function Dashboard() {
     case 'manager':
       return <ManagerDashboard data={dashboardData as ManagerDashboardType} />;
     case 'hr':
+      // For users with admin-like permissions (HR role in new system), show admin dashboard
+      if (user.email === 'admin@trackzen.com') {
+        return <AdminDashboard data={dashboardData as AdminDashboardType} />;
+      }
       return <HRDashboard data={dashboardData as HRDashboardType} />;
     case 'admin':
       return <AdminDashboard data={dashboardData as AdminDashboardType} />;
