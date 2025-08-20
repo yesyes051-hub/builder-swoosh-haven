@@ -132,6 +132,7 @@ export function createServer() {
   app.post("/api/users", authenticateToken, requireRole(['admin', 'hr']), createUser);
   app.get("/api/users", authenticateToken, requireRole(['admin', 'hr']), getAllUsers);
   app.put("/api/users/:id", authenticateToken, requireRole(['admin', 'hr']), updateUser);
+  app.delete("/api/users/:id", authenticateToken, requireRole(['admin', 'hr']), deleteUser);
 
   // User Statistics and Management
   app.get("/api/user-stats", authenticateToken, requireRole(['admin', 'hr']), getUserStats);
