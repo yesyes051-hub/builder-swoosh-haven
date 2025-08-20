@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import DashboardLayout from './DashboardLayout';
 import AddUserModal from '@/components/pms/AddUserModal';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Props {
   data: AdminDashboardType;
