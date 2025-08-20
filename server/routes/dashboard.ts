@@ -1,12 +1,13 @@
 import { RequestHandler } from 'express';
 import { db } from '../db/memory';
+import { EmployeeUser } from '../models/employeeManagement';
 import { AuthRequest } from '../middleware/auth';
-import { 
-  EmployeeDashboard, 
-  ManagerDashboard, 
-  HRDashboard, 
+import {
+  EmployeeDashboard,
+  ManagerDashboard,
+  HRDashboard,
   AdminDashboard,
-  ApiResponse 
+  ApiResponse
 } from '@shared/api';
 
 export const getEmployeeDashboard: RequestHandler = async (req, res) => {
