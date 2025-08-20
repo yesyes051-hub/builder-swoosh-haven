@@ -19,6 +19,7 @@ import {
 import DashboardLayout from './DashboardLayout';
 import AddUserModal from '@/components/pms/AddUserModal';
 import UserManagementModal from '@/components/pms/UserManagementModal';
+import ViewAllUsersModal from '@/components/pms/ViewAllUsersModal';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Props {
