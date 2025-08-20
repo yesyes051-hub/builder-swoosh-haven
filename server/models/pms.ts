@@ -6,6 +6,9 @@ export interface IPMSUser extends Document {
   password: string;
   firstName: string;
   lastName: string;
+  gender?: 'Male' | 'Female' | 'Other';
+  contactNumber?: string;
+  jobStatus?: 'Intern' | 'Full-Time' | 'On-Job Training' | 'Part-Time';
   role: 'admin' | 'hr' | 'manager' | 'employee' | 'interviewer';
   department: string;
   managerId?: string;
