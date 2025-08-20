@@ -24,14 +24,55 @@ interface Props {
   data: AdminDashboardType;
 }
 
+interface UserStats {
+  totalUsers: number;
+  activeUsers: number;
+  newUsersLast30Days: number;
+  roleBreakdown: {
+    hr: number;
+    manager: number;
+    employee: number;
+  };
+}
+
 export default function AdminDashboard({ data }: Props) {
+  const { token } = useAuth();
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  const fetchUserStats = async () => {
+    if (!token) return;
+
+    try {
+      setStatsLoading(true);
+      const response = await fetch('/api/user-stats', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setUserStats(result.data);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserStats();
+  }, [token, refreshTrigger]);
 
   const handleUserAdded = () => {
     // Trigger a refresh of user data
     setRefreshTrigger(prev => prev + 1);
-    // In a real app, you might want to refetch the dashboard data here
   };
   return (
     <DashboardLayout user={data.user}>
