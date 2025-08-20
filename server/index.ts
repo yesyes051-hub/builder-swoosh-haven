@@ -65,7 +65,7 @@ export function createServer() {
   app.get("/api/dashboard/employee", authenticateToken, requireRole(['employee']), getEmployeeDashboard);
   app.get("/api/dashboard/manager", authenticateToken, requireRole(['manager']), getManagerDashboard);
   app.get("/api/dashboard/hr", authenticateToken, requireRole(['hr']), getHRDashboard);
-  app.get("/api/dashboard/admin", authenticateToken, requireRole(['admin']), getAdminDashboard);
+  app.get("/api/dashboard/admin", authenticateToken, requireRole(['admin', 'hr']), getAdminDashboard);
 
   // Daily Update routes (protected)
   app.post("/api/daily-updates", authenticateToken, requireRole(['employee', 'manager', 'admin']), createDailyUpdate);
