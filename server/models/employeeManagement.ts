@@ -44,7 +44,7 @@ const EmployeeUserSchema = new Schema<IEmployeeUser>({
 
 // Create connection to employemanagement database
 const employeeManagementConnection = mongoose.createConnection(
-  'mongodb+srv://Nisarg:Shah@cluster0.ggpuny2.mongodb.net/trackzen'
+  'mongodb+srv://Nisarg:Shah@cluster0.ggpuny2.mongodb.net/employemanagement'
 );
 
 // Export the model using the specific connection and collection name
