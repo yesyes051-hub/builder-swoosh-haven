@@ -143,7 +143,7 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
       if (result.success) {
         toast({
           title: 'Success',
-          description: 'User added successfully',
+          description: 'User created successfully',
         });
         onUserAdded();
         handleClose();
