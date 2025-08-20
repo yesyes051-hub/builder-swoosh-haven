@@ -47,14 +47,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
+          // Create abort controller for timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
           response = await fetch('/api/auth/profile', {
             headers: {
               'Authorization': `Bearer ${authToken}`,
               'Content-Type': 'application/json'
             },
-            // Add signal for timeout
-            signal: AbortSignal.timeout(10000) // 10 second timeout
+            signal: controller.signal
           });
+
+          clearTimeout(timeoutId);
           break; // Success, exit retry loop
         } catch (fetchError) {
           lastError = fetchError;
