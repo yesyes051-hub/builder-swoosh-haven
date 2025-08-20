@@ -293,7 +293,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
                       <SelectValue placeholder="Select interviewer" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableInterviewers.map((interviewer) => (
+                      {filteredInterviewers.map((interviewer) => (
                         <SelectItem key={interviewer.id} value={interviewer.id}>
                           <div className="flex flex-col">
                             <span>{interviewer.firstName} {interviewer.lastName}</span>
