@@ -53,22 +53,36 @@ class ResizeObserverErrorSuppressor {
   }
 
   private suppressWindowErrors(): void {
+    // Handle error events
     window.addEventListener('error', (event) => {
-      if (event.message && this.isResizeObserverError(event.message)) {
+      const message = event.message || event.error?.message || '';
+      if (this.isResizeObserverError(message)) {
         event.preventDefault();
         event.stopImmediatePropagation();
         return false;
       }
-    });
+    }, true); // Use capture phase
 
+    // Handle unhandled promise rejections
     window.addEventListener('unhandledrejection', (event) => {
-      if (event.reason && 
-          typeof event.reason === 'object' && 
-          event.reason.message &&
-          this.isResizeObserverError(event.reason.message)) {
+      let message = '';
+      if (event.reason) {
+        if (typeof event.reason === 'string') {
+          message = event.reason;
+        } else if (typeof event.reason === 'object' && event.reason.message) {
+          message = event.reason.message;
+        }
+      }
+
+      if (this.isResizeObserverError(message)) {
         event.preventDefault();
         return false;
       }
+    });
+
+    // Handle beforeunload to suppress any last-minute errors
+    window.addEventListener('beforeunload', () => {
+      // Additional cleanup if needed
     });
   }
 
