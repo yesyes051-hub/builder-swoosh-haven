@@ -73,6 +73,12 @@ export default function ManagerDashboard({ data }: Props) {
   const fetchTeamMembers = async () => {
     try {
       const token = localStorage.getItem('token');
+
+      if (!token) {
+        console.error('❌ No authentication token found');
+        return;
+      }
+
       console.log('🔍 Fetching team members...');
 
       const response = await fetch('/api/project-assignments/team-members', {
@@ -84,6 +90,13 @@ export default function ManagerDashboard({ data }: Props) {
       });
 
       console.log('📡 Team members response status:', response.status);
+
+      if (response.status === 401 || response.status === 403) {
+        console.error('❌ Authentication failed - token may be expired');
+        toast.error('Session expired. Please log in again.');
+        // Optionally redirect to login
+        return;
+      }
 
       if (!response.ok) {
         const errorText = await response.text();
