@@ -139,5 +139,8 @@ export function createServer() {
   // Initialize PMS data
   seedPMSData().catch(console.error);
 
+  // Initialize Employee Management data
+  seedEmployeeManagementData().catch(console.error);
+
   return app;
 }
