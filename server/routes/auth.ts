@@ -124,8 +124,8 @@ export const getProfile: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    // Get full user details from database
-    const fullUser = await db.getUserById(user.id);
+    // Get full user details from ROLES collection
+    const fullUser = await EmployeeUser.findById(user.id).select('-password');
     if (!fullUser) {
       return res.status(404).json({
         success: false,
@@ -133,7 +133,11 @@ export const getProfile: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    const { password: _, ...userWithoutPassword } = fullUser;
+    const userWithoutPassword = {
+      ...fullUser.toObject(),
+      id: fullUser._id,
+      role: fullUser.role.toLowerCase() // Convert to lowercase for frontend compatibility
+    };
 
     res.json({
       success: true,
