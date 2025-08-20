@@ -1,23 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { HRDashboard as HRDashboardType } from '@shared/api';
+import { HRDashboard as HRDashboardType, ApiResponse } from '@shared/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  Calendar, 
-  Users, 
-  MessageSquare, 
+import {
+  Calendar,
+  Users,
+  MessageSquare,
   Plus,
   Clock,
   CheckCircle,
   UserPlus,
-  FileText
+  FileText,
+  Loader2
 } from 'lucide-react';
 import DashboardLayout from './DashboardLayout';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Props {
   data: HRDashboardType;
+}
+
+interface EmployeeCount {
+  totalEmployees: number;
 }
 
 export default function HRDashboard({ data }: Props) {
