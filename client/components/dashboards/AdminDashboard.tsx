@@ -46,7 +46,7 @@ export default function AdminDashboard({ data }: Props) {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
-  const fetchUserStats = async () => {
+  const fetchUserStats = async (retryCount = 0) => {
     if (!token) {
       console.warn('No token available for fetching user stats');
       setStatsLoading(false);
@@ -55,20 +55,24 @@ export default function AdminDashboard({ data }: Props) {
 
     try {
       setStatsLoading(true);
+      console.log(`Attempting to fetch user stats (attempt ${retryCount + 1})`);
 
       // Add timeout to the fetch request
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
       const response = await fetch('/api/user-stats', {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         signal: controller.signal
       });
 
       clearTimeout(timeoutId);
+      console.log('Response received:', response.status, response.statusText);
 
       if (!response.ok) {
         let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
@@ -91,19 +95,29 @@ export default function AdminDashboard({ data }: Props) {
     } catch (error) {
       console.error('Error fetching user stats:', error);
 
-      // Provide more specific error information
+      // Provide more specific error information and retry logic
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          console.error('Request timed out after 10 seconds');
+          console.error('Request timed out after 8 seconds');
         } else if (error.message.includes('Failed to fetch')) {
-          console.error('Network error - check if server is running and accessible');
+          console.error('Network error - server may be unreachable');
+
+          // Retry up to 2 times with exponential backoff
+          if (retryCount < 2) {
+            const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s delays
+            console.log(`Retrying in ${delay}ms...`);
+            setTimeout(() => fetchUserStats(retryCount + 1), delay);
+            return;
+          }
         }
       }
 
       // Fallback to showing the original dashboard data on error
       setUserStats(null);
     } finally {
-      setStatsLoading(false);
+      if (retryCount === 0) {
+        setStatsLoading(false);
+      }
     }
   };
 
