@@ -147,7 +147,7 @@ export default function ViewAllUsersModal({ isOpen, onClose }: ViewAllUsersModal
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto fixed-size-modal">
+      <DialogContent className="max-w-4xl fixed-size-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Users className="h-5 w-5" />
