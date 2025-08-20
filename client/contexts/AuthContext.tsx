@@ -120,12 +120,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(credentials)
+        body: JSON.stringify(credentials),
+        // Add timeout for login requests
+        signal: AbortSignal.timeout(15000) // 15 second timeout
       });
+
+      if (!response.ok) {
+        let errorMessage = 'Login failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // If we can't parse error response, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
 
       const data: ApiResponse<AuthResponse> = await response.json();
 
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.error || 'Login failed');
       }
 
@@ -134,9 +148,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setToken(authToken);
         setUser(userData);
         localStorage.setItem('trackzen_token', authToken);
+      } else {
+        throw new Error('Invalid login response format');
       }
     } catch (error) {
       console.error('Login error:', error);
+
+      // Clear any existing auth state on login failure
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('trackzen_token');
+
       throw error;
     } finally {
       setLoading(false);
