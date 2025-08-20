@@ -315,6 +315,17 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
         user={selectedUser}
         onUserUpdated={handleUserUpdated}
       />
+
+      <DeleteConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setUserToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        user={userToDelete}
+        isLoading={isDeleting}
+      />
     </Dialog>
   );
 }
