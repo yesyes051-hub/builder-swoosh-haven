@@ -43,14 +43,19 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 
 export const requireRole = (roles: UserRole[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
+    console.log(`🔐 Role check for ${req.path}: Required roles: [${roles.join(', ')}], User role: ${req.user?.role || 'none'}`);
+
     if (!req.user) {
+      console.log('❌ Authentication required - no user in request');
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
 
     if (!roles.includes(req.user.role)) {
+      console.log(`❌ Insufficient permissions - user has '${req.user.role}', needs one of [${roles.join(', ')}]`);
       return res.status(403).json({ success: false, error: 'Insufficient permissions' });
     }
 
+    console.log('✅ Role check passed');
     next();
   };
 };
