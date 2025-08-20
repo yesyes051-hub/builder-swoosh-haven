@@ -122,11 +122,13 @@ export default function UserManagementModal({ isOpen, onClose }: UserManagementM
 
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
-    // TODO: This will be implemented in the next step
-    toast({
-      title: 'Edit User',
-      description: `Edit functionality for ${user.firstName} ${user.lastName} will be implemented soon.`,
-    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleUserUpdated = () => {
+    fetchUsers(); // Refresh the users list
+    setIsEditModalOpen(false);
+    setSelectedUser(null);
   };
 
   const formatDate = (dateString: string) => {
