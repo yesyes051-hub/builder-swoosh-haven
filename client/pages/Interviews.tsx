@@ -244,13 +244,9 @@ export default function Interviews() {
             </CardContent>
           </Card>
         ) : (
-          <Tabs defaultValue={user.role === 'hr' || user.role === 'admin' ? 'all' : 'my'} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              {(user.role === 'hr' || user.role === 'admin') && (
-                <TabsTrigger value="all">All Interviews</TabsTrigger>
-              )}
-              <TabsTrigger value="my">My Interviews</TabsTrigger>
-              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+          <Tabs defaultValue="all" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-1">
+              <TabsTrigger value="all">Interviews</TabsTrigger>
             </TabsList>
 
             {/* All Interviews Tab (HR/Admin only) */}
