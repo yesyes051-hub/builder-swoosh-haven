@@ -137,6 +137,59 @@ export default function UserManagementModal({ isOpen, onClose, onUserChanged }: 
     onUserChanged?.(); // Trigger dashboard stats refresh
   };
 
+  const handleDeleteUser = (user: User) => {
+    setUserToDelete(user);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete || !token) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/users/${userToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to delete user';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        toast({
+          title: 'Success',
+          description: 'User deleted successfully',
+        });
+        fetchUsers(); // Refresh the users list
+        onUserChanged?.(); // Trigger dashboard stats refresh
+      } else {
+        throw new Error(result.error || 'Failed to delete user');
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete user',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+      setUserToDelete(null);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
