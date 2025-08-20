@@ -219,8 +219,8 @@ export default function Interviews() {
             <p className="text-gray-600">Manage mock interviews and feedback</p>
           </div>
           {(user.role === 'hr' || user.role === 'admin') && (
-            <Button 
-              onClick={() => setShowScheduleForm(true)}
+            <Button
+              onClick={() => setShowScheduleModal(true)}
               className="bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="h-4 w-4 mr-2" />
