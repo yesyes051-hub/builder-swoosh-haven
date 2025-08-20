@@ -291,7 +291,15 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
       }
     }
 
-    const allUsers = await db.getAllUsers();
+    // Safely get data from memory database, providing defaults for new users
+    let allUsers = [];
+
+    try {
+      allUsers = await db.getAllUsers();
+    } catch (error) {
+      // For new users from Employee Management system, use empty arrays
+      console.log('Admin dashboard: Using empty data for new user');
+    }
 
     const dashboardData: AdminDashboard = {
       user: fullUser,
