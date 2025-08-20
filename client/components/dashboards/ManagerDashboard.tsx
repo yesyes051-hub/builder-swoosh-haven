@@ -107,18 +107,34 @@ export default function ManagerDashboard({ data }: Props) {
   const fetchRecentAssignments = async () => {
     try {
       const token = localStorage.getItem('token');
+      console.log('🔍 Fetching recent assignments...');
+
       const response = await fetch('/api/project-assignments/recent?limit=5', {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
-      
+
+      console.log('📡 Recent assignments response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Recent assignments fetch failed:', response.status, errorText);
+        return;
+      }
+
       const result = await response.json();
+      console.log('✅ Recent assignments result:', result);
+
       if (result.success) {
         setRecentAssignments(result.data);
+      } else {
+        console.error('❌ Recent assignments API error:', result.error);
       }
     } catch (error) {
-      console.error('Error fetching recent assignments:', error);
+      console.error('❌ Error fetching recent assignments:', error);
     }
   };
 
