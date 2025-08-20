@@ -52,8 +52,20 @@ export const createUser: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
+    // Validate password strength
+    if (password.length < 8 ||
+        !/[A-Z]/.test(password) ||
+        !/[a-z]/.test(password) ||
+        !/\d/.test(password) ||
+        !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password must be at least 8 characters with uppercase, lowercase, number, and special character'
+      } as ApiResponse<never>);
+    }
+
     // Check if user already exists
-    const existingUser = await PMSUser.findOne({ email: email.toLowerCase() });
+    const existingUser = await EmployeeUser.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return res.status(409).json({
         success: false,
@@ -61,24 +73,19 @@ export const createUser: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    // Generate a temporary password
-    const tempPassword = Math.random().toString(36).slice(-8) + 'A1!';
-    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create new user
-    const newUser = new PMSUser({
-      email: email.toLowerCase(),
-      password: hashedPassword,
+    const newUser = new EmployeeUser({
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       gender,
+      email: email.toLowerCase(),
       contactNumber: contactNumber?.trim(),
       jobStatus,
-      role: role.toLowerCase() as 'hr' | 'manager' | 'employee',
-      department: 'General', // Default department, can be updated later
-      isActive: true,
-      requiresPasswordReset: true,
-      isTemporaryPassword: true,
+      role,
+      password: hashedPassword,
     });
 
     await newUser.save();
@@ -90,12 +97,10 @@ export const createUser: RequestHandler = async (req, res) => {
       success: true,
       data: {
         user: userWithoutPassword,
-        tempPassword, // In a real app, this would be sent via email
-        message: 'User created successfully. Temporary password provided.'
+        message: 'User created successfully'
       }
     } as ApiResponse<{
       user: typeof userWithoutPassword;
-      tempPassword: string;
       message: string;
     }>);
 
