@@ -297,14 +297,23 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
 
           <div className="space-y-2">
             <Label htmlFor="password">Password *</Label>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
-              placeholder="Enter a secure password"
-              className={errors.password ? 'border-red-500' : ''}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                placeholder="Enter a secure password"
+                className={`pr-10 ${errors.password ? 'border-red-500' : ''}`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-sm text-red-500">{errors.password}</p>
             )}
