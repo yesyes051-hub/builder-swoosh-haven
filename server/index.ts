@@ -37,6 +37,7 @@ import {
 import { createUser, getAllUsers } from "./routes/users";
 import { authenticateToken, requireRole } from "./middleware/auth";
 import { seedPMSData } from "./db/seedPMS";
+import { seedEmployeeManagementData } from "./db/seedEmployeeManagement";
 
 export function createServer() {
   const app = express();
