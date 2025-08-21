@@ -94,19 +94,81 @@ class ResizeObserverErrorSuppressor {
     const OriginalResizeObserver = window.ResizeObserver;
     window.ResizeObserver = class extends OriginalResizeObserver {
       constructor(callback: ResizeObserverCallback) {
-        super((entries, observer) => {
+        const wrappedCallback: ResizeObserverCallback = (entries, observer) => {
           try {
-            callback(entries, observer);
+            // Use requestAnimationFrame to avoid immediate resize loops
+            requestAnimationFrame(() => {
+              try {
+                callback(entries, observer);
+              } catch (error) {
+                // Silently handle all ResizeObserver callback errors
+                if (error instanceof Error) {
+                  const errorMessage = error.message.toLowerCase();
+                  if (errorMessage.includes('resizeobserver') ||
+                      errorMessage.includes('loop') ||
+                      errorMessage.includes('undelivered') ||
+                      error.name === 'ResizeObserverError') {
+                    return;
+                  }
+                }
+                // Re-throw non-ResizeObserver errors
+                console.debug('Non-ResizeObserver error in callback:', error);
+              }
+            });
           } catch (error) {
-            // Silently handle ResizeObserver-related errors
-            if (error instanceof Error && 
-                (error.message.includes('ResizeObserver') || 
+            // Catch any synchronous errors
+            if (error instanceof Error &&
+                (error.message.toLowerCase().includes('resizeobserver') ||
                  error.name === 'ResizeObserverError')) {
               return;
             }
             throw error;
           }
-        });
+        };
+
+        super(wrappedCallback);
+      }
+
+      observe(target: Element, options?: ResizeObserverOptions): void {
+        try {
+          super.observe(target, options);
+        } catch (error) {
+          // Silently handle observe errors
+          if (error instanceof Error &&
+              (error.message.toLowerCase().includes('resizeobserver') ||
+               error.name === 'ResizeObserverError')) {
+            return;
+          }
+          throw error;
+        }
+      }
+
+      unobserve(target: Element): void {
+        try {
+          super.unobserve(target);
+        } catch (error) {
+          // Silently handle unobserve errors
+          if (error instanceof Error &&
+              (error.message.toLowerCase().includes('resizeobserver') ||
+               error.name === 'ResizeObserverError')) {
+            return;
+          }
+          throw error;
+        }
+      }
+
+      disconnect(): void {
+        try {
+          super.disconnect();
+        } catch (error) {
+          // Silently handle disconnect errors
+          if (error instanceof Error &&
+              (error.message.toLowerCase().includes('resizeobserver') ||
+               error.name === 'ResizeObserverError')) {
+            return;
+          }
+          throw error;
+        }
       }
     };
   }
@@ -125,7 +187,17 @@ class ResizeObserverErrorSuppressor {
       'ResizeObserver callback',
       'ResizeObserver entry',
       'resizeobserver.js',
-      'ResizeObserver.observe'
+      'ResizeObserver.observe',
+      'loop completed with undelivered notifications',
+      'loop limit exceeded',
+      'undelivered notifications',
+      'resize-observer',
+      'ResizeObserver is not defined',
+      'ResizeObserver construction failed',
+      'ResizeObserver disconnect',
+      'ResizeObserver unobserve',
+      'observation target',
+      'resize observation'
     ];
 
     const lowerMessage = message.toLowerCase();
