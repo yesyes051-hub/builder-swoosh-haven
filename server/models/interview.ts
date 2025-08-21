@@ -8,7 +8,16 @@ export interface IInterview extends Document {
   time: string;
   type: "technical" | "behavioral" | "system-design" | "general";
   duration: number; // minutes
-  status: "scheduled" | "in-progress" | "completed" | "cancelled";
+  status: "pending" | "accepted" | "rejected" | "scheduled" | "in-progress" | "completed" | "cancelled";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface INotification extends Document {
+  interviewId: mongoose.Types.ObjectId;
+  candidateId: string;
+  message: string;
+  status: "unread" | "read";
   createdAt: Date;
   updatedAt: Date;
 }
