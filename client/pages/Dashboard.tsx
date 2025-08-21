@@ -29,11 +29,13 @@ export default function Dashboard() {
     }
   }, [user, token]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     if (!user || !token) return;
 
     try {
       setLoading(true);
+      setError(''); // Clear any previous errors
+
       // Determine the correct dashboard endpoint
       let dashboardType = user.role;
 
@@ -44,27 +46,11 @@ export default function Dashboard() {
 
       const endpoint = `/api/dashboard/${dashboardType}`;
 
-      const response = await fetch(endpoint, {
+      const data: ApiResponse<any> = await apiRequest(endpoint, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-
-      // Check if response is ok before trying to parse JSON
-      if (!response.ok) {
-        // For non-JSON error responses, get text or use status text
-        let errorMessage = 'Failed to fetch dashboard data';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch {
-          // If JSON parsing fails, use status text
-          errorMessage = response.statusText || errorMessage;
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data: ApiResponse<any> = await response.json();
 
       if (!data.success) {
         throw new Error(data.error || 'Failed to fetch dashboard data');
@@ -73,11 +59,12 @@ export default function Dashboard() {
       setDashboardData(data.data);
     } catch (err) {
       console.error('Dashboard fetch error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load dashboard');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, token]);
 
   if (!user) {
     return null;
