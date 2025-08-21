@@ -278,8 +278,10 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
     // Try to get user from new Employee Management system first
     let fullUser;
     try {
+      console.log('🔍 Admin dashboard - Looking for user by MongoDB ID:', user.id);
       const employeeUser = await EmployeeUser.findById(user.id).select('-password');
       if (employeeUser) {
+        console.log('✅ Admin dashboard - Found user in Employee Management system:', employeeUser.email);
         fullUser = {
           id: employeeUser._id.toString(),
           email: employeeUser.email,
@@ -291,9 +293,11 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
           createdAt: employeeUser.createdAt,
           updatedAt: employeeUser.createdAt
         };
+      } else {
+        console.log('❌ Admin dashboard - User not found in Employee Management system by ID');
       }
     } catch (error) {
-      console.log('User not found in Employee Management system, trying memory database');
+      console.log('❌ Admin dashboard - Error finding user in Employee Management system:', error);
     }
 
     // Fallback to memory database
