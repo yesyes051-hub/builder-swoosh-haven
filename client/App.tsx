@@ -196,7 +196,7 @@ const AppContent = () => {
                 />
               </svg>
             </div>
-            <p className="text-gray-600">Loading...</p>
+            <p className="text-gray-600">Loading..</p>
           </div>
         </div>
       );
