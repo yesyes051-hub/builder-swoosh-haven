@@ -309,17 +309,20 @@ export const getAvailableInterviewers: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    const allUsers = await db.getAllUsers();
-    const interviewers = allUsers.filter(u => 
-      u.isActive && (u.role === 'employee' || u.role === 'manager')
-    ).map(u => ({
-      id: u.id,
-      firstName: u.firstName,
-      lastName: u.lastName,
-      email: u.email,
-      department: u.department,
-      role: u.role
-    }));
+    const allUsers = await EmployeeUser.find({})
+      .select('-password')
+      .sort({ firstName: 1, lastName: 1 });
+
+    const interviewers = allUsers
+      .filter(u => u.role.toLowerCase() === 'employee' || u.role.toLowerCase() === 'manager')
+      .map(u => ({
+        id: u._id.toString(),
+        firstName: u.firstName,
+        lastName: u.lastName,
+        email: u.email,
+        department: 'General', // Default since not in current schema
+        role: u.role.toLowerCase()
+      }));
 
     res.json({
       success: true,
