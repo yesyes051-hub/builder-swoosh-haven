@@ -285,28 +285,31 @@ export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
           </div>
 
           {/* Form Actions */}
-          <div className="flex space-x-4 pt-6">
-            <Button 
-              type="submit" 
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6">
+            <Button
+              type="submit"
+              className="w-full sm:flex-1 bg-blue-600 hover:bg-blue-700"
               disabled={loading}
             >
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
+                  <span className="hidden sm:inline">Submitting...</span>
+                  <span className="sm:hidden">Submitting</span>
                 </>
               ) : (
                 <>
                   <CheckCircle className="mr-2 h-4 w-4" />
-                  Submit Daily Update
+                  <span className="hidden sm:inline">Submit Daily Update</span>
+                  <span className="sm:hidden">Submit Update</span>
                 </>
               )}
             </Button>
             {onCancel && (
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:w-auto"
                 onClick={onCancel}
                 disabled={loading}
               >
