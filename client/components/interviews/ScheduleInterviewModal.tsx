@@ -166,15 +166,21 @@ export default function ScheduleInterviewModal({
       const scheduledDateTime = new Date(selectedDate);
       scheduledDateTime.setHours(hours, minutes, 0, 0);
 
+      // Create a proper date for the date field (start of day)
+      const interviewDate = new Date(selectedDate);
+      interviewDate.setHours(0, 0, 0, 0);
+
       const interviewData: ScheduleInterviewRequest = {
         candidateId,
         interviewerId,
         scheduledAt: scheduledDateTime,
-        date: selectedDate,
+        date: interviewDate,
         time: selectedTime,
         duration: parseInt(duration),
         type,
       };
+
+      console.log("📅 Sending interview data:", interviewData);
 
       const response = await fetch("/api/interviews", {
         method: "POST",
