@@ -154,17 +154,17 @@ export default function EmployeeDashboard({ data }: Props) {
     <DashboardLayout user={data.user}>
       <div className="space-y-6">
         {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
-          <h1 className="text-2xl font-bold mb-2">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-4 sm:p-6 text-white">
+          <h1 className="text-xl sm:text-2xl font-bold mb-2">
             Welcome back, {data.user.firstName}!
           </h1>
-          <p className="text-blue-100">
+          <p className="text-blue-100 text-sm sm:text-base">
             Track your progress and stay connected with your team
           </p>
         </div>
 
         {/* Performance Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -225,20 +225,20 @@ export default function EmployeeDashboard({ data }: Props) {
             <CardDescription>Common tasks you can do right now</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-3">
-              <Link to="/daily-updates">
-                <Button className="bg-blue-600 hover:bg-blue-700">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
+              <Link to="/daily-updates" className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700">
                   <Plus className="h-4 w-4 mr-2" />
                   Submit Daily Update
                 </Button>
               </Link>
-              <Link to="/pms">
-                <Button variant="outline">
+              <Link to="/pms" className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto">
                   <BarChart3 className="h-4 w-4 mr-2" />
                   View PMS
                 </Button>
               </Link>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto">
                 <Calendar className="h-4 w-4 mr-2" />
                 View Calendar
               </Button>
@@ -247,7 +247,7 @@ export default function EmployeeDashboard({ data }: Props) {
         </Card>
 
         {/* Recent Updates and Upcoming Events */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Recent Updates */}
           <Card>
             <CardHeader>

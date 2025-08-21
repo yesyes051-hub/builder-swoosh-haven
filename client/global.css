@@ -263,6 +263,58 @@
     min-height: 300px;
     overflow: hidden;
   }
+
+  /* Mobile-specific improvements */
+  @media (max-width: 768px) {
+    /* Better touch targets on mobile */
+    .touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    /* Improved text readability on small screens */
+    .mobile-text-sm {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    /* Better button spacing on mobile */
+    .mobile-button-spacing {
+      margin: 0.5rem 0;
+    }
+
+    /* Responsive padding utilities */
+    .mobile-padding {
+      padding: 1rem;
+    }
+
+    .mobile-padding-sm {
+      padding: 0.75rem;
+    }
+  }
+
+  /* Mobile navigation improvements */
+  .mobile-nav-item {
+    @apply py-3 px-4 text-base font-medium rounded-lg transition-colors;
+  }
+
+  .mobile-nav-item:active {
+    @apply bg-gray-100;
+  }
+
+  /* Mobile form improvements */
+  .mobile-form-input {
+    @apply h-11 text-base; /* Prevents zoom on iOS */
+  }
+
+  /* Improved mobile card layouts */
+  .mobile-card-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4;
+  }
+
+  .mobile-stats-grid {
+    @apply grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4;
+  }
 }
 
 /* Role-specific accent colors */

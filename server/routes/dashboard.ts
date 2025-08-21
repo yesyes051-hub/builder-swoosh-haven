@@ -42,10 +42,11 @@ export const getEmployeeDashboard: RequestHandler = async (req, res) => {
 
     // Fallback to memory database for existing users
     if (!fullUser) {
-      fullUser = await db.getUserById(user.id);
+      // Try by email first since ID formats might be different
+      fullUser = await db.getUserByEmail(user.email);
       if (!fullUser) {
-        // Try to find user by email as a final fallback
-        fullUser = await db.getUserByEmail(user.email);
+        // As last resort, try by ID
+        fullUser = await db.getUserById(user.id);
         if (!fullUser) {
           return res.status(404).json({
             success: false,
@@ -135,10 +136,11 @@ export const getManagerDashboard: RequestHandler = async (req, res) => {
 
     // Fallback to memory database
     if (!fullUser) {
-      fullUser = await db.getUserById(user.id);
+      // Try by email first since ID formats might be different
+      fullUser = await db.getUserByEmail(user.email);
       if (!fullUser) {
-        // Try to find user by email as a final fallback
-        fullUser = await db.getUserByEmail(user.email);
+        // As last resort, try by ID
+        fullUser = await db.getUserById(user.id);
         if (!fullUser) {
           return res.status(404).json({
             success: false,
@@ -235,24 +237,23 @@ export const getHRDashboard: RequestHandler = async (req, res) => {
     // Fallback to memory database
     if (!fullUser) {
       console.log(`🔍 HR Dashboard - Looking for user by ID: ${user.id}`);
-      fullUser = await db.getUserById(user.id);
+      // Try by email first since ID formats might be different
+      fullUser = await db.getUserByEmail(user.email);
       if (!fullUser) {
-        console.log(
-          `🔍 HR Dashboard - User not found by ID, trying email: ${user.email}`,
-        );
-        // Try to find user by email as a final fallback
-        fullUser = await db.getUserByEmail(user.email);
+        // As last resort, try by ID
+        fullUser = await db.getUserById(user.id);
         if (!fullUser) {
-          console.log(`❌ HR Dashboard - User not found by email either`);
+          console.log("❌ HR Dashboard - User not found in memory database");
           return res.status(404).json({
             success: false,
             error: "User not found",
           } as ApiResponse<never>);
-        } else {
-          console.log(
-            `✅ HR Dashboard - Found user by email: ${fullUser.email}`,
-          );
         }
+      } else {
+        console.log(
+          "✅ HR Dashboard - Found user in memory database:",
+          fullUser.email,
+        );
       }
     }
 
@@ -302,14 +303,23 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
   try {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
+    console.log("🔍 Admin dashboard request - User from token:", user);
 
     // Try to get user from new Employee Management system first
     let fullUser;
     try {
+      console.log(
+        "🔍 Admin dashboard - Looking for user by MongoDB ID:",
+        user.id,
+      );
       const employeeUser = await EmployeeUser.findById(user.id).select(
         "-password",
       );
       if (employeeUser) {
+        console.log(
+          "✅ Admin dashboard - Found user in Employee Management system:",
+          employeeUser.email,
+        );
         fullUser = {
           id: employeeUser._id.toString(),
           email: employeeUser.email,
@@ -321,21 +331,31 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
           createdAt: employeeUser.createdAt,
           updatedAt: employeeUser.createdAt,
         };
+      } else {
+        console.log(
+          "❌ Admin dashboard - User not found in Employee Management system by ID",
+        );
       }
     } catch (error) {
       console.log(
-        "User not found in Employee Management system, trying memory database",
+        "❌ Admin dashboard - Error finding user in Employee Management system:",
+        error,
       );
     }
 
     // Fallback to memory database
     if (!fullUser) {
-      fullUser = await db.getUserById(user.id);
+      // Try by email first since ID formats might be different
+      fullUser = await db.getUserByEmail(user.email);
       if (!fullUser) {
-        return res.status(404).json({
-          success: false,
-          error: "User not found",
-        } as ApiResponse<never>);
+        // As last resort, try by ID
+        fullUser = await db.getUserById(user.id);
+        if (!fullUser) {
+          return res.status(404).json({
+            success: false,
+            error: "User not found",
+          } as ApiResponse<never>);
+        }
       }
     }
 
@@ -364,6 +384,10 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
       },
     };
 
+    console.log(
+      "✅ Admin dashboard - Sending successful response with data for user:",
+      fullUser.email,
+    );
     res.json({
       success: true,
       data: dashboardData,
