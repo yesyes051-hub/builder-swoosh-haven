@@ -66,11 +66,104 @@ export default function DashboardLayout({ user, children }: Props) {
           <div className="flex justify-between items-center h-16">
             {/* Logo and Title */}
             <div className="flex items-center space-x-4">
+              {/* Mobile Menu Trigger */}
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="md:hidden">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Open navigation menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[280px] sm:w-[350px]">
+                  <SheetHeader>
+                    <SheetTitle className="flex items-center space-x-2">
+                      <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
+                        <BarChart3 className="h-5 w-5 text-white" />
+                      </div>
+                      <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        TrackZen
+                      </span>
+                    </SheetTitle>
+                  </SheetHeader>
+                  <nav className="flex flex-col space-y-4 mt-6">
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        location.pathname === '/dashboard'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      }`}
+                    >
+                      Dashboard
+                    </Link>
+                    {(user.role === 'employee' || user.role === 'manager' || user.role === 'admin') && (
+                      <Link
+                        to="/daily-updates"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                          location.pathname === '/daily-updates'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        }`}
+                      >
+                        Daily Updates
+                      </Link>
+                    )}
+                    <Link
+                      to="/leaderboard"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        location.pathname === '/leaderboard'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      }`}
+                    >
+                      Leaderboard
+                    </Link>
+                    <Link
+                      to="/interviews"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        location.pathname === '/interviews'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      }`}
+                    >
+                      Interviews
+                    </Link>
+                    {user.role !== 'admin' && (
+                      <Link
+                        to="/pms"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                          location.pathname === '/pms'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        }`}
+                      >
+                        PMS
+                      </Link>
+                    )}
+                    {(user.role === 'manager' || user.role === 'admin') && (
+                      <div className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-400">
+                        Team Reports
+                      </div>
+                    )}
+                    {user.role === 'admin' && (
+                      <div className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-400">
+                        Admin Panel
+                      </div>
+                    )}
+                  </nav>
+                </SheetContent>
+              </Sheet>
+
               <div className="flex items-center space-x-2">
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
                   <BarChart3 className="h-6 w-6 text-white" />
                 </div>
-                <div>
+                <div className="hidden sm:block">
                   <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     TrackZen
                   </h1>
