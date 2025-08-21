@@ -135,8 +135,9 @@ export default function HRDashboard({ data }: Props) {
   const handleFeedbackModalClose = () => {
     setFeedbackModalOpen(false);
     setSelectedInterview(null);
-    // Optionally refresh interviews after feedback submission
+    // Refresh interviews after feedback submission to update the view
     fetchInterviews();
+    toast.success("Interview data refreshed");
   };
 
   const formatDateTime = (date: Date) => {
@@ -329,8 +330,7 @@ export default function HRDashboard({ data }: Props) {
                         <Badge className={getStatusColor(interview.status)}>
                           {interview.status}
                         </Badge>
-                        {(interview.status === "completed" ||
-                          interview.status === "in-progress") && (
+                        {interview.status !== "cancelled" && (
                           <div>
                             <Button
                               size="sm"
@@ -339,7 +339,9 @@ export default function HRDashboard({ data }: Props) {
                               className="text-xs h-7"
                             >
                               <Star className="h-3 w-3 mr-1" />
-                              Give Feedback
+                              {interview.status === "scheduled"
+                                ? "Pre-Interview Feedback"
+                                : "Give Feedback"}
                             </Button>
                           </div>
                         )}

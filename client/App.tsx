@@ -33,14 +33,14 @@ if (typeof window !== "undefined") {
 
   // Override unhandled rejection handler
   const originalOnUnhandledRejection = window.onunhandledrejection;
-  window.onunhandledrejection = (event) => {
+  window.onunhandledrejection = function (event: PromiseRejectionEvent) {
     const msg = String(event.reason?.message || event.reason || "");
     if (isResizeObserverError(msg)) {
       event.preventDefault();
       return;
     }
     if (originalOnUnhandledRejection) {
-      originalOnUnhandledRejection(event);
+      originalOnUnhandledRejection.call(this, event);
     }
   };
 
@@ -242,4 +242,18 @@ const App = () => (
   </QueryClientProvider>
 );
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Prevent multiple createRoot calls during development hot reloads
+const container = document.getElementById("root")!;
+
+// Store root instance to prevent recreation
+let root: ReturnType<typeof createRoot>;
+
+// Check if root already exists (for hot module reloading in development)
+if (!(container as any)._reactRoot) {
+  root = createRoot(container);
+  (container as any)._reactRoot = root;
+} else {
+  root = (container as any)._reactRoot;
+}
+
+root.render(<App />);

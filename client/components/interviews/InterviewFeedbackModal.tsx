@@ -78,6 +78,10 @@ export default function InterviewFeedbackModal({
     }));
   };
 
+  const averageRating =
+    Object.values(ratings).reduce((sum, rating) => sum + rating, 0) /
+    Object.values(ratings).length;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -108,8 +112,9 @@ export default function InterviewFeedbackModal({
       const result: ApiResponse<InterviewFeedback> = await response.json();
 
       if (response.ok && result.success) {
-        toast.success("Feedback submitted successfully!");
-        onClose();
+        toast.success(
+          "✅ Feedback submitted successfully and saved to database!",
+        );
         // Reset form
         setRatings({
           communication: 3,
@@ -123,8 +128,10 @@ export default function InterviewFeedbackModal({
           analyticalThinking: 3,
         });
         setWrittenFeedback("");
+        onClose();
       } else {
         toast.error(result.error || "Failed to submit feedback");
+        console.error("Feedback submission error:", result);
       }
     } catch (error) {
       console.error("Error submitting feedback:", error);
@@ -188,6 +195,11 @@ export default function InterviewFeedbackModal({
             Interview Type: {interview.type} | Date:{" "}
             {new Date(interview.scheduledAt).toLocaleDateString()}
           </DialogDescription>
+          <div className="mt-2 p-2 bg-blue-50 rounded-md">
+            <span className="text-sm font-medium">
+              Current Average Rating: {averageRating.toFixed(1)}/5.0
+            </span>
+          </div>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
