@@ -1,6 +1,7 @@
 import "./global.css";
 
-// Initialize ResizeObserver error suppression
+// Initialize DOM and ResizeObserver error suppression
+import "@/lib/domErrorSuppress"; // Auto-initializes DOM error suppression
 import { initializeResizeObserverSuppression } from "@/lib/resizeObserverSuppress";
 import "@/lib/resizeObserverTest"; // Make test utility available globally
 import { initializeDevModeProtection } from "@/lib/devModeProtection";
