@@ -48,11 +48,75 @@ interface InterviewWithDetails extends MockInterview {
 }
 
 export default function EmployeeDashboard({ data }: Props) {
+  const { token } = useAuth();
+  const [myInterviews, setMyInterviews] = useState<InterviewWithDetails[]>([]);
+  const [loadingInterviews, setLoadingInterviews] = useState(true);
+
+  useEffect(() => {
+    fetchMyInterviews();
+  }, [token]);
+
+  const fetchMyInterviews = async () => {
+    try {
+      setLoadingInterviews(true);
+      const response = await fetch('/api/interviews', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result: ApiResponse<InterviewWithDetails[]> = await response.json();
+
+      if (response.ok && result.success && result.data) {
+        // Filter interviews where the current user is the candidate
+        const userInterviews = result.data.filter(interview =>
+          interview.candidateId === data.user.id
+        );
+        setMyInterviews(userInterviews);
+      }
+    } catch (error) {
+      console.error('Failed to fetch interviews:', error);
+    } finally {
+      setLoadingInterviews(false);
+    }
+  };
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const formatDateTime = (date: Date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'scheduled': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'in-progress': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'completed': return 'bg-green-100 text-green-800 border-green-200';
+      case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getInterviewTypeColor = (type: string) => {
+    switch (type) {
+      case 'technical': return 'bg-purple-100 text-purple-800';
+      case 'behavioral': return 'bg-green-100 text-green-800';
+      case 'system-design': return 'bg-orange-100 text-orange-800';
+      case 'general': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
