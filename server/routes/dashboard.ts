@@ -341,6 +341,7 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
       }
     };
 
+    console.log('✅ Admin dashboard - Sending successful response with data for user:', fullUser.email);
     res.json({
       success: true,
       data: dashboardData
