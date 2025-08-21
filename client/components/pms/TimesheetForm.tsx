@@ -128,6 +128,21 @@ export default function TimesheetForm({ onRefresh }: Props) {
     setLoading(true);
     setError('');
 
+    // Validate that a project is selected
+    if (!formData.projectId) {
+      setError('Please select a project for this timesheet entry');
+      setLoading(false);
+      return;
+    }
+
+    // Validate that the selected project still exists
+    const selectedProject = projects.find(p => p._id === formData.projectId);
+    if (!selectedProject) {
+      setError('The selected project is no longer available. Please select a different project.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch('/api/pms-new/timesheets', {
         method: 'POST',
@@ -208,19 +223,30 @@ export default function TimesheetForm({ onRefresh }: Props) {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="project">Project</Label>
+                <Label htmlFor="project">Project *</Label>
                 <Select value={formData.projectId} onValueChange={(value) => setFormData(prev => ({ ...prev, projectId: value }))}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a project" />
+                    <SelectValue placeholder={projects.length > 0 ? "Select a project" : "No projects available"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {projects.map((project) => (
-                      <SelectItem key={project._id} value={project._id}>
-                        {project.projectName}
+                    {projects.length > 0 ? (
+                      projects.map((project) => (
+                        <SelectItem key={project._id} value={project._id}>
+                          {project.projectName} ({project.status})
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>
+                        No projects available - create a project first
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
+                {projects.length === 0 && (
+                  <p className="text-sm text-red-600">
+                    ⚠️ At least one project must exist before creating timesheet entries.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
