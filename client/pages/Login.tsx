@@ -26,19 +26,19 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4 sm:p-6">
+      <div className="w-full max-w-md space-y-6 sm:space-y-8">
         {/* TrackZen Branding */}
         <div className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-xl">
-              <BarChart3 className="h-8 w-8 text-white" />
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 sm:p-3 rounded-xl">
+              <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               TrackZen
             </h1>
           </div>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 text-base sm:text-lg">
             Empowering Teams Through Performance and Visibility
           </p>
         </div>
