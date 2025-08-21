@@ -314,7 +314,7 @@ export const getAvailableInterviewers: RequestHandler = async (req, res) => {
       .sort({ firstName: 1, lastName: 1 });
 
     const interviewers = allUsers
-      .filter(u => u.role.toLowerCase() === 'employee' || u.role.toLowerCase() === 'manager')
+      .filter(u => u.role === 'Employee' || u.role === 'Manager')
       .map(u => ({
         id: u._id.toString(),
         firstName: u.firstName,
