@@ -124,6 +124,45 @@ export default function EmployeeDashboard({ data }: Props) {
     });
   };
 
+  const handleInterviewAction = async (interviewId: string, action: "accepted" | "rejected") => {
+    const actionKey = `${interviewId}-${action}`;
+    setActionLoading(prev => ({ ...prev, [actionKey]: true }));
+
+    try {
+      const response = await fetch(`/api/interviews/${interviewId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: action }),
+      });
+
+      const result: ApiResponse<MockInterview> = await response.json();
+
+      if (response.ok && result.success) {
+        // Update the interview in local state
+        setMyInterviews(prev =>
+          prev.map(interview =>
+            interview.id === interviewId
+              ? { ...interview, status: action }
+              : interview
+          )
+        );
+
+        const actionText = action === "accepted" ? "accepted" : "rejected";
+        toast.success(`Interview ${actionText} successfully!`);
+      } else {
+        toast.error(result.error || `Failed to ${action} interview`);
+      }
+    } catch (error) {
+      console.error(`Error ${action} interview:`, error);
+      toast.error(`Failed to ${action} interview. Please try again.`);
+    } finally {
+      setActionLoading(prev => ({ ...prev, [actionKey]: false }));
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "scheduled":
