@@ -57,8 +57,8 @@ const InterviewSchema: Schema = new Schema(
     duration: { type: Number, required: true },
     status: {
       type: String,
-      enum: ["scheduled", "in-progress", "completed", "cancelled"],
-      default: "scheduled",
+      enum: ["pending", "accepted", "rejected", "scheduled", "in-progress", "completed", "cancelled"],
+      default: "pending",
     },
   },
   {
