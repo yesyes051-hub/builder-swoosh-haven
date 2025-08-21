@@ -70,7 +70,7 @@ export default function TicketForm({ onTicketCreated }: Props) {
     projectId: '',
     title: '',
     description: '',
-    assignedTo: '',
+    assignedTo: 'unassigned',
     type: 'Task' as const,
     priority: 'Medium' as const,
     status: 'Pending' as const,
@@ -118,7 +118,7 @@ export default function TicketForm({ onTicketCreated }: Props) {
       projectId: '',
       title: '',
       description: '',
-      assignedTo: '',
+      assignedTo: 'unassigned',
       type: 'Task',
       priority: 'Medium',
       status: 'Pending',
@@ -146,7 +146,7 @@ export default function TicketForm({ onTicketCreated }: Props) {
         projectId: formData.projectId,
         title: formData.title,
         description: formData.description,
-        assignedTo: formData.assignedTo || undefined,
+        assignedTo: formData.assignedTo === 'unassigned' ? undefined : formData.assignedTo,
         type: formData.type,
         priority: formData.priority,
         status: formData.status,
@@ -259,7 +259,7 @@ export default function TicketForm({ onTicketCreated }: Props) {
                   <SelectValue placeholder="Select assignee (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No assignee</SelectItem>
+                  <SelectItem value="unassigned">No assignee</SelectItem>
                   {employees.map((employee) => (
                     <SelectItem key={employee._id} value={employee._id}>
                       {employee.firstName} {employee.lastName} ({employee.role})
