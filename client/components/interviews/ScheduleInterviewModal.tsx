@@ -261,7 +261,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
                 <span className="ml-2">Loading available personnel...</span>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Candidate Selection */}
                 <div className="space-y-2">
                   <Label htmlFor="candidate">Candidate (Employee)</Label>
