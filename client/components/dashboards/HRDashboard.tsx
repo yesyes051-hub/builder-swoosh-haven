@@ -94,6 +94,12 @@ export default function HRDashboard({ data }: Props) {
   useEffect(() => {
     fetchEmployeeCount();
     fetchInterviews();
+    fetchNotifications();
+
+    // Poll for new notifications every 30 seconds
+    const notificationInterval = setInterval(fetchNotifications, 30000);
+
+    return () => clearInterval(notificationInterval);
   }, []);
 
   const fetchEmployeeCount = async () => {
