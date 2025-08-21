@@ -118,11 +118,12 @@ export default function Leaderboard() {
             <h1 className="text-3xl font-bold text-gray-900">Leaderboard</h1>
             <p className="text-gray-600">Track team performance and rankings</p>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant={period === 'weekly' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setPeriod('weekly')}
+              className="flex-1 sm:flex-none"
             >
               Weekly
             </Button>
@@ -130,6 +131,7 @@ export default function Leaderboard() {
               variant={period === 'monthly' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setPeriod('monthly')}
+              className="flex-1 sm:flex-none"
             >
               Monthly
             </Button>
@@ -137,6 +139,7 @@ export default function Leaderboard() {
               variant={period === 'quarterly' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setPeriod('quarterly')}
+              className="flex-1 sm:flex-none"
             >
               Quarterly
             </Button>
