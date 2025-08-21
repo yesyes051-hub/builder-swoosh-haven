@@ -87,7 +87,7 @@ export interface MockInterview {
   scheduledAt: Date;
   duration: number; // minutes
   type: "technical" | "behavioral" | "system-design" | "general";
-  status: "scheduled" | "in-progress" | "completed" | "cancelled";
+  status: "pending" | "accepted" | "rejected" | "scheduled" | "in-progress" | "completed" | "cancelled";
   createdAt: Date;
   updatedAt: Date;
 }
