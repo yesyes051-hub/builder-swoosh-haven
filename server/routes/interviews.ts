@@ -27,17 +27,21 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    if (
-      !interviewData.candidateId ||
-      !interviewData.interviewerId ||
-      !interviewData.date ||
-      !interviewData.time ||
-      !interviewData.duration ||
-      !interviewData.type
-    ) {
+    // Detailed validation with logging
+    const missingFields = [];
+    if (!interviewData.candidateId) missingFields.push('candidateId');
+    if (!interviewData.interviewerId) missingFields.push('interviewerId');
+    if (!interviewData.date) missingFields.push('date');
+    if (!interviewData.time) missingFields.push('time');
+    if (!interviewData.duration) missingFields.push('duration');
+    if (!interviewData.type) missingFields.push('type');
+
+    if (missingFields.length > 0) {
+      console.log("❌ Missing required fields:", missingFields);
+      console.log("📋 Received fields:", Object.keys(interviewData));
       return res.status(400).json({
         success: false,
-        error: "All fields are required",
+        error: `Missing required fields: ${missingFields.join(', ')}`,
       } as ApiResponse<never>);
     }
 
