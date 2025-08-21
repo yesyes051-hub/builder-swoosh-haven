@@ -223,36 +223,39 @@ export default function Leaderboard() {
                 {leaderboard.entries.map((entry, index) => (
                   <div
                     key={entry.userId}
-                    className={`flex items-center space-x-4 p-4 rounded-lg border ${
-                      entry.rank <= 3 
-                        ? 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200' 
+                    className={`flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 p-3 sm:p-4 rounded-lg border ${
+                      entry.rank <= 3
+                        ? 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200'
                         : 'bg-gray-50 border-gray-200'
                     } ${entry.userId === user?.id ? 'ring-2 ring-blue-500' : ''}`}
                   >
-                    {/* Rank */}
-                    <div className="flex items-center justify-center w-12">
-                      {entry.rank <= 3 ? (
-                        getRankIcon(entry.rank)
-                      ) : (
-                        <Badge variant="outline" className={getRankBadgeColor(entry.rank)}>
-                          #{entry.rank}
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* User Info */}
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">
-                        {entry.user.firstName} {entry.user.lastName}
-                        {entry.userId === user?.id && (
-                          <Badge variant="outline" className="ml-2 text-xs">You</Badge>
+                    {/* Top row: Rank and User Info */}
+                    <div className="flex items-center space-x-4 flex-1">
+                      {/* Rank */}
+                      <div className="flex items-center justify-center w-10 sm:w-12">
+                        {entry.rank <= 3 ? (
+                          getRankIcon(entry.rank)
+                        ) : (
+                          <Badge variant="outline" className={getRankBadgeColor(entry.rank)}>
+                            #{entry.rank}
+                          </Badge>
                         )}
-                      </h3>
-                      <p className="text-sm text-gray-600">{entry.user.department}</p>
+                      </div>
+
+                      {/* User Info */}
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                          {entry.user.firstName} {entry.user.lastName}
+                          {entry.userId === user?.id && (
+                            <Badge variant="outline" className="ml-2 text-xs">You</Badge>
+                          )}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-gray-600">{entry.user.department}</p>
+                      </div>
                     </div>
 
                     {/* Metrics */}
-                    <div className="grid grid-cols-4 gap-4 text-center">
+                    <div className="grid grid-cols-4 gap-2 sm:gap-4 text-center min-w-0 sm:min-w-[200px]">
                       <div>
                         <div className={`font-bold ${getScoreColor(entry.totalScore)}`}>
                           {entry.totalScore}
