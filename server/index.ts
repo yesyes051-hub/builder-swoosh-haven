@@ -170,6 +170,20 @@ export function createServer() {
     getAvailableInterviewers,
   );
 
+  // Notification routes (protected)
+  app.get(
+    "/api/notifications",
+    authenticateToken,
+    requireRole(["hr", "admin"]),
+    getNotifications,
+  );
+  app.put(
+    "/api/notifications/:id/read",
+    authenticateToken,
+    requireRole(["hr", "admin"]),
+    markNotificationAsRead,
+  );
+
   // PMS (Performance Management System) routes (protected)
   app.get(
     "/api/pms/performance",
