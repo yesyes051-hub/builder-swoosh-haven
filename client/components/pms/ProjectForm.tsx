@@ -240,11 +240,12 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                     {formData.startDate ? format(formData.startDate, "PPP") : "Pick start date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
+                <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
                     selected={formData.startDate}
                     onSelect={(date) => setFormData({...formData, startDate: date})}
+                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                     initialFocus
                   />
                 </PopoverContent>
@@ -265,11 +266,12 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                     {formData.endDate ? format(formData.endDate, "PPP") : "Pick end date (optional)"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
+                <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
                     selected={formData.endDate}
                     onSelect={(date) => setFormData({...formData, endDate: date})}
+                    disabled={(date) => formData.startDate ? date < formData.startDate : date < new Date(new Date().setHours(0, 0, 0, 0))}
                     initialFocus
                   />
                 </PopoverContent>
