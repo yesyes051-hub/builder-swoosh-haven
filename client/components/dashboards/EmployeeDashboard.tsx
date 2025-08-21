@@ -303,30 +303,37 @@ export default function EmployeeDashboard({ data }: Props) {
                             <h3 className="font-semibold text-lg mb-2">
                               {interview.type.charAt(0).toUpperCase() + interview.type.slice(1)} Interview
                             </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                              <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4 text-gray-500" />
-                                <span>
-                                  <strong>Date & Time:</strong> {formatDateTime(interview.scheduledAt)}
-                                </span>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                              <div className="flex items-start space-x-2">
+                                <Calendar className="h-4 w-4 text-blue-600 mt-0.5" />
+                                <div>
+                                  <div className="font-medium text-gray-900">Date & Time</div>
+                                  <div className="text-gray-600">{formatDateTime(interview.scheduledAt)}</div>
+                                </div>
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <Clock className="h-4 w-4 text-gray-500" />
-                                <span>
-                                  <strong>Duration:</strong> {interview.duration} minutes
-                                </span>
+                              <div className="flex items-start space-x-2">
+                                <Clock className="h-4 w-4 text-green-600 mt-0.5" />
+                                <div>
+                                  <div className="font-medium text-gray-900">Duration</div>
+                                  <div className="text-gray-600">{interview.duration} minutes</div>
+                                </div>
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <User className="h-4 w-4 text-gray-500" />
-                                <span>
-                                  <strong>Interviewer:</strong> {interview.interviewer?.firstName} {interview.interviewer?.lastName}
-                                </span>
+                              <div className="flex items-start space-x-2">
+                                <User className="h-4 w-4 text-purple-600 mt-0.5" />
+                                <div>
+                                  <div className="font-medium text-gray-900">Interviewer</div>
+                                  <div className="text-gray-600">{interview.interviewer?.firstName} {interview.interviewer?.lastName}</div>
+                                  {interview.interviewer?.email && (
+                                    <div className="text-xs text-gray-500">{interview.interviewer.email}</div>
+                                  )}
+                                </div>
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <CheckCircle className="h-4 w-4 text-gray-500" />
-                                <span>
-                                  <strong>Status:</strong> {interview.status.charAt(0).toUpperCase() + interview.status.slice(1)}
-                                </span>
+                              <div className="flex items-start space-x-2">
+                                <CheckCircle className="h-4 w-4 text-orange-600 mt-0.5" />
+                                <div>
+                                  <div className="font-medium text-gray-900">Status</div>
+                                  <div className="text-gray-600">{interview.status.charAt(0).toUpperCase() + interview.status.slice(1)}</div>
+                                </div>
                               </div>
                             </div>
                             {interview.interviewer?.email && (
