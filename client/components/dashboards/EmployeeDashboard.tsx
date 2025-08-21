@@ -65,7 +65,9 @@ export default function EmployeeDashboard({ data }: Props) {
   const { token } = useAuth();
   const [myInterviews, setMyInterviews] = useState<InterviewWithDetails[]>([]);
   const [loadingInterviews, setLoadingInterviews] = useState(true);
-  const [actionLoading, setActionLoading] = useState<{ [key: string]: boolean }>({});
+  const [actionLoading, setActionLoading] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   useEffect(() => {
     fetchMyInterviews();
@@ -124,9 +126,12 @@ export default function EmployeeDashboard({ data }: Props) {
     });
   };
 
-  const handleInterviewAction = async (interviewId: string, action: "accepted" | "rejected") => {
+  const handleInterviewAction = async (
+    interviewId: string,
+    action: "accepted" | "rejected",
+  ) => {
     const actionKey = `${interviewId}-${action}`;
-    setActionLoading(prev => ({ ...prev, [actionKey]: true }));
+    setActionLoading((prev) => ({ ...prev, [actionKey]: true }));
 
     try {
       const response = await fetch(`/api/interviews/${interviewId}/status`, {
@@ -142,12 +147,12 @@ export default function EmployeeDashboard({ data }: Props) {
 
       if (response.ok && result.success) {
         // Update the interview in local state
-        setMyInterviews(prev =>
-          prev.map(interview =>
+        setMyInterviews((prev) =>
+          prev.map((interview) =>
             interview.id === interviewId
               ? { ...interview, status: action }
-              : interview
-          )
+              : interview,
+          ),
         );
 
         const actionText = action === "accepted" ? "accepted" : "rejected";
@@ -159,7 +164,7 @@ export default function EmployeeDashboard({ data }: Props) {
       console.error(`Error ${action} interview:`, error);
       toast.error(`Failed to ${action} interview. Please try again.`);
     } finally {
-      setActionLoading(prev => ({ ...prev, [actionKey]: false }));
+      setActionLoading((prev) => ({ ...prev, [actionKey]: false }));
     }
   };
 
@@ -459,66 +464,98 @@ export default function EmployeeDashboard({ data }: Props) {
                                     {interview.status.charAt(0).toUpperCase() +
                                       interview.status.slice(1)}
                                   </div>
-                          </div>
-                        </div>
-
-                        {/* Accept/Reject Actions for Pending Interviews */}
-                        {interview.status === "pending" && (
-                          <div className="mt-4 pt-4 border-t border-gray-200">
-                            <div className="flex space-x-3">
-                              <Button
-                                onClick={() => handleInterviewAction(interview.id, "accepted")}
-                                disabled={actionLoading[`${interview.id}-accepted`] || actionLoading[`${interview.id}-rejected`]}
-                                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                                size="sm"
-                              >
-                                {actionLoading[`${interview.id}-accepted`] ? (
-                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                ) : (
-                                  <ThumbsUp className="h-4 w-4 mr-2" />
-                                )}
-                                Accept
-                              </Button>
-                              <Button
-                                onClick={() => handleInterviewAction(interview.id, "rejected")}
-                                disabled={actionLoading[`${interview.id}-accepted`] || actionLoading[`${interview.id}-rejected`]}
-                                variant="destructive"
-                                className="flex-1"
-                                size="sm"
-                              >
-                                {actionLoading[`${interview.id}-rejected`] ? (
-                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                ) : (
-                                  <ThumbsDown className="h-4 w-4 mr-2" />
-                                )}
-                                Reject
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Status Message for Already Decided Interviews */}
-                        {(interview.status === "accepted" || interview.status === "rejected") && (
-                          <div className="mt-4 pt-4 border-t border-gray-200">
-                            <div className={`p-3 rounded-lg text-center ${
-                              interview.status === "accepted"
-                                ? "bg-green-50 text-green-800 border border-green-200"
-                                : "bg-red-50 text-red-800 border border-red-200"
-                            }`}>
-                              <div className="flex items-center justify-center space-x-2">
-                                {interview.status === "accepted" ? (
-                                  <ThumbsUp className="h-4 w-4" />
-                                ) : (
-                                  <ThumbsDown className="h-4 w-4" />
-                                )}
-                                <span className="font-medium">
-                                  You have {interview.status} this interview
-                                </span>
+                                </div>
                               </div>
+
+                              {/* Accept/Reject Actions for Pending Interviews */}
+                              {interview.status === "pending" && (
+                                <div className="mt-4 pt-4 border-t border-gray-200">
+                                  <div className="flex space-x-3">
+                                    <Button
+                                      onClick={() =>
+                                        handleInterviewAction(
+                                          interview.id,
+                                          "accepted",
+                                        )
+                                      }
+                                      disabled={
+                                        actionLoading[
+                                          `${interview.id}-accepted`
+                                        ] ||
+                                        actionLoading[
+                                          `${interview.id}-rejected`
+                                        ]
+                                      }
+                                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                                      size="sm"
+                                    >
+                                      {actionLoading[
+                                        `${interview.id}-accepted`
+                                      ] ? (
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                      ) : (
+                                        <ThumbsUp className="h-4 w-4 mr-2" />
+                                      )}
+                                      Accept
+                                    </Button>
+                                    <Button
+                                      onClick={() =>
+                                        handleInterviewAction(
+                                          interview.id,
+                                          "rejected",
+                                        )
+                                      }
+                                      disabled={
+                                        actionLoading[
+                                          `${interview.id}-accepted`
+                                        ] ||
+                                        actionLoading[
+                                          `${interview.id}-rejected`
+                                        ]
+                                      }
+                                      variant="destructive"
+                                      className="flex-1"
+                                      size="sm"
+                                    >
+                                      {actionLoading[
+                                        `${interview.id}-rejected`
+                                      ] ? (
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                      ) : (
+                                        <ThumbsDown className="h-4 w-4 mr-2" />
+                                      )}
+                                      Reject
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Status Message for Already Decided Interviews */}
+                              {(interview.status === "accepted" ||
+                                interview.status === "rejected") && (
+                                <div className="mt-4 pt-4 border-t border-gray-200">
+                                  <div
+                                    className={`p-3 rounded-lg text-center ${
+                                      interview.status === "accepted"
+                                        ? "bg-green-50 text-green-800 border border-green-200"
+                                        : "bg-red-50 text-red-800 border border-red-200"
+                                    }`}
+                                  >
+                                    <div className="flex items-center justify-center space-x-2">
+                                      {interview.status === "accepted" ? (
+                                        <ThumbsUp className="h-4 w-4" />
+                                      ) : (
+                                        <ThumbsDown className="h-4 w-4" />
+                                      )}
+                                      <span className="font-medium">
+                                        You have {interview.status} this
+                                        interview
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        )}
-                      </div>
                           </div>
                         </div>
                       </div>

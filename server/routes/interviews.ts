@@ -1,7 +1,11 @@
 import { RequestHandler } from "express";
 import { AuthRequest } from "../middleware/auth";
 import { EmployeeUser } from "../models/employeeManagement";
-import { Interview, InterviewFeedback, Notification } from "../models/interview";
+import {
+  Interview,
+  InterviewFeedback,
+  Notification,
+} from "../models/interview";
 import {
   ScheduleInterviewRequest,
   SubmitFeedbackRequest,
@@ -253,7 +257,6 @@ export const getInterviews: RequestHandler = async (req, res) => {
   }
 };
 
-
 export const submitFeedback: RequestHandler = async (req, res) => {
   try {
     const authReq = req as AuthRequest;
@@ -454,7 +457,15 @@ export const updateInterviewStatus: RequestHandler = async (req, res) => {
     console.log(`🔄 Updating interview ${id} status to: ${status}`);
 
     // Validate status
-    const validStatuses = ["pending", "accepted", "rejected", "scheduled", "in-progress", "completed", "cancelled"];
+    const validStatuses = [
+      "pending",
+      "accepted",
+      "rejected",
+      "scheduled",
+      "in-progress",
+      "completed",
+      "cancelled",
+    ];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -479,7 +490,10 @@ export const updateInterviewStatus: RequestHandler = async (req, res) => {
     }
 
     // Only employees can accept/reject, HR/Admin can change any status
-    if (user.role === "employee" && !["accepted", "rejected"].includes(status)) {
+    if (
+      user.role === "employee" &&
+      !["accepted", "rejected"].includes(status)
+    ) {
       return res.status(403).json({
         success: false,
         error: "Employees can only accept or reject interviews",
@@ -492,8 +506,12 @@ export const updateInterviewStatus: RequestHandler = async (req, res) => {
 
     // Create notification for HR when status changes
     if (["accepted", "rejected"].includes(status) && user.role === "employee") {
-      const candidate = await EmployeeUser.findById(interview.candidateId).select("-password");
-      const candidateName = candidate ? `${candidate.firstName} ${candidate.lastName}` : "Unknown";
+      const candidate = await EmployeeUser.findById(
+        interview.candidateId,
+      ).select("-password");
+      const candidateName = candidate
+        ? `${candidate.firstName} ${candidate.lastName}`
+        : "Unknown";
 
       const message = `Candidate ${candidateName} ${status} interview on ${new Date(interview.date).toLocaleDateString()}`;
 
@@ -552,15 +570,17 @@ export const getNotifications: RequestHandler = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(50); // Get latest 50 notifications
 
-    const responseNotifications: INotification[] = notifications.map(notification => ({
-      id: notification._id.toString(),
-      interviewId: notification.interviewId.toString(),
-      candidateId: notification.candidateId,
-      message: notification.message,
-      status: notification.status,
-      createdAt: notification.createdAt!,
-      updatedAt: notification.updatedAt!,
-    }));
+    const responseNotifications: INotification[] = notifications.map(
+      (notification) => ({
+        id: notification._id.toString(),
+        interviewId: notification.interviewId.toString(),
+        candidateId: notification.candidateId,
+        message: notification.message,
+        status: notification.status,
+        createdAt: notification.createdAt!,
+        updatedAt: notification.updatedAt!,
+      }),
+    );
 
     res.json({
       success: true,

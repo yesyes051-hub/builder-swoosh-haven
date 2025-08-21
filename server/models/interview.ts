@@ -8,7 +8,14 @@ export interface IInterview extends Document {
   time: string;
   type: "technical" | "behavioral" | "system-design" | "general";
   duration: number; // minutes
-  status: "pending" | "accepted" | "rejected" | "scheduled" | "in-progress" | "completed" | "cancelled";
+  status:
+    | "pending"
+    | "accepted"
+    | "rejected"
+    | "scheduled"
+    | "in-progress"
+    | "completed"
+    | "cancelled";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -57,7 +64,15 @@ const InterviewSchema: Schema = new Schema(
     duration: { type: Number, required: true },
     status: {
       type: String,
-      enum: ["pending", "accepted", "rejected", "scheduled", "in-progress", "completed", "cancelled"],
+      enum: [
+        "pending",
+        "accepted",
+        "rejected",
+        "scheduled",
+        "in-progress",
+        "completed",
+        "cancelled",
+      ],
       default: "pending",
     },
   },

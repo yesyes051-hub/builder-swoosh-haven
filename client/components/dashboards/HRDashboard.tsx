@@ -89,7 +89,9 @@ export default function HRDashboard({ data }: Props) {
   // Notifications state
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState<{ [key: string]: boolean }>({});
+  const [actionLoading, setActionLoading] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   useEffect(() => {
     fetchEmployeeCount();
@@ -188,22 +190,23 @@ export default function HRDashboard({ data }: Props) {
 
   const markNotificationAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch(`/api/notifications/${notificationId}/read`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `/api/notifications/${notificationId}/read`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       const result: ApiResponse<Notification> = await response.json();
 
       if (response.ok && result.success) {
-        setNotifications(prev =>
-          prev.map(notif =>
-            notif.id === notificationId
-              ? { ...notif, status: "read" }
-              : notif
-          )
+        setNotifications((prev) =>
+          prev.map((notif) =>
+            notif.id === notificationId ? { ...notif, status: "read" } : notif,
+          ),
         );
       }
     } catch (error) {
@@ -211,9 +214,12 @@ export default function HRDashboard({ data }: Props) {
     }
   };
 
-  const handleInterviewAction = async (interviewId: string, action: "accepted" | "rejected") => {
+  const handleInterviewAction = async (
+    interviewId: string,
+    action: "accepted" | "rejected",
+  ) => {
     const actionKey = `${interviewId}-${action}`;
-    setActionLoading(prev => ({ ...prev, [actionKey]: true }));
+    setActionLoading((prev) => ({ ...prev, [actionKey]: true }));
 
     try {
       const response = await fetch(`/api/interviews/${interviewId}/status`, {
@@ -229,12 +235,12 @@ export default function HRDashboard({ data }: Props) {
 
       if (response.ok && result.success) {
         // Update the interview in local state
-        setInterviews(prev =>
-          prev.map(interview =>
+        setInterviews((prev) =>
+          prev.map((interview) =>
             interview.id === interviewId
               ? { ...interview, status: action }
-              : interview
-          )
+              : interview,
+          ),
         );
 
         const actionText = action === "accepted" ? "accepted" : "rejected";
@@ -249,7 +255,7 @@ export default function HRDashboard({ data }: Props) {
       console.error(`Error ${action} interview:`, error);
       toast.error(`Failed to ${action} interview. Please try again.`);
     } finally {
-      setActionLoading(prev => ({ ...prev, [actionKey]: false }));
+      setActionLoading((prev) => ({ ...prev, [actionKey]: false }));
     }
   };
 
@@ -309,15 +315,24 @@ export default function HRDashboard({ data }: Props) {
             {/* Notifications Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="relative bg-white/10 border-white/20 text-white hover:bg-white/20">
-                  {notifications.filter(n => n.status === "unread").length > 0 ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="relative bg-white/10 border-white/20 text-white hover:bg-white/20"
+                >
+                  {notifications.filter((n) => n.status === "unread").length >
+                  0 ? (
                     <BellDot className="h-4 w-4" />
                   ) : (
                     <Bell className="h-4 w-4" />
                   )}
-                  {notifications.filter(n => n.status === "unread").length > 0 && (
+                  {notifications.filter((n) => n.status === "unread").length >
+                    0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {notifications.filter(n => n.status === "unread").length}
+                      {
+                        notifications.filter((n) => n.status === "unread")
+                          .length
+                      }
                     </span>
                   )}
                 </Button>
@@ -345,7 +360,9 @@ export default function HRDashboard({ data }: Props) {
                         <div className="flex-1">
                           <p className="text-sm">{notification.message}</p>
                           <p className="text-xs text-gray-500 mt-1">
-                            {new Date(notification.createdAt).toLocaleDateString("en-US", {
+                            {new Date(
+                              notification.createdAt,
+                            ).toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
                               hour: "2-digit",
@@ -521,8 +538,13 @@ export default function HRDashboard({ data }: Props) {
                           <div className="flex space-x-1">
                             <Button
                               size="sm"
-                              onClick={() => handleInterviewAction(interview.id, "accepted")}
-                              disabled={actionLoading[`${interview.id}-accepted`] || actionLoading[`${interview.id}-rejected`]}
+                              onClick={() =>
+                                handleInterviewAction(interview.id, "accepted")
+                              }
+                              disabled={
+                                actionLoading[`${interview.id}-accepted`] ||
+                                actionLoading[`${interview.id}-rejected`]
+                              }
                               className="bg-green-600 hover:bg-green-700 text-white text-xs h-7 px-2"
                             >
                               {actionLoading[`${interview.id}-accepted`] ? (
@@ -533,8 +555,13 @@ export default function HRDashboard({ data }: Props) {
                             </Button>
                             <Button
                               size="sm"
-                              onClick={() => handleInterviewAction(interview.id, "rejected")}
-                              disabled={actionLoading[`${interview.id}-accepted`] || actionLoading[`${interview.id}-rejected`]}
+                              onClick={() =>
+                                handleInterviewAction(interview.id, "rejected")
+                              }
+                              disabled={
+                                actionLoading[`${interview.id}-accepted`] ||
+                                actionLoading[`${interview.id}-rejected`]
+                              }
                               variant="destructive"
                               className="text-xs h-7 px-2"
                             >
@@ -548,26 +575,30 @@ export default function HRDashboard({ data }: Props) {
                         )}
 
                         {/* Give Feedback button for non-cancelled interviews */}
-                        {interview.status !== "cancelled" && interview.status !== "pending" && (
-                          <div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleGiveFeedback(interview)}
-                              className="text-xs h-7 w-full"
-                            >
-                              <Star className="h-3 w-3 mr-1" />
-                              {interview.status === "scheduled"
-                                ? "Feedback"
-                                : "Feedback"}
-                            </Button>
-                          </div>
-                        )}
+                        {interview.status !== "cancelled" &&
+                          interview.status !== "pending" && (
+                            <div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleGiveFeedback(interview)}
+                                className="text-xs h-7 w-full"
+                              >
+                                <Star className="h-3 w-3 mr-1" />
+                                {interview.status === "scheduled"
+                                  ? "Feedback"
+                                  : "Feedback"}
+                              </Button>
+                            </div>
+                          )}
 
                         {/* Status message for already decided interviews */}
-                        {(interview.status === "accepted" || interview.status === "rejected") && (
+                        {(interview.status === "accepted" ||
+                          interview.status === "rejected") && (
                           <div className="text-xs text-gray-500">
-                            {interview.status === "accepted" ? "✓ Accepted" : "✗ Rejected"}
+                            {interview.status === "accepted"
+                              ? "✓ Accepted"
+                              : "✗ Rejected"}
                           </div>
                         )}
                       </div>
