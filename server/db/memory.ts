@@ -195,7 +195,8 @@ class MemoryDatabase {
       firstName: 'John',
       lastName: 'Smith',
       role: 'manager',
-      department: 'Engineering'
+      department: 'Engineering',
+      isActive: true
     });
 
     // Create employees
