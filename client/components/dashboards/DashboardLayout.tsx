@@ -37,6 +37,7 @@ interface Props {
 export default function DashboardLayout({ user, children }: Props) {
   const { logout } = useAuth();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
