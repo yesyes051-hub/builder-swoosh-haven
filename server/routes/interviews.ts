@@ -1,12 +1,13 @@
 import { RequestHandler } from "express";
 import { AuthRequest } from "../middleware/auth";
 import { EmployeeUser } from "../models/employeeManagement";
-import { Interview, InterviewFeedback } from "../models/interview";
+import { Interview, InterviewFeedback, Notification } from "../models/interview";
 import {
   ScheduleInterviewRequest,
   SubmitFeedbackRequest,
   MockInterview,
   InterviewFeedback as IInterviewFeedback,
+  Notification as INotification,
   ApiResponse,
 } from "@shared/api";
 
