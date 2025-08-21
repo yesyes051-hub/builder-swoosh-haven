@@ -296,12 +296,78 @@ export default function HRDashboard({ data }: Props) {
       <div className="space-y-6">
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-green-600 to-teal-600 rounded-xl p-6 text-white">
-          <h1 className="text-2xl font-bold mb-2">
-            HR Dashboard - {data.user.firstName} {data.user.lastName}
-          </h1>
-          <p className="text-green-100">
-            Manage talent development and interview processes
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-bold mb-2">
+                HR Dashboard - {data.user.firstName} {data.user.lastName}
+              </h1>
+              <p className="text-green-100">
+                Manage talent development and interview processes
+              </p>
+            </div>
+
+            {/* Notifications Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="relative bg-white/10 border-white/20 text-white hover:bg-white/20">
+                  {notifications.filter(n => n.status === "unread").length > 0 ? (
+                    <BellDot className="h-4 w-4" />
+                  ) : (
+                    <Bell className="h-4 w-4" />
+                  )}
+                  {notifications.filter(n => n.status === "unread").length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {notifications.filter(n => n.status === "unread").length}
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80">
+                <div className="p-3 border-b">
+                  <h3 className="font-semibold">Notifications</h3>
+                  {notificationsLoading && (
+                    <div className="flex items-center mt-2">
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <span className="text-sm text-gray-600">Loading...</span>
+                    </div>
+                  )}
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {notifications.length > 0 ? (
+                    notifications.slice(0, 10).map((notification) => (
+                      <DropdownMenuItem
+                        key={notification.id}
+                        className={`p-3 cursor-pointer ${
+                          notification.status === "unread" ? "bg-blue-50" : ""
+                        }`}
+                        onClick={() => markNotificationAsRead(notification.id)}
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm">{notification.message}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {new Date(notification.createdAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                        {notification.status === "unread" && (
+                          <div className="w-2 h-2 bg-blue-500 rounded-full ml-2"></div>
+                        )}
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">
+                      <Bell className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm">No notifications</p>
+                    </div>
+                  )}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Department Stats */}
