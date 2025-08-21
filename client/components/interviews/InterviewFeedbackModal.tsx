@@ -190,6 +190,12 @@ export default function InterviewFeedbackModal({
             )}
             Interview Type: {interview.type} | Date:{" "}
             {new Date(interview.scheduledAt).toLocaleDateString()}
+            <br />
+            <div className="mt-2 p-2 bg-blue-50 rounded-md">
+              <span className="text-sm font-medium">
+                Current Average Rating: {averageRating.toFixed(1)}/5.0
+              </span>
+            </div>
           </DialogDescription>
         </DialogHeader>
 
