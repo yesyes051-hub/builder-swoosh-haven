@@ -45,9 +45,9 @@ export default function Login() {
 
         {/* Login Form */}
         <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-semibold text-center">Welcome back</CardTitle>
-            <CardDescription className="text-center">
+          <CardHeader className="space-y-1 pb-4 sm:pb-6">
+            <CardTitle className="text-xl sm:text-2xl font-semibold text-center">Welcome back</CardTitle>
+            <CardDescription className="text-center text-sm sm:text-base">
               Sign in to your TrackZen account
             </CardDescription>
           </CardHeader>
