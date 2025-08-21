@@ -54,6 +54,10 @@ export const authenticateToken = async (
       isActive: true,
     };
 
+<<<<<<< HEAD
+=======
+    console.log("✅ User set in request:", req.user);
+>>>>>>> refs/remotes/origin/main
     next();
   } catch (error) {
     console.error(

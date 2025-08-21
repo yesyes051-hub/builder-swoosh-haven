@@ -60,6 +60,7 @@ import DashboardLayout from "@/components/dashboards/DashboardLayout";
 import BirthdayManager from "@/components/pms/BirthdayManager";
 import ProjectForm from "@/components/pms/ProjectForm";
 import TimesheetForm from "@/components/pms/TimesheetForm";
+import TicketForm from "@/components/pms/TicketForm";
 import UserManagement from "@/components/pms/UserManagement";
 import { ApiResponse } from "@shared/api";
 
@@ -482,10 +483,11 @@ export default function PMSNew() {
                       Track all project tickets and issues
                     </CardDescription>
                   </div>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Ticket
-                  </Button>
+                  <TicketForm
+                    onTicketCreated={(ticket) => {
+                      setTickets([ticket, ...tickets]);
+                    }}
+                  />
                 </CardHeader>
                 <CardContent>
                   {tickets.length > 0 ? (
