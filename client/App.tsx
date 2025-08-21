@@ -3,7 +3,10 @@ import "./global.css";
 // Initialize ResizeObserver error suppression
 import { initializeResizeObserverSuppression } from "@/lib/resizeObserverSuppress";
 import "@/lib/resizeObserverTest"; // Make test utility available globally
+import { initializeDevModeProtection } from "@/lib/devModeProtection";
+
 initializeResizeObserverSuppression();
+initializeDevModeProtection();
 
 // Additional aggressive suppression for ResizeObserver and DOM errors
 if (typeof window !== "undefined") {
