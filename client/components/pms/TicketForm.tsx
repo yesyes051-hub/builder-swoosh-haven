@@ -104,12 +104,21 @@ export default function TicketForm({ onTicketCreated }: Props) {
       const response = await fetch('/api/pms/employees', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+
+      if (response.status === 403) {
+        // User doesn't have permission to view employees list
+        console.log('⚠️ User does not have permission to view employees list');
+        setEmployees([]);
+        return;
+      }
+
       const data: ApiResponse<Employee[]> = await response.json();
       if (data.success) {
         setEmployees(data.data || []);
       }
     } catch (error) {
       console.error('Error loading employees:', error);
+      setEmployees([]);
     }
   };
 
