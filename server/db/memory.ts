@@ -207,7 +207,8 @@ class MemoryDatabase {
       lastName: 'Brown',
       role: 'employee',
       department: 'Engineering',
-      managerId: manager.id
+      managerId: manager.id,
+      isActive: true
     });
 
     await this.createUser({
