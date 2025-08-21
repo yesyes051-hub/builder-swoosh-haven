@@ -184,7 +184,8 @@ class MemoryDatabase {
       firstName: 'Sarah',
       lastName: 'Johnson',
       role: 'hr',
-      department: 'Human Resources'
+      department: 'Human Resources',
+      isActive: true
     });
 
     // Create manager
