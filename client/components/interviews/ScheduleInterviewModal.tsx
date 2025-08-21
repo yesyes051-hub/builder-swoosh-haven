@@ -59,7 +59,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
       // Reset form when modal opens
       resetForm();
     }
-  }, [isOpen]);
+  }, [isOpen, token]);
 
   const resetForm = () => {
     setCandidateId('');
