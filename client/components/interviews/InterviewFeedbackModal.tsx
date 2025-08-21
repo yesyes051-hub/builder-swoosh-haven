@@ -78,7 +78,9 @@ export default function InterviewFeedbackModal({
     }));
   };
 
-  const averageRating = Object.values(ratings).reduce((sum, rating) => sum + rating, 0) / Object.values(ratings).length;
+  const averageRating =
+    Object.values(ratings).reduce((sum, rating) => sum + rating, 0) /
+    Object.values(ratings).length;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +112,9 @@ export default function InterviewFeedbackModal({
       const result: ApiResponse<InterviewFeedback> = await response.json();
 
       if (response.ok && result.success) {
-        toast.success("✅ Feedback submitted successfully and saved to database!");
+        toast.success(
+          "✅ Feedback submitted successfully and saved to database!",
+        );
         // Reset form
         setRatings({
           communication: 3,

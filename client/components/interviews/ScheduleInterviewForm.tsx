@@ -1,23 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { 
-  Calendar as CalendarIcon, 
-  Clock, 
-  Users, 
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  Users,
   CheckCircle,
   AlertTriangle,
-  Loader2
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { ScheduleInterviewRequest, ApiResponse, MockInterview } from '@shared/api';
+  Loader2,
+} from "lucide-react";
+import { format } from "date-fns";
+import {
+  ScheduleInterviewRequest,
+  ApiResponse,
+  MockInterview,
+} from "@shared/api";
 
 interface InterviewerOption {
   id: string;
@@ -37,17 +57,19 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [loadingInterviewers, setLoadingInterviewers] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [interviewers, setInterviewers] = useState<InterviewerOption[]>([]);
 
   // Form state
-  const [candidateId, setCandidateId] = useState('');
-  const [interviewerId, setInterviewerId] = useState('');
+  const [candidateId, setCandidateId] = useState("");
+  const [interviewerId, setInterviewerId] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>();
-  const [selectedTime, setSelectedTime] = useState('');
-  const [duration, setDuration] = useState('60');
-  const [type, setType] = useState<'technical' | 'behavioral' | 'system-design' | 'general'>('technical');
+  const [selectedTime, setSelectedTime] = useState("");
+  const [duration, setDuration] = useState("60");
+  const [type, setType] = useState<
+    "technical" | "behavioral" | "system-design" | "general"
+  >("technical");
 
   useEffect(() => {
     fetchInterviewers();
@@ -56,22 +78,24 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
   const fetchInterviewers = async () => {
     try {
       setLoadingInterviewers(true);
-      const response = await fetch('/api/interviews/interviewers', {
+      const response = await fetch("/api/interviews/interviewers", {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const data: ApiResponse<InterviewerOption[]> = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to fetch interviewers');
+        throw new Error(data.error || "Failed to fetch interviewers");
       }
 
       setInterviewers(data.data || []);
     } catch (err) {
-      console.error('Fetch interviewers error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load interviewers');
+      console.error("Fetch interviewers error:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load interviewers",
+      );
     } finally {
       setLoadingInterviewers(false);
     }
@@ -81,7 +105,7 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
     const slots = [];
     for (let hour = 9; hour <= 17; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
-        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        const timeString = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
         slots.push(timeString);
       }
     }
@@ -90,16 +114,23 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
-    if (!candidateId || !interviewerId || !selectedDate || !selectedTime || !duration || !type) {
-      setError('Please fill in all required fields');
+    if (
+      !candidateId ||
+      !interviewerId ||
+      !selectedDate ||
+      !selectedTime ||
+      !duration ||
+      !type
+    ) {
+      setError("Please fill in all required fields");
       return;
     }
 
     if (candidateId === interviewerId) {
-      setError('Candidate and interviewer cannot be the same person');
+      setError("Candidate and interviewer cannot be the same person");
       return;
     }
 
@@ -107,7 +138,7 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
       setLoading(true);
 
       // Combine date and time
-      const [hours, minutes] = selectedTime.split(':').map(Number);
+      const [hours, minutes] = selectedTime.split(":").map(Number);
       const scheduledDateTime = new Date(selectedDate);
       scheduledDateTime.setHours(hours, minutes, 0, 0);
 
@@ -118,48 +149,52 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
         date: selectedDate,
         time: selectedTime,
         duration: parseInt(duration),
-        type
+        type,
       };
 
-      const response = await fetch('/api/interviews', {
-        method: 'POST',
+      const response = await fetch("/api/interviews", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(interviewData)
+        body: JSON.stringify(interviewData),
       });
 
       const data: ApiResponse<MockInterview> = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to schedule interview');
+        throw new Error(data.error || "Failed to schedule interview");
       }
 
-      setSuccess('Interview scheduled successfully!');
-      
+      setSuccess("Interview scheduled successfully!");
+
       // Reset form
-      setCandidateId('');
-      setInterviewerId('');
+      setCandidateId("");
+      setInterviewerId("");
       setSelectedDate(undefined);
-      setSelectedTime('');
-      setDuration('60');
-      setType('technical');
+      setSelectedTime("");
+      setDuration("60");
+      setType("technical");
 
       if (onSuccess && data.data) {
         onSuccess(data.data);
       }
     } catch (err) {
-      console.error('Schedule interview error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to schedule interview');
+      console.error("Schedule interview error:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to schedule interview",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const candidates = interviewers.filter(person => person.role === 'employee');
-  const availableInterviewers = interviewers.filter(person => 
-    person.role === 'employee' || person.role === 'manager'
+  const candidates = interviewers.filter(
+    (person) => person.role === "employee",
+  );
+  const availableInterviewers = interviewers.filter(
+    (person) => person.role === "employee" || person.role === "manager",
   );
 
   return (
@@ -207,7 +242,9 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
                     {candidates.map((candidate) => (
                       <SelectItem key={candidate.id} value={candidate.id}>
                         <div className="flex flex-col">
-                          <span>{candidate.firstName} {candidate.lastName}</span>
+                          <span>
+                            {candidate.firstName} {candidate.lastName}
+                          </span>
                           <span className="text-xs text-gray-500">
                             {candidate.department} • {candidate.email}
                           </span>
@@ -229,9 +266,12 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
                     {availableInterviewers.map((interviewer) => (
                       <SelectItem key={interviewer.id} value={interviewer.id}>
                         <div className="flex flex-col">
-                          <span>{interviewer.firstName} {interviewer.lastName}</span>
+                          <span>
+                            {interviewer.firstName} {interviewer.lastName}
+                          </span>
                           <span className="text-xs text-gray-500">
-                            {interviewer.role} • {interviewer.department} • {interviewer.email}
+                            {interviewer.role} • {interviewer.department} •{" "}
+                            {interviewer.email}
                           </span>
                         </div>
                       </SelectItem>
@@ -252,7 +292,9 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
                       }`}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
+                      {selectedDate
+                        ? format(selectedDate, "PPP")
+                        : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -260,7 +302,11 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
                       mode="single"
                       selected={selectedDate}
                       onSelect={setSelectedDate}
-                      disabled={(date) => date < new Date() || date.getDay() === 0 || date.getDay() === 6}
+                      disabled={(date) =>
+                        date < new Date() ||
+                        date.getDay() === 0 ||
+                        date.getDay() === 6
+                      }
                       initialFocus
                     />
                   </PopoverContent>
@@ -304,14 +350,23 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
               {/* Interview Type */}
               <div className="space-y-2">
                 <Label htmlFor="type">Interview Type</Label>
-                <Select value={type} onValueChange={(value: any) => setType(value)}>
+                <Select
+                  value={type}
+                  onValueChange={(value: any) => setType(value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="technical">Technical Interview</SelectItem>
-                    <SelectItem value="behavioral">Behavioral Interview</SelectItem>
-                    <SelectItem value="system-design">System Design Interview</SelectItem>
+                    <SelectItem value="technical">
+                      Technical Interview
+                    </SelectItem>
+                    <SelectItem value="behavioral">
+                      Behavioral Interview
+                    </SelectItem>
+                    <SelectItem value="system-design">
+                      System Design Interview
+                    </SelectItem>
                     <SelectItem value="general">General Interview</SelectItem>
                   </SelectContent>
                 </Select>
@@ -321,8 +376,8 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
 
           {/* Form Actions */}
           <div className="flex space-x-4 pt-6">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="flex-1 bg-blue-600 hover:bg-blue-700"
               disabled={loading || loadingInterviewers}
             >
@@ -339,9 +394,9 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
               )}
             </Button>
             {onCancel && (
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={onCancel}
                 disabled={loading}
               >

@@ -339,7 +339,9 @@ export default function HRDashboard({ data }: Props) {
                               className="text-xs h-7"
                             >
                               <Star className="h-3 w-3 mr-1" />
-                              {interview.status === "scheduled" ? "Pre-Interview Feedback" : "Give Feedback"}
+                              {interview.status === "scheduled"
+                                ? "Pre-Interview Feedback"
+                                : "Give Feedback"}
                             </Button>
                           </div>
                         )}

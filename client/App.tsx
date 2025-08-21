@@ -21,7 +21,7 @@ if (typeof window !== "undefined") {
 
   // Override unhandled rejection handler
   const originalOnUnhandledRejection = window.onunhandledrejection;
-  window.onunhandledrejection = function(event: PromiseRejectionEvent) {
+  window.onunhandledrejection = function (event: PromiseRejectionEvent) {
     const msg = String(event.reason?.message || event.reason || "");
     if (msg.toLowerCase().includes("resizeobserver")) {
       event.preventDefault();
