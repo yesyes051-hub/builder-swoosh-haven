@@ -124,12 +124,17 @@ export const getManagerDashboard: RequestHandler = async (req, res) => {
 
     // Fallback to memory database
     if (!fullUser) {
-      fullUser = await db.getUserById(user.id);
+      // Try by email first since ID formats might be different
+      fullUser = await db.getUserByEmail(user.email);
       if (!fullUser) {
-        return res.status(404).json({
-          success: false,
-          error: 'User not found'
-        } as ApiResponse<never>);
+        // As last resort, try by ID
+        fullUser = await db.getUserById(user.id);
+        if (!fullUser) {
+          return res.status(404).json({
+            success: false,
+            error: 'User not found'
+          } as ApiResponse<never>);
+        }
       }
     }
 
