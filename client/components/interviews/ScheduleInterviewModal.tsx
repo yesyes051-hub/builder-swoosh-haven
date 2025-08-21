@@ -81,9 +81,20 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
         }
       });
 
+      if (!response.ok) {
+        let errorMessage = 'Failed to fetch employees';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = `HTTP Error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
       const data: ApiResponse<EmployeeOption[]> = await response.json();
 
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.error || 'Failed to fetch employees');
       }
 
