@@ -135,8 +135,9 @@ export default function HRDashboard({ data }: Props) {
   const handleFeedbackModalClose = () => {
     setFeedbackModalOpen(false);
     setSelectedInterview(null);
-    // Optionally refresh interviews after feedback submission
+    // Refresh interviews after feedback submission to update the view
     fetchInterviews();
+    toast.success("Interview data refreshed");
   };
 
   const formatDateTime = (date: Date) => {
