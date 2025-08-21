@@ -1,13 +1,13 @@
-import { v4 as uuidv4 } from 'uuid';
-import bcrypt from 'bcryptjs';
-import { 
-  User, 
-  DailyUpdate, 
-  Project, 
-  MockInterview, 
+import { v4 as uuidv4 } from "uuid";
+import bcrypt from "bcryptjs";
+import {
+  User,
+  DailyUpdate,
+  Project,
+  MockInterview,
   InterviewFeedback,
-  UserRole 
-} from '@shared/api';
+  UserRole,
+} from "@shared/api";
 
 // In-memory storage (replace with real database in production)
 class MemoryDatabase {
@@ -22,17 +22,19 @@ class MemoryDatabase {
   }
 
   // User operations
-  async createUser(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
+  async createUser(
+    userData: Omit<User, "id" | "createdAt" | "updatedAt">,
+  ): Promise<User> {
     const id = uuidv4();
     const hashedPassword = await bcrypt.hash(userData.password!, 10);
-    
+
     const user: User = {
       ...userData,
       id,
       password: hashedPassword,
       createdAt: new Date(),
       updatedAt: new Date(),
-      isActive: true
+      isActive: true,
     };
 
     this.users.set(id, user);
@@ -66,41 +68,51 @@ class MemoryDatabase {
   }
 
   // Daily Update operations
-  async createDailyUpdate(update: Omit<DailyUpdate, 'id' | 'createdAt' | 'updatedAt'>): Promise<DailyUpdate> {
+  async createDailyUpdate(
+    update: Omit<DailyUpdate, "id" | "createdAt" | "updatedAt">,
+  ): Promise<DailyUpdate> {
     const id = uuidv4();
     const dailyUpdate: DailyUpdate = {
       ...update,
       id,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.dailyUpdates.set(id, dailyUpdate);
     return dailyUpdate;
   }
 
-  async getDailyUpdatesByUser(userId: string, limit = 10): Promise<DailyUpdate[]> {
+  async getDailyUpdatesByUser(
+    userId: string,
+    limit = 10,
+  ): Promise<DailyUpdate[]> {
     return Array.from(this.dailyUpdates.values())
-      .filter(update => update.userId === userId)
+      .filter((update) => update.userId === userId)
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, limit);
   }
 
-  async getDailyUpdatesByTeam(managerIds: string[], limit = 20): Promise<DailyUpdate[]> {
+  async getDailyUpdatesByTeam(
+    managerIds: string[],
+    limit = 20,
+  ): Promise<DailyUpdate[]> {
     return Array.from(this.dailyUpdates.values())
-      .filter(update => managerIds.includes(update.userId))
+      .filter((update) => managerIds.includes(update.userId))
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, limit);
   }
 
   // Project operations
-  async createProject(project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<Project> {
+  async createProject(
+    project: Omit<Project, "id" | "createdAt" | "updatedAt">,
+  ): Promise<Project> {
     const id = uuidv4();
     const newProject: Project = {
       ...project,
       id,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.projects.set(id, newProject);
@@ -108,21 +120,22 @@ class MemoryDatabase {
   }
 
   async getProjectsByUser(userId: string): Promise<Project[]> {
-    return Array.from(this.projects.values())
-      .filter(project => 
-        project.managerId === userId || 
-        project.teamMembers.includes(userId)
-      );
+    return Array.from(this.projects.values()).filter(
+      (project) =>
+        project.managerId === userId || project.teamMembers.includes(userId),
+    );
   }
 
   // Interview operations
-  async createInterview(interview: Omit<MockInterview, 'id' | 'createdAt' | 'updatedAt'>): Promise<MockInterview> {
+  async createInterview(
+    interview: Omit<MockInterview, "id" | "createdAt" | "updatedAt">,
+  ): Promise<MockInterview> {
     const id = uuidv4();
     const newInterview: MockInterview = {
       ...interview,
       id,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.interviews.set(id, newInterview);
@@ -130,12 +143,12 @@ class MemoryDatabase {
   }
 
   async getInterviewsByUser(userId: string): Promise<MockInterview[]> {
-    return Array.from(this.interviews.values())
-      .filter(interview => 
-        interview.candidateId === userId || 
+    return Array.from(this.interviews.values()).filter(
+      (interview) =>
+        interview.candidateId === userId ||
         interview.interviewerId === userId ||
-        interview.scheduledBy === userId
-      );
+        interview.scheduledBy === userId,
+    );
   }
 
   async getInterviewById(id: string): Promise<MockInterview | null> {
@@ -143,19 +156,23 @@ class MemoryDatabase {
   }
 
   // Feedback operations
-  async createFeedback(feedback: Omit<InterviewFeedback, 'id' | 'createdAt'>): Promise<InterviewFeedback> {
+  async createFeedback(
+    feedback: Omit<InterviewFeedback, "id" | "createdAt">,
+  ): Promise<InterviewFeedback> {
     const id = uuidv4();
     const newFeedback: InterviewFeedback = {
       ...feedback,
       id,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     this.feedback.set(id, newFeedback);
     return newFeedback;
   }
 
-  async getFeedbackByInterview(interviewId: string): Promise<InterviewFeedback | null> {
+  async getFeedbackByInterview(
+    interviewId: string,
+  ): Promise<InterviewFeedback | null> {
     for (const feedback of this.feedback.values()) {
       if (feedback.interviewId === interviewId) {
         return feedback;
@@ -168,55 +185,60 @@ class MemoryDatabase {
   private async seedData() {
     // Create admin user
     await this.createUser({
-      email: 'admin@trackzen.com',
-      password: 'admin123',
-      firstName: 'System',
-      lastName: 'Administrator',
-      role: 'admin',
-      department: 'IT'
+      email: "admin@trackzen.com",
+      password: "admin123",
+      firstName: "System",
+      lastName: "Administrator",
+      role: "admin",
+      department: "IT",
+      isActive: true,
     });
 
     // Create HR user
     await this.createUser({
-      email: 'hr@trackzen.com',
-      password: 'hr123',
-      firstName: 'Sarah',
-      lastName: 'Johnson',
-      role: 'hr',
-      department: 'Human Resources'
+      email: "hr@trackzen.com",
+      password: "hr123",
+      firstName: "Sarah",
+      lastName: "Johnson",
+      role: "hr",
+      department: "Human Resources",
+      isActive: true,
     });
 
     // Create manager
     const manager = await this.createUser({
-      email: 'manager@trackzen.com',
-      password: 'manager123',
-      firstName: 'John',
-      lastName: 'Smith',
-      role: 'manager',
-      department: 'Engineering'
+      email: "manager@trackzen.com",
+      password: "manager123",
+      firstName: "John",
+      lastName: "Smith",
+      role: "manager",
+      department: "Engineering",
+      isActive: true,
     });
 
     // Create employees
     await this.createUser({
-      email: 'employee@trackzen.com',
-      password: 'employee123',
-      firstName: 'Alice',
-      lastName: 'Brown',
-      role: 'employee',
-      department: 'Engineering',
-      managerId: manager.id
+      email: "employee@trackzen.com",
+      password: "employee123",
+      firstName: "Alice",
+      lastName: "Brown",
+      role: "employee",
+      department: "Engineering",
+      managerId: manager.id,
+      isActive: true,
     });
 
     await this.createUser({
-      email: 'interviewer@trackzen.com',
-      password: 'interviewer123',
-      firstName: 'Bob',
-      lastName: 'Wilson',
-      role: 'interviewer',
-      department: 'Engineering'
+      email: "interviewer@trackzen.com",
+      password: "interviewer123",
+      firstName: "Bob",
+      lastName: "Wilson",
+      role: "interviewer",
+      department: "Engineering",
+      isActive: true,
     });
 
-    console.log('✅ Database seeded with initial users');
+    console.log("✅ Database seeded with initial users");
   }
 }
 

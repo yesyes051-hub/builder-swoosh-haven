@@ -7,11 +7,23 @@ initializeResizeObserverSuppression();
 
 // Additional aggressive suppression for ResizeObserver errors
 if (typeof window !== "undefined") {
+  // Helper function to check for ResizeObserver errors
+  const isResizeObserverError = (message: string) => {
+    const msg = message.toLowerCase();
+    return (
+      msg.includes("resizeobserver") ||
+      msg.includes("loop completed") ||
+      msg.includes("undelivered notifications") ||
+      msg.includes("loop limit exceeded") ||
+      msg.includes("resize observer")
+    );
+  };
+
   // Override the global error handler
   const originalOnError = window.onerror;
   window.onerror = (message, source, lineno, colno, error) => {
     const msg = String(message || "");
-    if (msg.toLowerCase().includes("resizeobserver")) {
+    if (isResizeObserverError(msg)) {
       return true; // Prevent default error handling
     }
     return originalOnError
@@ -21,15 +33,39 @@ if (typeof window !== "undefined") {
 
   // Override unhandled rejection handler
   const originalOnUnhandledRejection = window.onunhandledrejection;
-  window.onunhandledrejection = (event) => {
+  window.onunhandledrejection = function (event: PromiseRejectionEvent) {
     const msg = String(event.reason?.message || event.reason || "");
-    if (msg.toLowerCase().includes("resizeobserver")) {
+    if (isResizeObserverError(msg)) {
       event.preventDefault();
       return;
     }
     if (originalOnUnhandledRejection) {
-      originalOnUnhandledRejection(event);
+      originalOnUnhandledRejection.call(this, event);
     }
+  };
+
+  // Also catch errors during the error event itself
+  window.addEventListener(
+    "error",
+    (event) => {
+      const msg = String(event.message || event.error?.message || "");
+      if (isResizeObserverError(msg)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return false;
+      }
+    },
+    true,
+  );
+
+  // Add a catch-all for any remaining console errors
+  const originalConsoleError = console.error;
+  console.error = (...args) => {
+    const msg = String(args[0] || "");
+    if (isResizeObserverError(msg)) {
+      return; // Suppress ResizeObserver console errors
+    }
+    originalConsoleError.apply(console, args);
   };
 }
 
@@ -206,4 +242,18 @@ const App = () => (
   </QueryClientProvider>
 );
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Prevent multiple createRoot calls during development hot reloads
+const container = document.getElementById("root")!;
+
+// Store root instance to prevent recreation
+let root: ReturnType<typeof createRoot>;
+
+// Check if root already exists (for hot module reloading in development)
+if (!(container as any)._reactRoot) {
+  root = createRoot(container);
+  (container as any)._reactRoot = root;
+} else {
+  root = (container as any)._reactRoot;
+}
+
+root.render(<App />);
