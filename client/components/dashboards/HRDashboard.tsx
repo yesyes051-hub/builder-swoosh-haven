@@ -26,6 +26,11 @@ import {
   FileText,
   Loader2,
   Star,
+  ThumbsUp,
+  ThumbsDown,
+  Bell,
+  BellDot,
+  X,
 } from "lucide-react";
 import DashboardLayout from "./DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
