@@ -27,7 +27,8 @@ export const authenticateToken = async (
   console.log("🔍 Extracted token length:", token ? token.length : "N/A");
 
   if (!token) {
-    console.log("❌ No token provided in request");
+    
+    console.log("❌ No token provided");
     return res
       .status(401)
       .json({ success: false, error: "Access token required" });
@@ -53,6 +54,7 @@ export const authenticateToken = async (
       updatedAt: new Date(),
       isActive: true,
     };
+
 
     console.log("✅ User set in request:", req.user);
     next();
