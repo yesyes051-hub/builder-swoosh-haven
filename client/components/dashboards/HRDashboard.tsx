@@ -157,6 +157,96 @@ export default function HRDashboard({ data }: Props) {
     toast.success("Interview data refreshed");
   };
 
+  const fetchNotifications = async () => {
+    try {
+      setNotificationsLoading(true);
+      const response = await fetch("/api/notifications", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result: ApiResponse<Notification[]> = await response.json();
+
+      if (response.ok && result.success && result.data) {
+        setNotifications(result.data);
+      } else {
+        console.error("Failed to fetch notifications:", result.error);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
+  const markNotificationAsRead = async (notificationId: string) => {
+    try {
+      const response = await fetch(`/api/notifications/${notificationId}/read`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result: ApiResponse<Notification> = await response.json();
+
+      if (response.ok && result.success) {
+        setNotifications(prev =>
+          prev.map(notif =>
+            notif.id === notificationId
+              ? { ...notif, status: "read" }
+              : notif
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
+  };
+
+  const handleInterviewAction = async (interviewId: string, action: "accepted" | "rejected") => {
+    const actionKey = `${interviewId}-${action}`;
+    setActionLoading(prev => ({ ...prev, [actionKey]: true }));
+
+    try {
+      const response = await fetch(`/api/interviews/${interviewId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: action }),
+      });
+
+      const result: ApiResponse<MockInterview> = await response.json();
+
+      if (response.ok && result.success) {
+        // Update the interview in local state
+        setInterviews(prev =>
+          prev.map(interview =>
+            interview.id === interviewId
+              ? { ...interview, status: action }
+              : interview
+          )
+        );
+
+        const actionText = action === "accepted" ? "accepted" : "rejected";
+        toast.success(`Interview ${actionText} successfully!`);
+
+        // Refresh notifications to see any new ones
+        fetchNotifications();
+      } else {
+        toast.error(result.error || `Failed to ${action} interview`);
+      }
+    } catch (error) {
+      console.error(`Error ${action} interview:`, error);
+      toast.error(`Failed to ${action} interview. Please try again.`);
+    } finally {
+      setActionLoading(prev => ({ ...prev, [actionKey]: false }));
+    }
+  };
+
   const formatDateTime = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
       month: "short",
