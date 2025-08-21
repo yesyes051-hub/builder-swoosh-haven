@@ -122,6 +122,16 @@ export interface InterviewFeedback {
   recommendations?: string;
 }
 
+export interface Notification {
+  id: string;
+  interviewId: string;
+  candidateId: string;
+  message: string;
+  status: "unread" | "read";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface ScheduleInterviewRequest {
   candidateId: string;
   interviewerId: string;
