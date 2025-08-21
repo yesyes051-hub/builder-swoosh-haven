@@ -115,6 +115,8 @@ export default function ScheduleInterviewForm({ onSuccess, onCancel }: Props) {
         candidateId,
         interviewerId,
         scheduledAt: scheduledDateTime,
+        date: selectedDate,
+        time: selectedTime,
         duration: parseInt(duration),
         type
       };
