@@ -303,7 +303,11 @@ const initializeApp = () => {
     try {
       root = createRoot(container);
       (container as any)._reactRoot = root;
-      root.render(<App />);
+      root.render(
+        <StrictMode>
+          <App />
+        </StrictMode>
+      );
     } catch (error) {
       console.error('Failed to create React root:', error);
       // Fallback: render a simple error message
