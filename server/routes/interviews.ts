@@ -72,8 +72,8 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
     }
 
     const interview = await db.createInterview({
-      candidateId: interviewData.candidateId,
-      interviewerId: interviewData.interviewerId,
+      candidateId: candidate._id.toString(),
+      interviewerId: interviewer._id.toString(),
       scheduledBy: user.id,
       scheduledAt: new Date(interviewData.scheduledAt),
       duration: interviewData.duration,
