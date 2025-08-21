@@ -147,9 +147,20 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
         body: JSON.stringify(interviewData)
       });
 
+      if (!response.ok) {
+        let errorMessage = 'Failed to schedule interview';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = `HTTP Error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
       const data: ApiResponse<MockInterview> = await response.json();
 
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.error || 'Failed to schedule interview');
       }
 
