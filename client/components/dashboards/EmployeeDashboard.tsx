@@ -56,6 +56,16 @@ export default function EmployeeDashboard({ data }: Props) {
     fetchMyInterviews();
   }, [token]);
 
+  // Auto-refresh interviews when window gains focus (user returns from other pages)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchMyInterviews();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
   const fetchMyInterviews = async () => {
     try {
       setLoadingInterviews(true);
