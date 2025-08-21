@@ -88,17 +88,43 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="p-8 max-w-md">
-          <CardContent className="text-center">
-            <h3 className="font-semibold text-red-600 mb-2">Error Loading Dashboard</h3>
-            <p className="text-sm text-gray-600 mb-4">{error}</p>
-            <button 
-              onClick={fetchDashboardData}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Retry
-            </button>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="p-8 max-w-lg w-full">
+          <CardContent className="text-center space-y-4">
+            <div className="flex items-center justify-center mb-4">
+              <AlertTriangle className="h-12 w-12 text-red-500" />
+            </div>
+            <h3 className="font-semibold text-red-600 text-lg">Error Loading Dashboard</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">{error}</p>
+
+            {error.includes('Network error') && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  <strong>Network Issue:</strong> Please check your internet connection and try again.
+                </p>
+              </div>
+            )}
+
+            <div className="flex gap-3 justify-center pt-2">
+              <Button
+                onClick={fetchDashboardData}
+                disabled={loading}
+                className="flex items-center gap-2"
+              >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+                Try Again
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => window.location.reload()}
+              >
+                Reload Page
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
