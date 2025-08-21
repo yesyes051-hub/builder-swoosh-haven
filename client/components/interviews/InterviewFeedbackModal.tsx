@@ -78,6 +78,8 @@ export default function InterviewFeedbackModal({
     }));
   };
 
+  const averageRating = Object.values(ratings).reduce((sum, rating) => sum + rating, 0) / Object.values(ratings).length;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
