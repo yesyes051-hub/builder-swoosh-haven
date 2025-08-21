@@ -98,6 +98,26 @@ const InterviewFeedbackSchema: Schema = new Schema(
   },
 );
 
+const NotificationSchema: Schema = new Schema(
+  {
+    interviewId: {
+      type: Schema.Types.ObjectId,
+      ref: "Interview",
+      required: true,
+    },
+    candidateId: { type: String, required: true },
+    message: { type: String, required: true },
+    status: {
+      type: String,
+      enum: ["unread", "read"],
+      default: "unread",
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
 export const Interview = mongoose.model<IInterview>(
   "Interview",
   InterviewSchema,
@@ -105,4 +125,8 @@ export const Interview = mongoose.model<IInterview>(
 export const InterviewFeedback = mongoose.model<IInterviewFeedback>(
   "InterviewFeedback",
   InterviewFeedbackSchema,
+);
+export const Notification = mongoose.model<INotification>(
+  "Notification",
+  NotificationSchema,
 );
