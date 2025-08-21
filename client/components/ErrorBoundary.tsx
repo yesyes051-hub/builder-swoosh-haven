@@ -1,7 +1,7 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -26,32 +26,36 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    const errorMessage = error.message || '';
+    const errorMessage = error.message || "";
 
     // Check if this is a known React DOM error we can ignore
-    const isKnownReactDOMError = (
-      errorMessage.includes('removeChild') ||
-      errorMessage.includes('not a child of this node') ||
-      errorMessage.includes('createRoot() on a container that has already been passed')
-    );
+    const isKnownReactDOMError =
+      errorMessage.includes("removeChild") ||
+      errorMessage.includes("not a child of this node") ||
+      errorMessage.includes(
+        "createRoot() on a container that has already been passed",
+      );
 
     if (isKnownReactDOMError) {
-      console.warn('Suppressed known React DOM error:', error.message);
+      console.warn("Suppressed known React DOM error:", error.message);
       // Reset error state for known errors
       this.setState({ hasError: false, error: null, errorInfo: null });
       return;
     }
 
-    console.error('ErrorBoundary caught an error:', error);
-    console.error('Error info:', errorInfo);
+    console.error("ErrorBoundary caught an error:", error);
+    console.error("Error info:", errorInfo);
 
     // Filter out known React DOM manipulation errors caused by external scripts
-    const isDOMError = error.message?.includes('removeChild') || 
-                      error.message?.includes('insertBefore') ||
-                      error.message?.includes('not a child of this node');
-    
+    const isDOMError =
+      error.message?.includes("removeChild") ||
+      error.message?.includes("insertBefore") ||
+      error.message?.includes("not a child of this node");
+
     if (isDOMError) {
-      console.warn('DOM manipulation error detected, likely caused by external scripts. Attempting recovery...');
+      console.warn(
+        "DOM manipulation error detected, likely caused by external scripts. Attempting recovery...",
+      );
       // Try to recover from DOM manipulation errors
       setTimeout(() => {
         this.setState({ hasError: false, error: null, errorInfo: null });
@@ -76,7 +80,7 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   handleGoHome = () => {
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   render() {
@@ -87,9 +91,10 @@ class ErrorBoundary extends Component<Props, State> {
       }
 
       // Check if this is a DOM manipulation error that we can recover from
-      const isDOMError = this.state.error?.message?.includes('removeChild') || 
-                        this.state.error?.message?.includes('insertBefore') ||
-                        this.state.error?.message?.includes('not a child of this node');
+      const isDOMError =
+        this.state.error?.message?.includes("removeChild") ||
+        this.state.error?.message?.includes("insertBefore") ||
+        this.state.error?.message?.includes("not a child of this node");
 
       if (isDOMError) {
         // For DOM errors, try to render a minimal recovery UI
@@ -104,14 +109,23 @@ class ErrorBoundary extends Component<Props, State> {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-gray-600">
-                  A temporary interface issue occurred. This is usually resolved automatically.
+                  A temporary interface issue occurred. This is usually resolved
+                  automatically.
                 </p>
                 <div className="flex gap-2">
-                  <Button onClick={this.handleReset} size="sm" className="flex-1">
+                  <Button
+                    onClick={this.handleReset}
+                    size="sm"
+                    className="flex-1"
+                  >
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Try Again
                   </Button>
-                  <Button onClick={this.handleGoHome} variant="outline" size="sm">
+                  <Button
+                    onClick={this.handleGoHome}
+                    variant="outline"
+                    size="sm"
+                  >
                     <Home className="h-4 w-4 mr-2" />
                     Home
                   </Button>
@@ -134,10 +148,11 @@ class ErrorBoundary extends Component<Props, State> {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-gray-600">
-                An unexpected error occurred in the application. Our team has been notified.
+                An unexpected error occurred in the application. Our team has
+                been notified.
               </p>
-              
-              {process.env.NODE_ENV === 'development' && this.state.error && (
+
+              {process.env.NODE_ENV === "development" && this.state.error && (
                 <details className="bg-red-50 p-4 rounded-lg border border-red-200">
                   <summary className="font-medium text-red-800 cursor-pointer">
                     Error Details (Development Mode)

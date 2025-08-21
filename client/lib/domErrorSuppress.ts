@@ -45,7 +45,7 @@ export const initializeDOMErrorSuppression = () => {
         return false;
       }
     },
-    { capture: true }
+    { capture: true },
   );
 
   // Handle unhandled promise rejections

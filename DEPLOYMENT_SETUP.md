@@ -26,6 +26,7 @@ You need to add one secret to your GitHub repository for automatic deployments t
 ## 🎯 Site Configuration
 
 Your Netlify site details:
+
 - **Site ID**: `d3da4e1f-f57b-46c4-aec0-232a99d5cd4f`
 - **Site Name**: `trackzen-pms-dashboard`
 - **Production URL**: https://trackzen-pms-dashboard.netlify.app
@@ -34,6 +35,7 @@ Your Netlify site details:
 ## 🔄 How Auto-Deployment Works
 
 ### When you merge a PR to `main`:
+
 1. ✅ GitHub Actions triggers automatically
 2. ✅ Code is checked out and dependencies installed
 3. ✅ TypeScript type checking runs
@@ -42,6 +44,7 @@ Your Netlify site details:
 6. ✅ Live at https://trackzen-pms-dashboard.netlify.app
 
 ### When you create a PR:
+
 1. ✅ GitHub Actions creates a preview deployment
 2. ✅ Preview URL is commented on the PR
 3. ✅ Test your changes before merging!
@@ -63,6 +66,7 @@ Your Netlify site details:
 ## 🛠️ Current Features Deployed
 
 Your TrackZen app includes:
+
 - ✅ **Enhanced PMS Dashboard** with 8 modules
 - ✅ **Admin User Management** with temporary passwords
 - ✅ **Advanced Timesheet System** with approval workflow
@@ -75,6 +79,7 @@ Your TrackZen app includes:
 ## 🔧 Troubleshooting
 
 If deployment fails:
+
 1. Check the **Actions** tab in your GitHub repo
 2. Review the build logs for errors
 3. Ensure all dependencies are in `package.json`
@@ -83,6 +88,7 @@ If deployment fails:
 ## 📱 Access Your Live App
 
 Once setup is complete:
+
 - **Production**: https://trackzen-pms-dashboard.netlify.app
 - **Login with**: `admin@trackzen.com` / `admin123`
 

@@ -31,7 +31,8 @@ if (typeof window !== "undefined") {
       msg.includes("insertbefore") ||
       msg.includes("not a child of this node") ||
       msg.includes("failed to execute") ||
-      (msg.includes("node") && (msg.includes("remove") || msg.includes("insert")))
+      (msg.includes("node") &&
+        (msg.includes("remove") || msg.includes("insert")))
     );
   };
 
@@ -40,7 +41,7 @@ if (typeof window !== "undefined") {
   window.onerror = (message, source, lineno, colno, error) => {
     const msg = String(message || "");
     if (isResizeObserverError(msg) || isDOMManipulationError(msg)) {
-      console.warn('Suppressed known error:', msg);
+      console.warn("Suppressed known error:", msg);
       return true; // Prevent default error handling
     }
     return originalOnError
@@ -53,7 +54,7 @@ if (typeof window !== "undefined") {
   window.onunhandledrejection = function (event: PromiseRejectionEvent) {
     const msg = String(event.reason?.message || event.reason || "");
     if (isResizeObserverError(msg) || isDOMManipulationError(msg)) {
-      console.warn('Suppressed known promise rejection:', msg);
+      console.warn("Suppressed known promise rejection:", msg);
       event.preventDefault();
       return;
     }
@@ -68,7 +69,7 @@ if (typeof window !== "undefined") {
     (event) => {
       const msg = String(event.message || event.error?.message || "");
       if (isResizeObserverError(msg) || isDOMManipulationError(msg)) {
-        console.warn('Suppressed error event:', msg);
+        console.warn("Suppressed error event:", msg);
         event.preventDefault();
         event.stopImmediatePropagation();
         return false;
@@ -267,15 +268,14 @@ const App = () => (
   <ErrorBoundary
     onError={(error, errorInfo) => {
       // Filter out known React DOM errors
-      const errorMessage = error.message || '';
-      const isKnownError = (
-        errorMessage.includes('removeChild') ||
-        errorMessage.includes('not a child of this node') ||
-        errorMessage.includes('createRoot')
-      );
+      const errorMessage = error.message || "";
+      const isKnownError =
+        errorMessage.includes("removeChild") ||
+        errorMessage.includes("not a child of this node") ||
+        errorMessage.includes("createRoot");
 
       if (!isKnownError) {
-        console.error('App-level error:', error, errorInfo);
+        console.error("App-level error:", error, errorInfo);
         // You could send this to a logging service
       }
     }}
@@ -313,10 +313,10 @@ const initializeApp = () => {
       root.render(
         <StrictMode>
           <App />
-        </StrictMode>
+        </StrictMode>,
       );
     } catch (error) {
-      console.error('Failed to create React root:', error);
+      console.error("Failed to create React root:", error);
       // Fallback: render a simple error message
       container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: system-ui, sans-serif;">
@@ -336,10 +336,10 @@ const initializeApp = () => {
       root.render(
         <StrictMode>
           <App />
-        </StrictMode>
+        </StrictMode>,
       );
     } catch (error) {
-      console.error('Failed to re-render app:', error);
+      console.error("Failed to re-render app:", error);
       // For re-renders, just log the error and let the existing content stay
     }
   }
