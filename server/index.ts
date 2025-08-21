@@ -23,6 +23,8 @@ import {
   submitFeedback,
   getInterviewFeedback,
   getAvailableInterviewers,
+  getNotifications,
+  markNotificationAsRead,
 } from "./routes/interviews";
 import {
   getUserPerformanceData,
