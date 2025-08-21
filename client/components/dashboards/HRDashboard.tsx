@@ -4,6 +4,7 @@ import {
   HRDashboard as HRDashboardType,
   ApiResponse,
   MockInterview,
+  Notification,
 } from "@shared/api";
 import {
   Card,
