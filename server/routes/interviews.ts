@@ -42,8 +42,8 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    if (candidate.role.toLowerCase() !== 'employee' ||
-        (interviewer.role.toLowerCase() !== 'employee' && interviewer.role.toLowerCase() !== 'manager')) {
+    if (candidate.role !== 'Employee' ||
+        (interviewer.role !== 'Employee' && interviewer.role !== 'Manager')) {
       return res.status(400).json({
         success: false,
         error: 'Candidates must be employees and interviewers must be employees or managers'
