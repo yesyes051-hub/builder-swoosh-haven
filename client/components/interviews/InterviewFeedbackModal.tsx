@@ -108,8 +108,7 @@ export default function InterviewFeedbackModal({
       const result: ApiResponse<InterviewFeedback> = await response.json();
 
       if (response.ok && result.success) {
-        toast.success("Feedback submitted successfully!");
-        onClose();
+        toast.success("✅ Feedback submitted successfully and saved to database!");
         // Reset form
         setRatings({
           communication: 3,
@@ -123,8 +122,10 @@ export default function InterviewFeedbackModal({
           analyticalThinking: 3,
         });
         setWrittenFeedback("");
+        onClose();
       } else {
         toast.error(result.error || "Failed to submit feedback");
+        console.error("Feedback submission error:", result);
       }
     } catch (error) {
       console.error("Error submitting feedback:", error);
