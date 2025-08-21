@@ -275,8 +275,31 @@ let root: ReturnType<typeof createRoot>;
 if (!(container as any)._reactRoot) {
   root = createRoot(container);
   (container as any)._reactRoot = root;
+
+  // Add error handling for root rendering
+  try {
+    root.render(<App />);
+  } catch (error) {
+    console.error('Failed to render app:', error);
+    // Fallback: render a simple error message
+    container.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: system-ui, sans-serif;">
+        <div style="text-align: center; padding: 2rem;">
+          <h1 style="color: #dc2626; margin-bottom: 1rem;">Application Error</h1>
+          <p style="color: #6b7280; margin-bottom: 1rem;">There was an error loading the application.</p>
+          <button onclick="window.location.reload()" style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer;">
+            Reload Page
+          </button>
+        </div>
+      </div>
+    `;
+  }
 } else {
   root = (container as any)._reactRoot;
+  try {
+    root.render(<App />);
+  } catch (error) {
+    console.error('Failed to re-render app:', error);
+    // For re-renders, just log the error and let the existing content stay
+  }
 }
-
-root.render(<App />);
