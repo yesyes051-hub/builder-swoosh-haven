@@ -511,23 +511,63 @@ export default function HRDashboard({ data }: Props) {
                           </p>
                         )}
                       </div>
-                      <div className="text-right space-y-2">
+                      <div className="text-right space-y-2 min-w-0 flex-shrink-0">
                         <Badge className={getStatusColor(interview.status)}>
                           {interview.status}
                         </Badge>
-                        {interview.status !== "cancelled" && (
+
+                        {/* Accept/Reject buttons for pending interviews */}
+                        {interview.status === "pending" && (
+                          <div className="flex space-x-1">
+                            <Button
+                              size="sm"
+                              onClick={() => handleInterviewAction(interview.id, "accepted")}
+                              disabled={actionLoading[`${interview.id}-accepted`] || actionLoading[`${interview.id}-rejected`]}
+                              className="bg-green-600 hover:bg-green-700 text-white text-xs h-7 px-2"
+                            >
+                              {actionLoading[`${interview.id}-accepted`] ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <ThumbsUp className="h-3 w-3" />
+                              )}
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => handleInterviewAction(interview.id, "rejected")}
+                              disabled={actionLoading[`${interview.id}-accepted`] || actionLoading[`${interview.id}-rejected`]}
+                              variant="destructive"
+                              className="text-xs h-7 px-2"
+                            >
+                              {actionLoading[`${interview.id}-rejected`] ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <ThumbsDown className="h-3 w-3" />
+                              )}
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Give Feedback button for non-cancelled interviews */}
+                        {interview.status !== "cancelled" && interview.status !== "pending" && (
                           <div>
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => handleGiveFeedback(interview)}
-                              className="text-xs h-7"
+                              className="text-xs h-7 w-full"
                             >
                               <Star className="h-3 w-3 mr-1" />
                               {interview.status === "scheduled"
-                                ? "Pre-Interview Feedback"
-                                : "Give Feedback"}
+                                ? "Feedback"
+                                : "Feedback"}
                             </Button>
+                          </div>
+                        )}
+
+                        {/* Status message for already decided interviews */}
+                        {(interview.status === "accepted" || interview.status === "rejected") && (
+                          <div className="text-xs text-gray-500">
+                            {interview.status === "accepted" ? "✓ Accepted" : "✗ Rejected"}
                           </div>
                         )}
                       </div>
