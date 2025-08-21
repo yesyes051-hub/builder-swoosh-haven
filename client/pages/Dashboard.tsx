@@ -132,32 +132,44 @@ export default function Dashboard() {
   }
 
   // Render appropriate dashboard based on user role
-  switch (user.role) {
-    case 'employee':
-      return <EmployeeDashboard data={dashboardData as EmployeeDashboardType} />;
-    case 'manager':
-      return <ManagerDashboard data={dashboardData as ManagerDashboardType} />;
-    case 'hr':
-      // For users with admin-like permissions (HR role in new system), show admin dashboard
-      if (user.email === 'admin@trackzen.com') {
+  const renderDashboard = () => {
+    switch (user.role) {
+      case 'employee':
+        return <EmployeeDashboard data={dashboardData as EmployeeDashboardType} />;
+      case 'manager':
+        return <ManagerDashboard data={dashboardData as ManagerDashboardType} />;
+      case 'hr':
+        // For users with admin-like permissions (HR role in new system), show admin dashboard
+        if (user.email === 'admin@trackzen.com') {
+          return <AdminDashboard data={dashboardData as AdminDashboardType} />;
+        }
+        return <HRDashboard data={dashboardData as HRDashboardType} />;
+      case 'admin':
         return <AdminDashboard data={dashboardData as AdminDashboardType} />;
-      }
-      return <HRDashboard data={dashboardData as HRDashboardType} />;
-    case 'admin':
-      return <AdminDashboard data={dashboardData as AdminDashboardType} />;
-    case 'interviewer':
-      // For now, show employee dashboard for interviewers
-      return <EmployeeDashboard data={dashboardData as EmployeeDashboardType} />;
-    default:
-      return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <Card className="p-8">
-            <CardContent className="text-center">
-              <h3 className="font-semibold text-red-600">Unknown Role</h3>
-              <p className="text-sm text-gray-600">Your account role is not recognized.</p>
-            </CardContent>
-          </Card>
-        </div>
-      );
-  }
+      case 'interviewer':
+        // For now, show employee dashboard for interviewers
+        return <EmployeeDashboard data={dashboardData as EmployeeDashboardType} />;
+      default:
+        return (
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <Card className="p-8">
+              <CardContent className="text-center">
+                <h3 className="font-semibold text-red-600">Unknown Role</h3>
+                <p className="text-sm text-gray-600">Your account role is not recognized.</p>
+              </CardContent>
+            </Card>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <ErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error('Dashboard component error:', error, errorInfo);
+      }}
+    >
+      {renderDashboard()}
+    </ErrorBoundary>
+  );
 }
