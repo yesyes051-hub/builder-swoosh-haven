@@ -173,7 +173,8 @@ class MemoryDatabase {
       firstName: 'System',
       lastName: 'Administrator',
       role: 'admin',
-      department: 'IT'
+      department: 'IT',
+      isActive: true
     });
 
     // Create HR user
