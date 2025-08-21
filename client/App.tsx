@@ -5,7 +5,7 @@ import { initializeResizeObserverSuppression } from "@/lib/resizeObserverSuppres
 import "@/lib/resizeObserverTest"; // Make test utility available globally
 initializeResizeObserverSuppression();
 
-// Additional aggressive suppression for ResizeObserver errors
+// Additional aggressive suppression for ResizeObserver and DOM errors
 if (typeof window !== "undefined") {
   // Helper function to check for ResizeObserver errors
   const isResizeObserverError = (message: string) => {
@@ -16,6 +16,18 @@ if (typeof window !== "undefined") {
       msg.includes("undelivered notifications") ||
       msg.includes("loop limit exceeded") ||
       msg.includes("resize observer")
+    );
+  };
+
+  // Helper function to check for DOM manipulation errors caused by external scripts
+  const isDOMManipulationError = (message: string) => {
+    const msg = message.toLowerCase();
+    return (
+      msg.includes("removechild") ||
+      msg.includes("insertbefore") ||
+      msg.includes("not a child of this node") ||
+      msg.includes("failed to execute") ||
+      (msg.includes("node") && (msg.includes("remove") || msg.includes("insert")))
     );
   };
 
