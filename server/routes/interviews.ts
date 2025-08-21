@@ -16,7 +16,8 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
     const user = authReq.user!;
     const interviewData: ScheduleInterviewRequest = req.body;
 
-    console.log("📅 Scheduling interview:", interviewData);
+    console.log("📅 Scheduling interview - Raw request:", req.body);
+    console.log("📅 Scheduling interview - Parsed data:", interviewData);
 
     // Only HR and Admin can schedule interviews
     if (user.role !== "hr" && user.role !== "admin") {
