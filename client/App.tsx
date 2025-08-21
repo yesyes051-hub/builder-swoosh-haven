@@ -245,17 +245,24 @@ const AppContent = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <ResizeObserverErrorBoundary>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </ResizeObserverErrorBoundary>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary
+    onError={(error, errorInfo) => {
+      console.error('App-level error:', error, errorInfo);
+      // You could send this to a logging service
+    }}
+  >
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <ResizeObserverErrorBoundary>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </ResizeObserverErrorBoundary>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 // Prevent multiple createRoot calls during development hot reloads
