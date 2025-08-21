@@ -226,25 +226,19 @@ export default function TimesheetForm({ onRefresh }: Props) {
                 <Label htmlFor="project">Project *</Label>
                 <Select value={formData.projectId} onValueChange={(value) => setFormData(prev => ({ ...prev, projectId: value }))}>
                   <SelectTrigger>
-                    <SelectValue placeholder={projects.length > 0 ? "Select a project" : "No projects available"} />
+                    <SelectValue placeholder="Select a project" />
                   </SelectTrigger>
                   <SelectContent>
-                    {projects.length > 0 ? (
-                      projects.map((project) => (
-                        <SelectItem key={project._id} value={project._id}>
-                          {project.projectName} ({project.status})
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="" disabled>
-                        No projects available - create a project first
+                    {projects.map((project) => (
+                      <SelectItem key={project._id} value={project._id}>
+                        {project.projectName}
                       </SelectItem>
-                    )}
+                    ))}
                   </SelectContent>
                 </Select>
                 {projects.length === 0 && (
                   <p className="text-sm text-red-600">
-                    ⚠️ At least one project must exist before creating timesheet entries.
+                    ⚠️ No projects available. Please create a project first before adding timesheet entries.
                   </p>
                 )}
               </div>
