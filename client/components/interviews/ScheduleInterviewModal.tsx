@@ -265,18 +265,12 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
                 {/* Candidate Selection */}
                 <div className="space-y-2">
                   <Label htmlFor="candidate">Candidate (Employee)</Label>
-                  <Input
-                    placeholder="Search candidates..."
-                    value={candidateSearch}
-                    onChange={(e) => setCandidateSearch(e.target.value)}
-                    className="mb-2"
-                  />
                   <Select value={candidateId} onValueChange={setCandidateId}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select candidate" />
                     </SelectTrigger>
                     <SelectContent>
-                      {filteredCandidates.map((candidate) => (
+                      {candidates.map((candidate) => (
                         <SelectItem key={candidate.id} value={candidate.id}>
                           <div className="flex flex-col">
                             <span>{candidate.firstName} {candidate.lastName}</span>
@@ -293,18 +287,12 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
                 {/* Interviewer Selection */}
                 <div className="space-y-2">
                   <Label htmlFor="interviewer">Interviewer</Label>
-                  <Input
-                    placeholder="Search interviewers..."
-                    value={interviewerSearch}
-                    onChange={(e) => setInterviewerSearch(e.target.value)}
-                    className="mb-2"
-                  />
                   <Select value={interviewerId} onValueChange={setInterviewerId}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select interviewer" />
                     </SelectTrigger>
                     <SelectContent>
-                      {filteredInterviewers.map((interviewer) => (
+                      {interviewers.map((interviewer) => (
                         <SelectItem key={interviewer.id} value={interviewer.id}>
                           <div className="flex flex-col">
                             <span>{interviewer.firstName} {interviewer.lastName}</span>
