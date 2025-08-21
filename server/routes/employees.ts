@@ -79,8 +79,17 @@ export const getEmployeesByRole: RequestHandler = async (req, res) => {
   try {
     const { role } = req.params;
     console.log(`👥 Fetching employees with role: ${role}...`);
-    
-    const employees = await EmployeeUser.find({ role: new RegExp(role, 'i') })
+
+    // Map the lowercase role parameter to the proper case used in database
+    const roleMap: { [key: string]: string } = {
+      'employee': 'Employee',
+      'manager': 'Manager',
+      'hr': 'HR'
+    };
+
+    const dbRole = roleMap[role.toLowerCase()] || role;
+
+    const employees = await EmployeeUser.find({ role: dbRole })
       .select('firstName lastName email role jobStatus')
       .sort({ firstName: 1, lastName: 1 });
 
@@ -95,7 +104,7 @@ export const getEmployeesByRole: RequestHandler = async (req, res) => {
     }));
 
     console.log('✅ Employees by role retrieved:', formattedEmployees.length);
-    
+
     res.json({
       success: true,
       data: formattedEmployees
