@@ -336,11 +336,6 @@ export default function EmployeeDashboard({ data }: Props) {
                                 </div>
                               </div>
                             </div>
-                            {interview.interviewer?.email && (
-                              <div className="mt-2 text-sm text-gray-600">
-                                <strong>Interviewer Email:</strong> {interview.interviewer.email}
-                              </div>
-                            )}
                           </div>
                         </div>
                       </div>
