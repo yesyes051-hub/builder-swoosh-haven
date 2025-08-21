@@ -1,24 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { SafeCalendar as Calendar } from '@/components/ui/safe-calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { 
-  Plus, 
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { SafeCalendar as Calendar } from "@/components/ui/safe-calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Plus,
   Calendar as CalendarIcon,
   CheckCircle,
   AlertTriangle,
   Loader2,
-  Ticket as TicketIcon
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { ApiResponse } from '@shared/api';
+  Ticket as TicketIcon,
+} from "lucide-react";
+import { format } from "date-fns";
+import { ApiResponse } from "@shared/api";
 
 interface Project {
   _id: string;
@@ -60,22 +77,22 @@ export default function TicketForm({ onTicketCreated }: Props) {
   const { token, user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
 
   // Form state
   const [formData, setFormData] = useState({
-    projectId: '',
-    title: '',
-    description: '',
-    assignedTo: 'unassigned',
-    type: 'Task' as const,
-    priority: 'Medium' as const,
-    status: 'Pending' as const,
-    estimatedHours: '',
-    dueDate: undefined as Date | undefined
+    projectId: "",
+    title: "",
+    description: "",
+    assignedTo: "unassigned",
+    type: "Task" as const,
+    priority: "Medium" as const,
+    status: "Pending" as const,
+    estimatedHours: "",
+    dueDate: undefined as Date | undefined,
   });
 
   useEffect(() => {
@@ -87,27 +104,27 @@ export default function TicketForm({ onTicketCreated }: Props) {
 
   const loadProjects = async () => {
     try {
-      const response = await fetch('/api/pms/projects', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetch("/api/pms/projects", {
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data: ApiResponse<Project[]> = await response.json();
       if (data.success) {
         setProjects(data.data || []);
       }
     } catch (error) {
-      console.error('Error loading projects:', error);
+      console.error("Error loading projects:", error);
     }
   };
 
   const loadEmployees = async () => {
     try {
-      const response = await fetch('/api/pms/employees', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetch("/api/pms/employees", {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.status === 403) {
         // User doesn't have permission to view employees list
-        console.log('⚠️ User does not have permission to view employees list');
+        console.log("⚠️ User does not have permission to view employees list");
         setEmployees([]);
         return;
       }
@@ -117,34 +134,36 @@ export default function TicketForm({ onTicketCreated }: Props) {
         setEmployees(data.data || []);
       }
     } catch (error) {
-      console.error('Error loading employees:', error);
+      console.error("Error loading employees:", error);
       setEmployees([]);
     }
   };
 
   const resetForm = () => {
     setFormData({
-      projectId: '',
-      title: '',
-      description: '',
-      assignedTo: 'unassigned',
-      type: 'Task',
-      priority: 'Medium',
-      status: 'Pending',
-      estimatedHours: '',
-      dueDate: undefined
+      projectId: "",
+      title: "",
+      description: "",
+      assignedTo: "unassigned",
+      type: "Task",
+      priority: "Medium",
+      status: "Pending",
+      estimatedHours: "",
+      dueDate: undefined,
     });
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     if (!formData.projectId || !formData.title || !formData.description) {
-      setError('Please fill in all required fields (project, title, and description)');
+      setError(
+        "Please fill in all required fields (project, title, and description)",
+      );
       return;
     }
 
@@ -155,45 +174,50 @@ export default function TicketForm({ onTicketCreated }: Props) {
         projectId: formData.projectId,
         title: formData.title,
         description: formData.description,
-        assignedTo: formData.assignedTo === 'unassigned' ? undefined : formData.assignedTo,
+        assignedTo:
+          formData.assignedTo === "unassigned"
+            ? undefined
+            : formData.assignedTo,
         type: formData.type,
         priority: formData.priority,
         status: formData.status,
-        estimatedHours: formData.estimatedHours ? parseInt(formData.estimatedHours) : undefined,
-        dueDate: formData.dueDate?.toISOString()
+        estimatedHours: formData.estimatedHours
+          ? parseInt(formData.estimatedHours)
+          : undefined,
+        dueDate: formData.dueDate?.toISOString(),
       };
 
-      console.log('🔍 Creating ticket with data:', ticketData);
+      console.log("🔍 Creating ticket with data:", ticketData);
 
-      const response = await fetch('/api/pms/tickets', {
-        method: 'POST',
+      const response = await fetch("/api/pms/tickets", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(ticketData)
+        body: JSON.stringify(ticketData),
       });
 
       const data: ApiResponse<TicketData> = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to create ticket');
+        throw new Error(data.error || "Failed to create ticket");
       }
 
-      setSuccess('Ticket created successfully!');
+      setSuccess("Ticket created successfully!");
       resetForm();
-      
+
       if (data.data) {
         onTicketCreated(data.data);
       }
-      
+
       setTimeout(() => {
         setIsModalOpen(false);
-        setSuccess('');
+        setSuccess("");
       }, 2000);
     } catch (err) {
-      console.error('Create ticket error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create ticket');
+      console.error("Create ticket error:", err);
+      setError(err instanceof Error ? err.message : "Failed to create ticket");
     } finally {
       setLoading(false);
     }
@@ -222,7 +246,7 @@ export default function TicketForm({ onTicketCreated }: Props) {
             Create a new ticket to track issues, features, or tasks
           </DialogDescription>
         </DialogHeader>
-        
+
         {error && (
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
@@ -236,14 +260,16 @@ export default function TicketForm({ onTicketCreated }: Props) {
             <AlertDescription>{success}</AlertDescription>
           </Alert>
         )}
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="projectId">Associated Project *</Label>
-              <Select 
-                value={formData.projectId} 
-                onValueChange={(value) => setFormData({...formData, projectId: value})}
+              <Select
+                value={formData.projectId}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, projectId: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a project" />
@@ -262,7 +288,9 @@ export default function TicketForm({ onTicketCreated }: Props) {
               <Label htmlFor="assignedTo">Assignee (Optional)</Label>
               <Select
                 value={formData.assignedTo}
-                onValueChange={(value) => setFormData({...formData, assignedTo: value})}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, assignedTo: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select assignee (optional)" />
@@ -272,7 +300,8 @@ export default function TicketForm({ onTicketCreated }: Props) {
                   {employees.length > 0 ? (
                     employees.map((employee) => (
                       <SelectItem key={employee._id} value={employee._id}>
-                        {employee.firstName} {employee.lastName} ({employee.role})
+                        {employee.firstName} {employee.lastName} (
+                        {employee.role})
                       </SelectItem>
                     ))
                   ) : (
@@ -284,7 +313,8 @@ export default function TicketForm({ onTicketCreated }: Props) {
               </Select>
               {employees.length === 0 && (
                 <p className="text-sm text-gray-500 mt-1">
-                  💡 Tip: Admin or HR role required to see employee list for assignment
+                  💡 Tip: Admin or HR role required to see employee list for
+                  assignment
                 </p>
               )}
             </div>
@@ -295,7 +325,9 @@ export default function TicketForm({ onTicketCreated }: Props) {
             <Input
               id="title"
               value={formData.title}
-              onChange={(e) => setFormData({...formData, title: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               placeholder="Enter ticket title"
               required
             />
@@ -306,7 +338,9 @@ export default function TicketForm({ onTicketCreated }: Props) {
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               placeholder="Describe the issue, feature, or task in detail"
               rows={4}
               required
@@ -316,9 +350,11 @@ export default function TicketForm({ onTicketCreated }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="type">Type</Label>
-              <Select 
-                value={formData.type} 
-                onValueChange={(value: any) => setFormData({...formData, type: value})}
+              <Select
+                value={formData.type}
+                onValueChange={(value: any) =>
+                  setFormData({ ...formData, type: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
@@ -334,9 +370,11 @@ export default function TicketForm({ onTicketCreated }: Props) {
 
             <div>
               <Label htmlFor="priority">Priority</Label>
-              <Select 
-                value={formData.priority} 
-                onValueChange={(value: any) => setFormData({...formData, priority: value})}
+              <Select
+                value={formData.priority}
+                onValueChange={(value: any) =>
+                  setFormData({ ...formData, priority: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select priority" />
@@ -352,9 +390,11 @@ export default function TicketForm({ onTicketCreated }: Props) {
 
             <div>
               <Label htmlFor="status">Status</Label>
-              <Select 
-                value={formData.status} 
-                onValueChange={(value: any) => setFormData({...formData, status: value})}
+              <Select
+                value={formData.status}
+                onValueChange={(value: any) =>
+                  setFormData({ ...formData, status: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
@@ -376,7 +416,9 @@ export default function TicketForm({ onTicketCreated }: Props) {
                 id="estimatedHours"
                 type="number"
                 value={formData.estimatedHours}
-                onChange={(e) => setFormData({...formData, estimatedHours: e.target.value})}
+                onChange={(e) =>
+                  setFormData({ ...formData, estimatedHours: e.target.value })
+                }
                 placeholder="Enter estimated hours"
                 min="0"
                 step="0.5"
@@ -394,14 +436,18 @@ export default function TicketForm({ onTicketCreated }: Props) {
                     }`}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.dueDate ? format(formData.dueDate, "PPP") : "Pick due date (optional)"}
+                    {formData.dueDate
+                      ? format(formData.dueDate, "PPP")
+                      : "Pick due date (optional)"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
                     selected={formData.dueDate}
-                    onSelect={(date) => setFormData({...formData, dueDate: date})}
+                    onSelect={(date) =>
+                      setFormData({ ...formData, dueDate: date })
+                    }
                     initialFocus
                   />
                 </PopoverContent>
@@ -410,11 +456,7 @@ export default function TicketForm({ onTicketCreated }: Props) {
           </div>
 
           <div className="flex space-x-2 pt-4">
-            <Button 
-              type="submit" 
-              className="flex-1" 
-              disabled={loading}
-            >
+            <Button type="submit" className="flex-1" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -427,9 +469,9 @@ export default function TicketForm({ onTicketCreated }: Props) {
                 </>
               )}
             </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => setIsModalOpen(false)}
               disabled={loading}
             >

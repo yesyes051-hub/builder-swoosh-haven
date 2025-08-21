@@ -36,28 +36,40 @@ const SafeCalendar = React.forwardRef<HTMLDivElement, CalendarProps>(
         }
       };
 
-      window.addEventListener('error', handleError, true);
-      return () => window.removeEventListener('error', handleError, true);
+      window.addEventListener("error", handleError, true);
+      return () => window.removeEventListener("error", handleError, true);
     }, []);
 
     if (!isVisible) {
-      return <div ref={ref} className="h-[300px] w-[300px] animate-pulse bg-gray-100 rounded" />;
+      return (
+        <div
+          ref={ref}
+          className="h-[300px] w-[300px] animate-pulse bg-gray-100 rounded"
+        />
+      );
     }
 
     try {
       return <Calendar ref={ref} {...props} />;
     } catch (error) {
-      if (error instanceof Error && 
-          (error.message.toLowerCase().includes("resizeobserver") ||
-           error.message.toLowerCase().includes("loop completed"))) {
+      if (
+        error instanceof Error &&
+        (error.message.toLowerCase().includes("resizeobserver") ||
+          error.message.toLowerCase().includes("loop completed"))
+      ) {
         // If there's a ResizeObserver error, show a simple fallback
-        return <div ref={ref} className="h-[300px] w-[300px] bg-gray-50 rounded flex items-center justify-center text-gray-500">
-          Calendar loading...
-        </div>;
+        return (
+          <div
+            ref={ref}
+            className="h-[300px] w-[300px] bg-gray-50 rounded flex items-center justify-center text-gray-500"
+          >
+            Calendar loading...
+          </div>
+        );
       }
       throw error;
     }
-  }
+  },
 );
 
 SafeCalendar.displayName = "SafeCalendar";

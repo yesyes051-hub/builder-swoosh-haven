@@ -1,24 +1,41 @@
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { SafeCalendar as Calendar } from '@/components/ui/safe-calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { 
-  Plus, 
+import React, { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { SafeCalendar as Calendar } from "@/components/ui/safe-calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Plus,
   Calendar as CalendarIcon,
   CheckCircle,
   AlertTriangle,
   Loader2,
-  FolderOpen
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { ApiResponse } from '@shared/api';
+  FolderOpen,
+} from "lucide-react";
+import { format } from "date-fns";
+import { ApiResponse } from "@shared/api";
 
 interface ProjectDetail {
   _id: string;
@@ -26,8 +43,8 @@ interface ProjectDetail {
   projectManager: string;
   startDate: string;
   endDate?: string;
-  status: 'Planning' | 'In Progress' | 'In Review' | 'Completed' | 'On Hold';
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  status: "Planning" | "In Progress" | "In Review" | "Completed" | "On Hold";
+  priority: "Low" | "Medium" | "High" | "Critical";
   description: string;
   teamMembers: string[];
   budget?: number;
@@ -41,39 +58,43 @@ export default function ProjectForm({ onProjectCreated }: Props) {
   const { token, user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Form state
   const [formData, setFormData] = useState({
-    projectName: '',
-    projectManager: user?.id || '',
+    projectName: "",
+    projectManager: user?.id || "",
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined,
-    status: 'Planning' as const,
-    priority: 'Medium' as const,
-    description: '',
-    teamMembers: [''],
-    budget: ''
+    status: "Planning" as const,
+    priority: "Medium" as const,
+    description: "",
+    teamMembers: [""],
+    budget: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     if (!formData.projectName || !formData.description || !formData.startDate) {
-      setError('Please fill in all required fields including project name, description, and start date');
+      setError(
+        "Please fill in all required fields including project name, description, and start date",
+      );
       return;
     }
 
     // Validate dates
     if (formData.endDate && formData.endDate <= formData.startDate) {
-      setError('End date must be after start date');
+      setError("End date must be after start date");
       return;
     }
 
-    const filteredTeamMembers = formData.teamMembers.filter(member => member.trim() !== '');
+    const filteredTeamMembers = formData.teamMembers.filter(
+      (member) => member.trim() !== "",
+    );
 
     try {
       setLoading(true);
@@ -87,50 +108,50 @@ export default function ProjectForm({ onProjectCreated }: Props) {
         priority: formData.priority,
         description: formData.description,
         teamMembers: filteredTeamMembers,
-        budget: formData.budget ? parseFloat(formData.budget) : undefined
+        budget: formData.budget ? parseFloat(formData.budget) : undefined,
       };
 
-      console.log('🔍 Creating project with data:', projectData);
+      console.log("🔍 Creating project with data:", projectData);
 
-      const response = await fetch('/api/pms/projects', {
-        method: 'POST',
+      const response = await fetch("/api/pms/projects", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(projectData)
+        body: JSON.stringify(projectData),
       });
 
       const data: ApiResponse<ProjectDetail> = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to create project');
+        throw new Error(data.error || "Failed to create project");
       }
 
-      setSuccess('Project created successfully!');
+      setSuccess("Project created successfully!");
       setFormData({
-        projectName: '',
-        projectManager: user?.id || '',
+        projectName: "",
+        projectManager: user?.id || "",
         startDate: undefined,
         endDate: undefined,
-        status: 'Planning',
-        priority: 'Medium',
-        description: '',
-        teamMembers: [''],
-        budget: ''
+        status: "Planning",
+        priority: "Medium",
+        description: "",
+        teamMembers: [""],
+        budget: "",
       });
-      
+
       if (data.data) {
         onProjectCreated(data.data);
       }
-      
+
       setTimeout(() => {
         setIsModalOpen(false);
-        setSuccess('');
+        setSuccess("");
       }, 2000);
     } catch (err) {
-      console.error('Create project error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create project');
+      console.error("Create project error:", err);
+      setError(err instanceof Error ? err.message : "Failed to create project");
     } finally {
       setLoading(false);
     }
@@ -139,7 +160,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
   const addTeamMember = () => {
     setFormData({
       ...formData,
-      teamMembers: [...formData.teamMembers, '']
+      teamMembers: [...formData.teamMembers, ""],
     });
   };
 
@@ -174,7 +195,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
             Add a new project to the system with all necessary details
           </DialogDescription>
         </DialogHeader>
-        
+
         {error && (
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
@@ -188,7 +209,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
             <AlertDescription>{success}</AlertDescription>
           </Alert>
         )}
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -196,7 +217,9 @@ export default function ProjectForm({ onProjectCreated }: Props) {
               <Input
                 id="projectName"
                 value={formData.projectName}
-                onChange={(e) => setFormData({...formData, projectName: e.target.value})}
+                onChange={(e) =>
+                  setFormData({ ...formData, projectName: e.target.value })
+                }
                 placeholder="Enter project name"
                 required
               />
@@ -207,7 +230,9 @@ export default function ProjectForm({ onProjectCreated }: Props) {
               <Input
                 id="projectManager"
                 value={formData.projectManager}
-                onChange={(e) => setFormData({...formData, projectManager: e.target.value})}
+                onChange={(e) =>
+                  setFormData({ ...formData, projectManager: e.target.value })
+                }
                 placeholder="Enter manager ID"
               />
             </div>
@@ -218,7 +243,9 @@ export default function ProjectForm({ onProjectCreated }: Props) {
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               placeholder="Enter project description"
               rows={3}
               required
@@ -237,15 +264,21 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                     }`}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.startDate ? format(formData.startDate, "PPP") : "Pick start date"}
+                    {formData.startDate
+                      ? format(formData.startDate, "PPP")
+                      : "Pick start date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
                     selected={formData.startDate}
-                    onSelect={(date) => setFormData({...formData, startDate: date})}
-                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                    onSelect={(date) =>
+                      setFormData({ ...formData, startDate: date })
+                    }
+                    disabled={(date) =>
+                      date < new Date(new Date().setHours(0, 0, 0, 0))
+                    }
                     initialFocus
                   />
                 </PopoverContent>
@@ -263,15 +296,23 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                     }`}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.endDate ? format(formData.endDate, "PPP") : "Pick end date (optional)"}
+                    {formData.endDate
+                      ? format(formData.endDate, "PPP")
+                      : "Pick end date (optional)"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
                     selected={formData.endDate}
-                    onSelect={(date) => setFormData({...formData, endDate: date})}
-                    disabled={(date) => formData.startDate ? date < formData.startDate : date < new Date(new Date().setHours(0, 0, 0, 0))}
+                    onSelect={(date) =>
+                      setFormData({ ...formData, endDate: date })
+                    }
+                    disabled={(date) =>
+                      formData.startDate
+                        ? date < formData.startDate
+                        : date < new Date(new Date().setHours(0, 0, 0, 0))
+                    }
                     initialFocus
                   />
                 </PopoverContent>
@@ -282,9 +323,11 @@ export default function ProjectForm({ onProjectCreated }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="status">Status</Label>
-              <Select 
-                value={formData.status} 
-                onValueChange={(value: any) => setFormData({...formData, status: value})}
+              <Select
+                value={formData.status}
+                onValueChange={(value: any) =>
+                  setFormData({ ...formData, status: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
@@ -301,9 +344,11 @@ export default function ProjectForm({ onProjectCreated }: Props) {
 
             <div>
               <Label htmlFor="priority">Priority</Label>
-              <Select 
-                value={formData.priority} 
-                onValueChange={(value: any) => setFormData({...formData, priority: value})}
+              <Select
+                value={formData.priority}
+                onValueChange={(value: any) =>
+                  setFormData({ ...formData, priority: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select priority" />
@@ -323,7 +368,9 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                 id="budget"
                 type="number"
                 value={formData.budget}
-                onChange={(e) => setFormData({...formData, budget: e.target.value})}
+                onChange={(e) =>
+                  setFormData({ ...formData, budget: e.target.value })
+                }
                 placeholder="Enter budget"
                 min="0"
               />
@@ -366,11 +413,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
           </div>
 
           <div className="flex space-x-2 pt-4">
-            <Button 
-              type="submit" 
-              className="flex-1" 
-              disabled={loading}
-            >
+            <Button type="submit" className="flex-1" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -383,9 +426,9 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                 </>
               )}
             </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => setIsModalOpen(false)}
               disabled={loading}
             >

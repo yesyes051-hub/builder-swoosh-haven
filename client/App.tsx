@@ -10,11 +10,13 @@ if (typeof window !== "undefined") {
   // Helper function to check for ResizeObserver errors
   const isResizeObserverError = (message: string) => {
     const msg = message.toLowerCase();
-    return msg.includes("resizeobserver") ||
-           msg.includes("loop completed") ||
-           msg.includes("undelivered notifications") ||
-           msg.includes("loop limit exceeded") ||
-           msg.includes("resize observer");
+    return (
+      msg.includes("resizeobserver") ||
+      msg.includes("loop completed") ||
+      msg.includes("undelivered notifications") ||
+      msg.includes("loop limit exceeded") ||
+      msg.includes("resize observer")
+    );
   };
 
   // Override the global error handler
@@ -43,14 +45,18 @@ if (typeof window !== "undefined") {
   };
 
   // Also catch errors during the error event itself
-  window.addEventListener('error', (event) => {
-    const msg = String(event.message || event.error?.message || "");
-    if (isResizeObserverError(msg)) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      return false;
-    }
-  }, true);
+  window.addEventListener(
+    "error",
+    (event) => {
+      const msg = String(event.message || event.error?.message || "");
+      if (isResizeObserverError(msg)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return false;
+      }
+    },
+    true,
+  );
 
   // Add a catch-all for any remaining console errors
   const originalConsoleError = console.error;
