@@ -180,12 +180,12 @@ export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
 
   return (
     <Card className="max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Calendar className="h-6 w-6 text-blue-600" />
+      <CardHeader className="pb-4 sm:pb-6">
+        <CardTitle className="flex items-center space-x-2 text-lg sm:text-xl">
+          <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
           <span>Daily Update</span>
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-sm sm:text-base">
           Share your progress, accomplishments, and plans for today
         </CardDescription>
       </CardHeader>
