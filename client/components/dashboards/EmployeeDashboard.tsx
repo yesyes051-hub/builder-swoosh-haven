@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { EmployeeDashboard as EmployeeDashboardType } from '@shared/api';
+import { EmployeeDashboard as EmployeeDashboardType, ApiResponse, MockInterview } from '@shared/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,38 @@ import {
   Clock,
   CheckCircle,
   Trophy,
-  BarChart3
+  BarChart3,
+  User,
+  Loader2
 } from 'lucide-react';
 import DashboardLayout from './DashboardLayout';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Props {
   data: EmployeeDashboardType;
+}
+
+interface InterviewWithDetails extends MockInterview {
+  candidate?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    department?: string;
+  };
+  interviewer?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    department?: string;
+  };
+  scheduledByUser?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
 }
 
 export default function EmployeeDashboard({ data }: Props) {
