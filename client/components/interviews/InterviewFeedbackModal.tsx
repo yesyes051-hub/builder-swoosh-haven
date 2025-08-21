@@ -1,26 +1,30 @@
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { 
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue 
-} from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { toast } from 'sonner';
-import { SubmitFeedbackRequest, ApiResponse, InterviewFeedback } from '@shared/api';
-import { Loader2, Star } from 'lucide-react';
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { toast } from "sonner";
+import {
+  SubmitFeedbackRequest,
+  ApiResponse,
+  InterviewFeedback,
+} from "@shared/api";
+import { Loader2, Star } from "lucide-react";
 
 interface InterviewFeedbackModalProps {
   isOpen: boolean;
@@ -38,21 +42,21 @@ interface InterviewFeedbackModalProps {
 }
 
 const ratingLabels = {
-  1: 'Poor',
-  2: 'Below Average', 
-  3: 'Average',
-  4: 'Good',
-  5: 'Excellent'
+  1: "Poor",
+  2: "Below Average",
+  3: "Average",
+  4: "Good",
+  5: "Excellent",
 };
 
-export default function InterviewFeedbackModal({ 
-  isOpen, 
-  onClose, 
-  interview 
+export default function InterviewFeedbackModal({
+  isOpen,
+  onClose,
+  interview,
 }: InterviewFeedbackModalProps) {
   const { token } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [ratings, setRatings] = useState({
     communication: 3,
     confidence: 3,
@@ -64,21 +68,21 @@ export default function InterviewFeedbackModal({
     energyInInterview: 3,
     analyticalThinking: 3,
   });
-  
-  const [writtenFeedback, setWrittenFeedback] = useState('');
+
+  const [writtenFeedback, setWrittenFeedback] = useState("");
 
   const handleRatingChange = (field: keyof typeof ratings, value: number[]) => {
-    setRatings(prev => ({
+    setRatings((prev) => ({
       ...prev,
-      [field]: value[0]
+      [field]: value[0],
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!writtenFeedback.trim()) {
-      toast.error('Written feedback is required');
+      toast.error("Written feedback is required");
       return;
     }
 
@@ -92,11 +96,11 @@ export default function InterviewFeedbackModal({
         writtenFeedback: writtenFeedback.trim(),
       };
 
-      const response = await fetch('/api/interviews/feedback', {
-        method: 'POST',
+      const response = await fetch("/api/interviews/feedback", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(feedbackData),
       });
@@ -104,7 +108,7 @@ export default function InterviewFeedbackModal({
       const result: ApiResponse<InterviewFeedback> = await response.json();
 
       if (response.ok && result.success) {
-        toast.success('Feedback submitted successfully!');
+        toast.success("Feedback submitted successfully!");
         onClose();
         // Reset form
         setRatings({
@@ -118,26 +122,26 @@ export default function InterviewFeedbackModal({
           energyInInterview: 3,
           analyticalThinking: 3,
         });
-        setWrittenFeedback('');
+        setWrittenFeedback("");
       } else {
-        toast.error(result.error || 'Failed to submit feedback');
+        toast.error(result.error || "Failed to submit feedback");
       }
     } catch (error) {
-      console.error('Error submitting feedback:', error);
-      toast.error('An error occurred while submitting feedback');
+      console.error("Error submitting feedback:", error);
+      toast.error("An error occurred while submitting feedback");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const RatingField = ({ 
-    label, 
-    field, 
-    value 
-  }: { 
-    label: string; 
-    field: keyof typeof ratings; 
-    value: number; 
+  const RatingField = ({
+    label,
+    field,
+    value,
+  }: {
+    label: string;
+    field: keyof typeof ratings;
+    value: number;
   }) => (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
@@ -176,68 +180,70 @@ export default function InterviewFeedbackModal({
           <DialogDescription className="text-gray-600">
             {interview.candidate && (
               <>
-                Candidate: {interview.candidate.firstName} {interview.candidate.lastName}
+                Candidate: {interview.candidate.firstName}{" "}
+                {interview.candidate.lastName}
                 <br />
               </>
             )}
-            Interview Type: {interview.type} | Date: {new Date(interview.scheduledAt).toLocaleDateString()}
+            Interview Type: {interview.type} | Date:{" "}
+            {new Date(interview.scheduledAt).toLocaleDateString()}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid gap-6">
-            <RatingField 
-              label="Communication" 
-              field="communication" 
-              value={ratings.communication} 
+            <RatingField
+              label="Communication"
+              field="communication"
+              value={ratings.communication}
             />
-            
-            <RatingField 
-              label="Confidence" 
-              field="confidence" 
-              value={ratings.confidence} 
+
+            <RatingField
+              label="Confidence"
+              field="confidence"
+              value={ratings.confidence}
             />
-            
-            <RatingField 
-              label="Presence of Mind" 
-              field="presenceOfMind" 
-              value={ratings.presenceOfMind} 
+
+            <RatingField
+              label="Presence of Mind"
+              field="presenceOfMind"
+              value={ratings.presenceOfMind}
             />
-            
-            <RatingField 
-              label="Interpersonal Skills" 
-              field="interpersonalSkills" 
-              value={ratings.interpersonalSkills} 
+
+            <RatingField
+              label="Interpersonal Skills"
+              field="interpersonalSkills"
+              value={ratings.interpersonalSkills}
             />
-            
-            <RatingField 
-              label="Body Gesture" 
-              field="bodyGesture" 
-              value={ratings.bodyGesture} 
+
+            <RatingField
+              label="Body Gesture"
+              field="bodyGesture"
+              value={ratings.bodyGesture}
             />
-            
-            <RatingField 
-              label="Technical Question Handling" 
-              field="technicalQuestionHandling" 
-              value={ratings.technicalQuestionHandling} 
+
+            <RatingField
+              label="Technical Question Handling"
+              field="technicalQuestionHandling"
+              value={ratings.technicalQuestionHandling}
             />
-            
-            <RatingField 
-              label="Coding Elaboration" 
-              field="codingElaboration" 
-              value={ratings.codingElaboration} 
+
+            <RatingField
+              label="Coding Elaboration"
+              field="codingElaboration"
+              value={ratings.codingElaboration}
             />
-            
-            <RatingField 
-              label="Energy in Interview" 
-              field="energyInInterview" 
-              value={ratings.energyInInterview} 
+
+            <RatingField
+              label="Energy in Interview"
+              field="energyInInterview"
+              value={ratings.energyInInterview}
             />
-            
-            <RatingField 
-              label="Analytical Thinking" 
-              field="analyticalThinking" 
-              value={ratings.analyticalThinking} 
+
+            <RatingField
+              label="Analytical Thinking"
+              field="analyticalThinking"
+              value={ratings.analyticalThinking}
             />
           </div>
 
@@ -256,16 +262,16 @@ export default function InterviewFeedbackModal({
           </div>
 
           <div className="flex justify-end space-x-3 pt-4 border-t">
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isSubmitting || !writtenFeedback.trim()}
               className="bg-green-600 hover:bg-green-700"
             >
@@ -275,7 +281,7 @@ export default function InterviewFeedbackModal({
                   Submitting...
                 </>
               ) : (
-                'Submit Feedback'
+                "Submit Feedback"
               )}
             </Button>
           </div>

@@ -4,7 +4,7 @@
  */
 
 // User Roles
-export type UserRole = 'admin' | 'hr' | 'manager' | 'employee' | 'interviewer';
+export type UserRole = "admin" | "hr" | "manager" | "employee" | "interviewer";
 
 // User Management
 export interface User {
@@ -23,7 +23,7 @@ export interface User {
 
 export interface AuthResponse {
   token: string;
-  user: Omit<User, 'password'>;
+  user: Omit<User, "password">;
 }
 
 export interface LoginRequest {
@@ -72,8 +72,8 @@ export interface Project {
   teamMembers: string[]; // User IDs
   startDate: Date;
   endDate?: Date;
-  status: 'planning' | 'active' | 'completed' | 'on-hold';
-  priority: 'low' | 'medium' | 'high';
+  status: "planning" | "active" | "completed" | "on-hold";
+  priority: "low" | "medium" | "high";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -86,8 +86,8 @@ export interface MockInterview {
   scheduledBy: string; // HR user ID
   scheduledAt: Date;
   duration: number; // minutes
-  type: 'technical' | 'behavioral' | 'system-design' | 'general';
-  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
+  type: "technical" | "behavioral" | "system-design" | "general";
+  status: "scheduled" | "in-progress" | "completed" | "cancelled";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -129,7 +129,7 @@ export interface ScheduleInterviewRequest {
   date: Date;
   time: string;
   duration: number;
-  type: MockInterview['type'];
+  type: MockInterview["type"];
 }
 
 export interface SubmitFeedbackRequest {
@@ -161,7 +161,7 @@ export interface SubmitFeedbackRequest {
 // Leaderboard
 export interface LeaderboardEntry {
   userId: string;
-  user: Pick<User, 'firstName' | 'lastName' | 'department'>;
+  user: Pick<User, "firstName" | "lastName" | "department">;
   totalScore: number;
   rank: number;
   updateConsistency: number; // percentage of days with updates
@@ -173,7 +173,7 @@ export interface LeaderboardEntry {
 
 export interface LeaderboardResponse {
   entries: LeaderboardEntry[];
-  period: 'weekly' | 'monthly' | 'quarterly';
+  period: "weekly" | "monthly" | "quarterly";
   generatedAt: Date;
 }
 
@@ -194,7 +194,9 @@ export interface EmployeeDashboard {
 export interface ManagerDashboard {
   user: User;
   teamMembers: User[];
-  recentTeamUpdates: (DailyUpdate & { user: Pick<User, 'firstName' | 'lastName'> })[];
+  recentTeamUpdates: (DailyUpdate & {
+    user: Pick<User, "firstName" | "lastName">;
+  })[];
   teamProjects: Project[];
   teamPerformanceStats: {
     teamSize: number;

@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IInterview extends Document {
   candidateId: string;
@@ -6,9 +6,9 @@ export interface IInterview extends Document {
   scheduledBy: string;
   date: Date;
   time: string;
-  type: 'technical' | 'behavioral' | 'system-design' | 'general';
+  type: "technical" | "behavioral" | "system-design" | "general";
   duration: number; // minutes
-  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
+  status: "scheduled" | "in-progress" | "completed" | "cancelled";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,46 +33,67 @@ export interface IInterviewFeedback extends Document {
   updatedAt: Date;
 }
 
-const InterviewSchema: Schema = new Schema({
-  candidateId: { type: String, required: true },
-  interviewerId: { type: String, required: true },
-  scheduledBy: { type: String, required: true },
-  date: { type: Date, required: true },
-  time: { type: String, required: true },
-  type: { 
-    type: String, 
-    enum: ['technical', 'behavioral', 'system-design', 'general'], 
-    required: true 
+const InterviewSchema: Schema = new Schema(
+  {
+    candidateId: { type: String, required: true },
+    interviewerId: { type: String, required: true },
+    scheduledBy: { type: String, required: true },
+    date: { type: Date, required: true },
+    time: { type: String, required: true },
+    type: {
+      type: String,
+      enum: ["technical", "behavioral", "system-design", "general"],
+      required: true,
+    },
+    duration: { type: Number, required: true },
+    status: {
+      type: String,
+      enum: ["scheduled", "in-progress", "completed", "cancelled"],
+      default: "scheduled",
+    },
   },
-  duration: { type: Number, required: true },
-  status: { 
-    type: String, 
-    enum: ['scheduled', 'in-progress', 'completed', 'cancelled'], 
-    default: 'scheduled' 
-  }
-}, {
-  timestamps: true
-});
-
-const InterviewFeedbackSchema: Schema = new Schema({
-  interviewId: { type: Schema.Types.ObjectId, ref: 'Interview', required: true },
-  candidateId: { type: String, required: true },
-  submittedBy: { type: String, required: true },
-  ratings: {
-    communication: { type: Number, min: 1, max: 5, required: true },
-    confidence: { type: Number, min: 1, max: 5, required: true },
-    presenceOfMind: { type: Number, min: 1, max: 5, required: true },
-    interpersonalSkills: { type: Number, min: 1, max: 5, required: true },
-    bodyGesture: { type: Number, min: 1, max: 5, required: true },
-    technicalQuestionHandling: { type: Number, min: 1, max: 5, required: true },
-    codingElaboration: { type: Number, min: 1, max: 5, required: true },
-    energyInInterview: { type: Number, min: 1, max: 5, required: true },
-    analyticalThinking: { type: Number, min: 1, max: 5, required: true }
+  {
+    timestamps: true,
   },
-  writtenFeedback: { type: String, required: true }
-}, {
-  timestamps: true
-});
+);
 
-export const Interview = mongoose.model<IInterview>('Interview', InterviewSchema);
-export const InterviewFeedback = mongoose.model<IInterviewFeedback>('InterviewFeedback', InterviewFeedbackSchema);
+const InterviewFeedbackSchema: Schema = new Schema(
+  {
+    interviewId: {
+      type: Schema.Types.ObjectId,
+      ref: "Interview",
+      required: true,
+    },
+    candidateId: { type: String, required: true },
+    submittedBy: { type: String, required: true },
+    ratings: {
+      communication: { type: Number, min: 1, max: 5, required: true },
+      confidence: { type: Number, min: 1, max: 5, required: true },
+      presenceOfMind: { type: Number, min: 1, max: 5, required: true },
+      interpersonalSkills: { type: Number, min: 1, max: 5, required: true },
+      bodyGesture: { type: Number, min: 1, max: 5, required: true },
+      technicalQuestionHandling: {
+        type: Number,
+        min: 1,
+        max: 5,
+        required: true,
+      },
+      codingElaboration: { type: Number, min: 1, max: 5, required: true },
+      energyInInterview: { type: Number, min: 1, max: 5, required: true },
+      analyticalThinking: { type: Number, min: 1, max: 5, required: true },
+    },
+    writtenFeedback: { type: String, required: true },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+export const Interview = mongoose.model<IInterview>(
+  "Interview",
+  InterviewSchema,
+);
+export const InterviewFeedback = mongoose.model<IInterviewFeedback>(
+  "InterviewFeedback",
+  InterviewFeedbackSchema,
+);

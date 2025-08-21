@@ -29,19 +29,19 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
 
     // Detailed validation with logging
     const missingFields = [];
-    if (!interviewData.candidateId) missingFields.push('candidateId');
-    if (!interviewData.interviewerId) missingFields.push('interviewerId');
-    if (!interviewData.date) missingFields.push('date');
-    if (!interviewData.time) missingFields.push('time');
-    if (!interviewData.duration) missingFields.push('duration');
-    if (!interviewData.type) missingFields.push('type');
+    if (!interviewData.candidateId) missingFields.push("candidateId");
+    if (!interviewData.interviewerId) missingFields.push("interviewerId");
+    if (!interviewData.date) missingFields.push("date");
+    if (!interviewData.time) missingFields.push("time");
+    if (!interviewData.duration) missingFields.push("duration");
+    if (!interviewData.type) missingFields.push("type");
 
     if (missingFields.length > 0) {
       console.log("❌ Missing required fields:", missingFields);
       console.log("📋 Received fields:", Object.keys(interviewData));
       return res.status(400).json({
         success: false,
-        error: `Missing required fields: ${missingFields.join(', ')}`,
+        error: `Missing required fields: ${missingFields.join(", ")}`,
       } as ApiResponse<never>);
     }
 
@@ -73,18 +73,22 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
 
     // Check if the interviewer is available at the scheduled time
     const scheduledDate = new Date(interviewData.date);
-    const [hours, minutes] = interviewData.time.split(':');
+    const [hours, minutes] = interviewData.time.split(":");
     scheduledDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-    
-    const endTime = new Date(scheduledDate.getTime() + interviewData.duration * 60000);
+
+    const endTime = new Date(
+      scheduledDate.getTime() + interviewData.duration * 60000,
+    );
 
     const conflictingInterview = await Interview.findOne({
       interviewerId: interviewData.interviewerId,
       date: {
-        $gte: new Date(scheduledDate.getTime() - interviewData.duration * 60000),
-        $lte: endTime
+        $gte: new Date(
+          scheduledDate.getTime() - interviewData.duration * 60000,
+        ),
+        $lte: endTime,
       },
-      status: { $ne: 'cancelled' }
+      status: { $ne: "cancelled" },
     });
 
     if (conflictingInterview) {
@@ -142,7 +146,12 @@ export const getInterviews: RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
 
-    console.log("📋 Fetching interviews for user:", user.id, "role:", user.role);
+    console.log(
+      "📋 Fetching interviews for user:",
+      user.id,
+      "role:",
+      user.role,
+    );
 
     let interviewQuery: any = {};
 
@@ -155,8 +164,8 @@ export const getInterviews: RequestHandler = async (req, res) => {
         $or: [
           { candidateId: user.id },
           { interviewerId: user.id },
-          { scheduledBy: user.id }
-        ]
+          { scheduledBy: user.id },
+        ],
       };
     }
 
@@ -170,9 +179,15 @@ export const getInterviews: RequestHandler = async (req, res) => {
     const interviewsWithDetails = await Promise.all(
       interviews.map(async (interview) => {
         try {
-          const candidate = await EmployeeUser.findById(interview.candidateId).select("-password");
-          const interviewer = await EmployeeUser.findById(interview.interviewerId).select("-password");
-          const scheduledBy = await EmployeeUser.findById(interview.scheduledBy).select("-password");
+          const candidate = await EmployeeUser.findById(
+            interview.candidateId,
+          ).select("-password");
+          const interviewer = await EmployeeUser.findById(
+            interview.interviewerId,
+          ).select("-password");
+          const scheduledBy = await EmployeeUser.findById(
+            interview.scheduledBy,
+          ).select("-password");
 
           return {
             id: interview._id.toString(),
@@ -185,26 +200,32 @@ export const getInterviews: RequestHandler = async (req, res) => {
             status: interview.status,
             createdAt: interview.createdAt!,
             updatedAt: interview.updatedAt!,
-            candidate: candidate ? {
-              id: candidate._id.toString(),
-              firstName: candidate.firstName,
-              lastName: candidate.lastName,
-              email: candidate.email,
-              department: candidate.department || "General",
-            } : null,
-            interviewer: interviewer ? {
-              id: interviewer._id.toString(),
-              firstName: interviewer.firstName,
-              lastName: interviewer.lastName,
-              email: interviewer.email,
-              department: interviewer.department || "General",
-            } : null,
-            scheduledByUser: scheduledBy ? {
-              id: scheduledBy._id.toString(),
-              firstName: scheduledBy.firstName,
-              lastName: scheduledBy.lastName,
-              email: scheduledBy.email,
-            } : null,
+            candidate: candidate
+              ? {
+                  id: candidate._id.toString(),
+                  firstName: candidate.firstName,
+                  lastName: candidate.lastName,
+                  email: candidate.email,
+                  department: candidate.department || "General",
+                }
+              : null,
+            interviewer: interviewer
+              ? {
+                  id: interviewer._id.toString(),
+                  firstName: interviewer.firstName,
+                  lastName: interviewer.lastName,
+                  email: interviewer.email,
+                  department: interviewer.department || "General",
+                }
+              : null,
+            scheduledByUser: scheduledBy
+              ? {
+                  id: scheduledBy._id.toString(),
+                  firstName: scheduledBy.firstName,
+                  lastName: scheduledBy.lastName,
+                  email: scheduledBy.email,
+                }
+              : null,
           };
         } catch (err) {
           console.error("Error processing interview:", interview._id, err);
@@ -214,7 +235,9 @@ export const getInterviews: RequestHandler = async (req, res) => {
     );
 
     // Filter out any null results
-    const validInterviews = interviewsWithDetails.filter(interview => interview !== null);
+    const validInterviews = interviewsWithDetails.filter(
+      (interview) => interview !== null,
+    );
 
     res.json({
       success: true,
@@ -294,7 +317,10 @@ export const submitFeedback: RequestHandler = async (req, res) => {
     const user = authReq.user!;
     const feedbackData: SubmitFeedbackRequest = req.body;
 
-    console.log("💬 Submitting feedback for interview:", feedbackData.interviewId);
+    console.log(
+      "💬 Submitting feedback for interview:",
+      feedbackData.interviewId,
+    );
 
     const interview = await Interview.findById(feedbackData.interviewId);
     if (!interview) {
@@ -313,14 +339,15 @@ export const submitFeedback: RequestHandler = async (req, res) => {
     ) {
       return res.status(403).json({
         success: false,
-        error: "Only interviewers, candidates, HR, or admin can submit feedback",
+        error:
+          "Only interviewers, candidates, HR, or admin can submit feedback",
       } as ApiResponse<never>);
     }
 
     // Check if feedback already exists for this user and interview
     const existingFeedback = await InterviewFeedback.findOne({
       interviewId: feedbackData.interviewId,
-      submittedBy: user.id
+      submittedBy: user.id,
     });
 
     if (existingFeedback) {
@@ -397,8 +424,8 @@ export const getInterviewFeedback: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    const feedbacks = await InterviewFeedback.find({ 
-      interviewId: id 
+    const feedbacks = await InterviewFeedback.find({
+      interviewId: id,
     }).sort({ createdAt: -1 });
 
     if (feedbacks.length === 0) {
@@ -409,7 +436,7 @@ export const getInterviewFeedback: RequestHandler = async (req, res) => {
     }
 
     // Convert to response format
-    const responseFeedbacks = feedbacks.map(feedback => ({
+    const responseFeedbacks = feedbacks.map((feedback) => ({
       id: feedback._id.toString(),
       interviewId: feedback.interviewId.toString(),
       candidateId: feedback.candidateId,

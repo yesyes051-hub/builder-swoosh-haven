@@ -1,9 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { HRDashboard as HRDashboardType, ApiResponse, MockInterview } from '@shared/api';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import {
+  HRDashboard as HRDashboardType,
+  ApiResponse,
+  MockInterview,
+} from "@shared/api";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Calendar,
   Users,
@@ -14,12 +24,12 @@ import {
   UserPlus,
   FileText,
   Loader2,
-  Star
-} from 'lucide-react';
-import DashboardLayout from './DashboardLayout';
-import { useAuth } from '@/contexts/AuthContext';
-import InterviewFeedbackModal from '@/components/interviews/InterviewFeedbackModal';
-import { toast } from 'sonner';
+  Star,
+} from "lucide-react";
+import DashboardLayout from "./DashboardLayout";
+import { useAuth } from "@/contexts/AuthContext";
+import InterviewFeedbackModal from "@/components/interviews/InterviewFeedbackModal";
+import { toast } from "sonner";
 
 interface Props {
   data: HRDashboardType;
@@ -54,11 +64,14 @@ interface InterviewWithDetails extends MockInterview {
 
 export default function HRDashboard({ data }: Props) {
   const { token } = useAuth();
-  const [employeeCount, setEmployeeCount] = useState<number>(data.departmentStats.totalEmployees);
+  const [employeeCount, setEmployeeCount] = useState<number>(
+    data.departmentStats.totalEmployees,
+  );
   const [interviews, setInterviews] = useState<InterviewWithDetails[]>([]);
   const [loading, setLoading] = useState(false);
   const [interviewsLoading, setInterviewsLoading] = useState(true);
-  const [selectedInterview, setSelectedInterview] = useState<InterviewWithDetails | null>(null);
+  const [selectedInterview, setSelectedInterview] =
+    useState<InterviewWithDetails | null>(null);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
 
   useEffect(() => {
@@ -69,10 +82,10 @@ export default function HRDashboard({ data }: Props) {
   const fetchEmployeeCount = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/employees/count', {
+      const response = await fetch("/api/employees/count", {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const result: ApiResponse<EmployeeCount> = await response.json();
@@ -81,7 +94,7 @@ export default function HRDashboard({ data }: Props) {
         setEmployeeCount(result.data.totalEmployees);
       }
     } catch (error) {
-      console.error('Failed to fetch employee count:', error);
+      console.error("Failed to fetch employee count:", error);
       // Keep the original count from props if fetch fails
     } finally {
       setLoading(false);
@@ -91,24 +104,24 @@ export default function HRDashboard({ data }: Props) {
   const fetchInterviews = async () => {
     try {
       setInterviewsLoading(true);
-      const response = await fetch('/api/interviews', {
+      const response = await fetch("/api/interviews", {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const result: ApiResponse<InterviewWithDetails[]> = await response.json();
 
       if (response.ok && result.success && result.data) {
-        console.log('📅 Fetched interviews:', result.data.length);
+        console.log("📅 Fetched interviews:", result.data.length);
         setInterviews(result.data);
       } else {
-        console.error('Failed to fetch interviews:', result.error);
-        toast.error('Failed to load interviews');
+        console.error("Failed to fetch interviews:", result.error);
+        toast.error("Failed to load interviews");
       }
     } catch (error) {
-      console.error('Failed to fetch interviews:', error);
-      toast.error('Failed to load interviews');
+      console.error("Failed to fetch interviews:", error);
+      toast.error("Failed to load interviews");
     } finally {
       setInterviewsLoading(false);
     }
@@ -127,32 +140,36 @@ export default function HRDashboard({ data }: Props) {
   };
 
   const formatDateTime = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'scheduled':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'in-progress':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'completed':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'cancelled':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+      case "scheduled":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "in-progress":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "completed":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "cancelled":
+        return "bg-gray-100 text-gray-800 border-gray-200";
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
   // Calculate stats from actual interviews
-  const pendingInterviews = interviews.filter(i => i.status === 'scheduled').length;
-  const completedInterviews = interviews.filter(i => i.status === 'completed').length;
+  const pendingInterviews = interviews.filter(
+    (i) => i.status === "scheduled",
+  ).length;
+  const completedInterviews = interviews.filter(
+    (i) => i.status === "completed",
+  ).length;
 
   return (
     <DashboardLayout user={data.user}>
@@ -171,7 +188,9 @@ export default function HRDashboard({ data }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Employees
+              </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -182,15 +201,15 @@ export default function HRDashboard({ data }: Props) {
                   employeeCount
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">
-                Active workforce
-              </p>
+              <p className="text-xs text-muted-foreground">Active workforce</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Interviews</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Pending Interviews
+              </CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -209,7 +228,9 @@ export default function HRDashboard({ data }: Props) {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed Interviews</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Completed Interviews
+              </CardTitle>
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -220,9 +241,7 @@ export default function HRDashboard({ data }: Props) {
                   completedInterviews
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">
-                Total completed
-              </p>
+              <p className="text-xs text-muted-foreground">Total completed</p>
             </CardContent>
           </Card>
         </div>
@@ -234,9 +253,7 @@ export default function HRDashboard({ data }: Props) {
               <Plus className="h-5 w-5" />
               <span>HR Actions</span>
             </CardTitle>
-            <CardDescription>
-              Common HR management tasks
-            </CardDescription>
+            <CardDescription>Common HR management tasks</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-3">
@@ -278,11 +295,16 @@ export default function HRDashboard({ data }: Props) {
                 {interviewsLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-                    <span className="ml-2 text-gray-600">Loading interviews...</span>
+                    <span className="ml-2 text-gray-600">
+                      Loading interviews...
+                    </span>
                   </div>
                 ) : interviews.length > 0 ? (
                   interviews.slice(0, 4).map((interview) => (
-                    <div key={interview.id} className="flex items-center space-x-4 p-3 border rounded-lg">
+                    <div
+                      key={interview.id}
+                      className="flex items-center space-x-4 p-3 border rounded-lg"
+                    >
                       <div className="bg-green-100 p-2 rounded-lg">
                         <Clock className="h-4 w-4 text-green-600" />
                       </div>
@@ -298,7 +320,8 @@ export default function HRDashboard({ data }: Props) {
                         </p>
                         {interview.candidate && (
                           <p className="text-sm text-gray-500 truncate">
-                            Candidate: {interview.candidate.firstName} {interview.candidate.lastName}
+                            Candidate: {interview.candidate.firstName}{" "}
+                            {interview.candidate.lastName}
                           </p>
                         )}
                       </div>
@@ -306,7 +329,8 @@ export default function HRDashboard({ data }: Props) {
                         <Badge className={getStatusColor(interview.status)}>
                           {interview.status}
                         </Badge>
-                        {(interview.status === 'completed' || interview.status === 'in-progress') && (
+                        {(interview.status === "completed" ||
+                          interview.status === "in-progress") && (
                           <div>
                             <Button
                               size="sm"
@@ -326,7 +350,9 @@ export default function HRDashboard({ data }: Props) {
                   <div className="text-center py-8 text-gray-500">
                     <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                     <p>No scheduled interviews</p>
-                    <p className="text-sm">Schedule interviews to see them here</p>
+                    <p className="text-sm">
+                      Schedule interviews to see them here
+                    </p>
                   </div>
                 )}
               </div>
@@ -357,7 +383,10 @@ export default function HRDashboard({ data }: Props) {
               <div className="space-y-4">
                 {data.recentFeedback.length > 0 ? (
                   data.recentFeedback.slice(0, 4).map((feedback) => (
-                    <div key={feedback.id} className="border-l-4 border-green-500 pl-4">
+                    <div
+                      key={feedback.id}
+                      className="border-l-4 border-green-500 pl-4"
+                    >
                       <div className="flex justify-between items-start mb-2">
                         <p className="font-medium">Interview Feedback</p>
                         <Badge variant="secondary">
@@ -367,20 +396,31 @@ export default function HRDashboard({ data }: Props) {
                       <div className="grid grid-cols-3 gap-2 text-sm mb-2">
                         <div>
                           <span className="text-gray-500">Technical:</span>
-                          <span className="ml-1">{feedback.technicalSkills}/10</span>
+                          <span className="ml-1">
+                            {feedback.technicalSkills}/10
+                          </span>
                         </div>
                         <div>
                           <span className="text-gray-500">Communication:</span>
-                          <span className="ml-1">{feedback.communication}/10</span>
+                          <span className="ml-1">
+                            {feedback.communication}/10
+                          </span>
                         </div>
                         <div>
-                          <span className="text-gray-500">Problem Solving:</span>
-                          <span className="ml-1">{feedback.problemSolving}/10</span>
+                          <span className="text-gray-500">
+                            Problem Solving:
+                          </span>
+                          <span className="ml-1">
+                            {feedback.problemSolving}/10
+                          </span>
                         </div>
                       </div>
                       <p className="text-sm text-gray-600">
-                        <strong>Strengths:</strong> {feedback.strengths?.slice(0, 2).join(', ')}
-                        {feedback.strengths && feedback.strengths.length > 2 && '...'}
+                        <strong>Strengths:</strong>{" "}
+                        {feedback.strengths?.slice(0, 2).join(", ")}
+                        {feedback.strengths &&
+                          feedback.strengths.length > 2 &&
+                          "..."}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         {new Date(feedback.createdAt).toLocaleDateString()}
@@ -391,7 +431,9 @@ export default function HRDashboard({ data }: Props) {
                   <div className="text-center py-8 text-gray-500">
                     <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                     <p>No recent feedback</p>
-                    <p className="text-sm">Interview feedback will appear here</p>
+                    <p className="text-sm">
+                      Interview feedback will appear here
+                    </p>
                   </div>
                 )}
               </div>
@@ -416,22 +458,26 @@ export default function HRDashboard({ data }: Props) {
                 <div className="border rounded-lg p-4 text-center hover:bg-gray-50 cursor-pointer">
                   <Calendar className="h-8 w-8 mx-auto mb-2 text-blue-600" />
                   <h3 className="font-medium mb-1">Schedule Interview</h3>
-                  <p className="text-sm text-gray-600">Set up new mock interviews</p>
+                  <p className="text-sm text-gray-600">
+                    Set up new mock interviews
+                  </p>
                 </div>
               </Link>
-              
+
               <div className="border rounded-lg p-4 text-center hover:bg-gray-50 cursor-pointer">
                 <Users className="h-8 w-8 mx-auto mb-2 text-green-600" />
                 <h3 className="font-medium mb-1">View Candidates</h3>
-                <p className="text-sm text-gray-600">Manage employee interviews</p>
+                <p className="text-sm text-gray-600">
+                  Manage employee interviews
+                </p>
               </div>
-              
+
               <div className="border rounded-lg p-4 text-center hover:bg-gray-50 cursor-pointer">
                 <MessageSquare className="h-8 w-8 mx-auto mb-2 text-purple-600" />
                 <h3 className="font-medium mb-1">Feedback Reports</h3>
                 <p className="text-sm text-gray-600">Review all feedback</p>
               </div>
-              
+
               <div className="border rounded-lg p-4 text-center hover:bg-gray-50 cursor-pointer">
                 <CheckCircle className="h-8 w-8 mx-auto mb-2 text-orange-600" />
                 <h3 className="font-medium mb-1">Interview Analytics</h3>
