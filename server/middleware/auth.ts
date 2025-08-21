@@ -27,6 +27,7 @@ export const authenticateToken = async (
   console.log("🔍 Extracted token length:", token ? token.length : "N/A");
 
   if (!token) {
+    
     console.log("❌ No token provided");
     return res
       .status(401)
@@ -54,6 +55,8 @@ export const authenticateToken = async (
       isActive: true,
     };
 
+
+    console.log("✅ User set in request:", req.user);
     next();
   } catch (error) {
     console.error(
