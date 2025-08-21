@@ -154,11 +154,11 @@ export default function EmployeeDashboard({ data }: Props) {
     <DashboardLayout user={data.user}>
       <div className="space-y-6">
         {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
-          <h1 className="text-2xl font-bold mb-2">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-4 sm:p-6 text-white">
+          <h1 className="text-xl sm:text-2xl font-bold mb-2">
             Welcome back, {data.user.firstName}!
           </h1>
-          <p className="text-blue-100">
+          <p className="text-blue-100 text-sm sm:text-base">
             Track your progress and stay connected with your team
           </p>
         </div>
