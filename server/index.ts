@@ -58,9 +58,11 @@ import { createUser, getAllUsers } from "./routes/users";
 import { getUserStats, getAllUsersForManagement } from "./routes/userStats";
 import { updateUser } from "./routes/updateUser";
 import { deleteUser } from "./routes/deleteUser";
-<<<<<<< HEAD
-import { getEmployeeCount, getAllEmployees, getEmployeesByRole } from "./routes/employees";
-=======
+import {
+  getEmployeeCount,
+  getAllEmployees,
+  getEmployeesByRole,
+} from "./routes/employees";
 import {
   createProjectAssignment,
   getRecentAssignments,
@@ -68,7 +70,6 @@ import {
   getEmployeeAssignments,
   updateAssignmentStatus,
 } from "./routes/projectAssignments";
->>>>>>> refs/remotes/origin/main
 import { authenticateToken, requireRole } from "./middleware/auth";
 import { seedPMSData } from "./db/seedPMS";
 import { seedEmployeeManagementData } from "./db/seedEmployeeManagement";
