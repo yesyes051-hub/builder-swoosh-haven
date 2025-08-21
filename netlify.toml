@@ -6,14 +6,7 @@
   NODE_VERSION = "18"
   NPM_FLAGS = "--production=false"
 
-# API proxy to netlify functions
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
-  status = 200
-  force = true
-
-# Redirect all other requests to index.html for SPA routing
+# SPA routing - redirect all requests to index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
