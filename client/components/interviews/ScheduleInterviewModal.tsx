@@ -1,23 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { 
-  Calendar as CalendarIcon, 
-  Clock, 
-  Users, 
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  Users,
   CheckCircle,
   AlertTriangle,
   Loader2,
-  X
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { ScheduleInterviewRequest, ApiResponse, MockInterview } from '@shared/api';
+  X,
+} from "lucide-react";
+import { format } from "date-fns";
+import {
+  ScheduleInterviewRequest,
+  ApiResponse,
+  MockInterview,
+} from "@shared/api";
 
 interface EmployeeOption {
   id: string;
@@ -35,21 +49,27 @@ interface Props {
   onSuccess?: (interview: MockInterview) => void;
 }
 
-export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: Props) {
+export default function ScheduleInterviewModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: Props) {
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
 
   // Form state
-  const [candidateId, setCandidateId] = useState('');
-  const [interviewerId, setInterviewerId] = useState('');
+  const [candidateId, setCandidateId] = useState("");
+  const [interviewerId, setInterviewerId] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>();
-  const [selectedTime, setSelectedTime] = useState('');
-  const [duration, setDuration] = useState('60');
-  const [type, setType] = useState<'technical' | 'behavioral' | 'system-design' | 'general'>('technical');
+  const [selectedTime, setSelectedTime] = useState("");
+  const [duration, setDuration] = useState("60");
+  const [type, setType] = useState<
+    "technical" | "behavioral" | "system-design" | "general"
+  >("technical");
 
   useEffect(() => {
     if (isOpen) {
@@ -60,27 +80,27 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
   }, [isOpen, token]);
 
   const resetForm = () => {
-    setCandidateId('');
-    setInterviewerId('');
+    setCandidateId("");
+    setInterviewerId("");
     setSelectedDate(undefined);
-    setSelectedTime('');
-    setDuration('60');
-    setType('technical');
-    setError('');
-    setSuccess('');
+    setSelectedTime("");
+    setDuration("60");
+    setType("technical");
+    setError("");
+    setSuccess("");
   };
 
   const fetchEmployees = async () => {
     try {
       setLoadingEmployees(true);
-      const response = await fetch('/api/employees', {
+      const response = await fetch("/api/employees", {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
-        let errorMessage = 'Failed to fetch employees';
+        let errorMessage = "Failed to fetch employees";
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
@@ -93,13 +113,13 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
       const data: ApiResponse<EmployeeOption[]> = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch employees');
+        throw new Error(data.error || "Failed to fetch employees");
       }
 
       setEmployees(data.data || []);
     } catch (err) {
-      console.error('Fetch employees error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load employees');
+      console.error("Fetch employees error:", err);
+      setError(err instanceof Error ? err.message : "Failed to load employees");
     } finally {
       setLoadingEmployees(false);
     }
@@ -109,7 +129,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
     const slots = [];
     for (let hour = 9; hour <= 17; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
-        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        const timeString = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
         slots.push(timeString);
       }
     }
@@ -118,16 +138,23 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
-    if (!candidateId || !interviewerId || !selectedDate || !selectedTime || !duration || !type) {
-      setError('Please fill in all required fields');
+    if (
+      !candidateId ||
+      !interviewerId ||
+      !selectedDate ||
+      !selectedTime ||
+      !duration ||
+      !type
+    ) {
+      setError("Please fill in all required fields");
       return;
     }
 
     if (candidateId === interviewerId) {
-      setError('Candidate and interviewer cannot be the same person');
+      setError("Candidate and interviewer cannot be the same person");
       return;
     }
 
@@ -135,7 +162,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
       setLoading(true);
 
       // Combine date and time
-      const [hours, minutes] = selectedTime.split(':').map(Number);
+      const [hours, minutes] = selectedTime.split(":").map(Number);
       const scheduledDateTime = new Date(selectedDate);
       scheduledDateTime.setHours(hours, minutes, 0, 0);
 
@@ -144,20 +171,20 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
         interviewerId,
         scheduledAt: scheduledDateTime,
         duration: parseInt(duration),
-        type
+        type,
       };
 
-      const response = await fetch('/api/interviews', {
-        method: 'POST',
+      const response = await fetch("/api/interviews", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(interviewData)
+        body: JSON.stringify(interviewData),
       });
 
       if (!response.ok) {
-        let errorMessage = 'Failed to schedule interview';
+        let errorMessage = "Failed to schedule interview";
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
@@ -170,11 +197,11 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
       const data: ApiResponse<MockInterview> = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to schedule interview');
+        throw new Error(data.error || "Failed to schedule interview");
       }
 
-      setSuccess('Interview scheduled successfully!');
-      
+      setSuccess("Interview scheduled successfully!");
+
       // Call success callback after a brief delay to show success message
       setTimeout(() => {
         if (onSuccess && data.data) {
@@ -183,8 +210,10 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
         onClose();
       }, 1500);
     } catch (err) {
-      console.error('Schedule interview error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to schedule interview');
+      console.error("Schedule interview error:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to schedule interview",
+      );
     } finally {
       setLoading(false);
     }
@@ -197,26 +226,28 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
   };
 
   // Filter candidates and interviewers
-  const candidates = employees.filter(person => person.role === 'employee');
-  const interviewers = employees.filter(person => person.role === 'employee' || person.role === 'manager');
+  const candidates = employees.filter((person) => person.role === "employee");
+  const interviewers = employees.filter(
+    (person) => person.role === "employee" || person.role === "manager",
+  );
 
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+      style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
       onClick={handleOverlayClick}
     >
-      <div 
+      <div
         className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto w-[95%] max-w-[600px]"
         style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)'
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
         }}
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between p-6 border-b">
@@ -224,9 +255,9 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
             <CalendarIcon className="h-6 w-6 text-blue-600" />
             <h2 className="text-xl font-semibold">Schedule Mock Interview</h2>
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onClose}
             className="h-8 w-8 p-0"
           >
@@ -273,7 +304,9 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
                       {candidates.map((candidate) => (
                         <SelectItem key={candidate.id} value={candidate.id}>
                           <div className="flex flex-col">
-                            <span>{candidate.firstName} {candidate.lastName}</span>
+                            <span>
+                              {candidate.firstName} {candidate.lastName}
+                            </span>
                             <span className="text-xs text-gray-500">
                               {candidate.department} • {candidate.email}
                             </span>
@@ -287,7 +320,10 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
                 {/* Interviewer Selection */}
                 <div className="space-y-2">
                   <Label htmlFor="interviewer">Interviewer</Label>
-                  <Select value={interviewerId} onValueChange={setInterviewerId}>
+                  <Select
+                    value={interviewerId}
+                    onValueChange={setInterviewerId}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select interviewer" />
                     </SelectTrigger>
@@ -295,9 +331,12 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
                       {interviewers.map((interviewer) => (
                         <SelectItem key={interviewer.id} value={interviewer.id}>
                           <div className="flex flex-col">
-                            <span>{interviewer.firstName} {interviewer.lastName}</span>
+                            <span>
+                              {interviewer.firstName} {interviewer.lastName}
+                            </span>
                             <span className="text-xs text-gray-500">
-                              {interviewer.role} • {interviewer.department} • {interviewer.email}
+                              {interviewer.role} • {interviewer.department} •{" "}
+                              {interviewer.email}
                             </span>
                           </div>
                         </SelectItem>
@@ -318,7 +357,9 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
                         }`}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
+                        {selectedDate
+                          ? format(selectedDate, "PPP")
+                          : "Pick a date"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -326,7 +367,11 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
                         mode="single"
                         selected={selectedDate}
                         onSelect={setSelectedDate}
-                        disabled={(date) => date < new Date() || date.getDay() === 0 || date.getDay() === 6}
+                        disabled={(date) =>
+                          date < new Date() ||
+                          date.getDay() === 0 ||
+                          date.getDay() === 6
+                        }
                         initialFocus
                       />
                     </PopoverContent>
@@ -370,14 +415,23 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
                 {/* Interview Type */}
                 <div className="space-y-2">
                   <Label htmlFor="type">Interview Type</Label>
-                  <Select value={type} onValueChange={(value: any) => setType(value)}>
+                  <Select
+                    value={type}
+                    onValueChange={(value: any) => setType(value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="technical">Technical Interview</SelectItem>
-                      <SelectItem value="behavioral">Behavioral Interview</SelectItem>
-                      <SelectItem value="system-design">System Design Interview</SelectItem>
+                      <SelectItem value="technical">
+                        Technical Interview
+                      </SelectItem>
+                      <SelectItem value="behavioral">
+                        Behavioral Interview
+                      </SelectItem>
+                      <SelectItem value="system-design">
+                        System Design Interview
+                      </SelectItem>
                       <SelectItem value="general">General Interview</SelectItem>
                     </SelectContent>
                   </Select>

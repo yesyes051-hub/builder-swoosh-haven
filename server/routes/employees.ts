@@ -1,6 +1,6 @@
-import { RequestHandler } from 'express';
-import { EmployeeUser } from '../models/employeeManagement';
-import { ApiResponse } from '@shared/api';
+import { RequestHandler } from "express";
+import { EmployeeUser } from "../models/employeeManagement";
+import { ApiResponse } from "@shared/api";
 
 export interface EmployeeOption {
   id: string;
@@ -19,22 +19,21 @@ export interface EmployeeCount {
 // Get total employee count
 export const getEmployeeCount: RequestHandler = async (req, res) => {
   try {
-    console.log('📊 Fetching total employee count...');
-    
+    console.log("📊 Fetching total employee count...");
+
     const totalEmployees = await EmployeeUser.countDocuments();
-    
-    console.log('✅ Employee count retrieved:', totalEmployees);
-    
+
+    console.log("✅ Employee count retrieved:", totalEmployees);
+
     res.json({
       success: true,
-      data: { totalEmployees }
+      data: { totalEmployees },
     } as ApiResponse<EmployeeCount>);
-
   } catch (error) {
-    console.error('Get employee count error:', error);
+    console.error("Get employee count error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch employee count'
+      error: "Failed to fetch employee count",
     } as ApiResponse<never>);
   }
 };
@@ -42,34 +41,33 @@ export const getEmployeeCount: RequestHandler = async (req, res) => {
 // Get all employees for dropdown selection
 export const getAllEmployees: RequestHandler = async (req, res) => {
   try {
-    console.log('👥 Fetching all employees for dropdown...');
-    
+    console.log("👥 Fetching all employees for dropdown...");
+
     const employees = await EmployeeUser.find({})
-      .select('firstName lastName email role jobStatus')
+      .select("firstName lastName email role jobStatus")
       .sort({ firstName: 1, lastName: 1 });
 
-    const formattedEmployees: EmployeeOption[] = employees.map(employee => ({
+    const formattedEmployees: EmployeeOption[] = employees.map((employee) => ({
       id: employee._id.toString(),
       firstName: employee.firstName,
       lastName: employee.lastName,
       email: employee.email,
       role: employee.role.toLowerCase(),
       jobStatus: employee.jobStatus,
-      department: 'General' // Default department since it's not in current schema
+      department: "General", // Default department since it's not in current schema
     }));
 
-    console.log('✅ Employees retrieved:', formattedEmployees.length);
-    
+    console.log("✅ Employees retrieved:", formattedEmployees.length);
+
     res.json({
       success: true,
-      data: formattedEmployees
+      data: formattedEmployees,
     } as ApiResponse<EmployeeOption[]>);
-
   } catch (error) {
-    console.error('Get all employees error:', error);
+    console.error("Get all employees error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch employees'
+      error: "Failed to fetch employees",
     } as ApiResponse<never>);
   }
 };
@@ -82,39 +80,38 @@ export const getEmployeesByRole: RequestHandler = async (req, res) => {
 
     // Map the lowercase role parameter to the proper case used in database
     const roleMap: { [key: string]: string } = {
-      'employee': 'Employee',
-      'manager': 'Manager',
-      'hr': 'HR'
+      employee: "Employee",
+      manager: "Manager",
+      hr: "HR",
     };
 
     const dbRole = roleMap[role.toLowerCase()] || role;
 
     const employees = await EmployeeUser.find({ role: dbRole })
-      .select('firstName lastName email role jobStatus')
+      .select("firstName lastName email role jobStatus")
       .sort({ firstName: 1, lastName: 1 });
 
-    const formattedEmployees: EmployeeOption[] = employees.map(employee => ({
+    const formattedEmployees: EmployeeOption[] = employees.map((employee) => ({
       id: employee._id.toString(),
       firstName: employee.firstName,
       lastName: employee.lastName,
       email: employee.email,
       role: employee.role.toLowerCase(),
       jobStatus: employee.jobStatus,
-      department: 'General'
+      department: "General",
     }));
 
-    console.log('✅ Employees by role retrieved:', formattedEmployees.length);
+    console.log("✅ Employees by role retrieved:", formattedEmployees.length);
 
     res.json({
       success: true,
-      data: formattedEmployees
+      data: formattedEmployees,
     } as ApiResponse<EmployeeOption[]>);
-
   } catch (error) {
-    console.error('Get employees by role error:', error);
+    console.error("Get employees by role error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch employees by role'
+      error: "Failed to fetch employees by role",
     } as ApiResponse<never>);
   }
 };
