@@ -58,15 +58,11 @@ import { createUser, getAllUsers } from "./routes/users";
 import { getUserStats, getAllUsersForManagement } from "./routes/userStats";
 import { updateUser } from "./routes/updateUser";
 import { deleteUser } from "./routes/deleteUser";
-<<<<<<< HEAD
-import { getEmployeeCount, getAllEmployees, getEmployeesByRole } from "./routes/employees";
-=======
 import {
   getEmployeeCount,
   getAllEmployees,
   getEmployeesByRole,
 } from "./routes/employees";
->>>>>>> refs/remotes/origin/main
 import {
   createProjectAssignment,
   getRecentAssignments,
