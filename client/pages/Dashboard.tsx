@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  EmployeeDashboard as EmployeeDashboardType, 
+import {
+  EmployeeDashboard as EmployeeDashboardType,
   ManagerDashboard as ManagerDashboardType,
   HRDashboard as HRDashboardType,
   AdminDashboard as AdminDashboardType,
-  ApiResponse 
+  ApiResponse
 } from '@shared/api';
 import EmployeeDashboard from '@/components/dashboards/EmployeeDashboard';
 import ManagerDashboard from '@/components/dashboards/ManagerDashboard';
 import HRDashboard from '@/components/dashboards/HRDashboard';
 import AdminDashboard from '@/components/dashboards/AdminDashboard';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { apiRequest } from '@/lib/fetch';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 export default function Dashboard() {
   const { user, token, logout } = useAuth();
