@@ -26,6 +26,22 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    const errorMessage = error.message || '';
+
+    // Check if this is a known React DOM error we can ignore
+    const isKnownReactDOMError = (
+      errorMessage.includes('removeChild') ||
+      errorMessage.includes('not a child of this node') ||
+      errorMessage.includes('createRoot() on a container that has already been passed')
+    );
+
+    if (isKnownReactDOMError) {
+      console.warn('Suppressed known React DOM error:', error.message);
+      // Reset error state for known errors
+      this.setState({ hasError: false, error: null, errorInfo: null });
+      return;
+    }
+
     console.error('ErrorBoundary caught an error:', error);
     console.error('Error info:', errorInfo);
 
