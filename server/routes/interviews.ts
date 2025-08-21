@@ -1,12 +1,12 @@
 import { RequestHandler } from "express";
-import { db } from "../db/memory";
 import { AuthRequest } from "../middleware/auth";
 import { EmployeeUser } from "../models/employeeManagement";
+import { Interview, InterviewFeedback } from "../models/interview";
 import {
   ScheduleInterviewRequest,
   SubmitFeedbackRequest,
   MockInterview,
-  InterviewFeedback,
+  InterviewFeedback as IInterviewFeedback,
   ApiResponse,
 } from "@shared/api";
 
@@ -15,6 +15,8 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
     const interviewData: ScheduleInterviewRequest = req.body;
+
+    console.log("📅 Scheduling interview:", interviewData);
 
     // Only HR and Admin can schedule interviews
     if (user.role !== "hr" && user.role !== "admin") {
@@ -27,7 +29,8 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
     if (
       !interviewData.candidateId ||
       !interviewData.interviewerId ||
-      !interviewData.scheduledAt ||
+      !interviewData.date ||
+      !interviewData.time ||
       !interviewData.duration ||
       !interviewData.type
     ) {
@@ -64,23 +67,19 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
     }
 
     // Check if the interviewer is available at the scheduled time
-    const interviewerInterviews = await db.getInterviewsByUser(
-      interviewData.interviewerId,
-    );
-    const scheduledTime = new Date(interviewData.scheduledAt);
-    const endTime = new Date(
-      scheduledTime.getTime() + interviewData.duration * 60000,
-    );
+    const scheduledDate = new Date(interviewData.date);
+    const [hours, minutes] = interviewData.time.split(':');
+    scheduledDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    
+    const endTime = new Date(scheduledDate.getTime() + interviewData.duration * 60000);
 
-    const conflictingInterview = interviewerInterviews.find((interview) => {
-      if (interview.status === "cancelled") return false;
-
-      const existingStart = new Date(interview.scheduledAt);
-      const existingEnd = new Date(
-        existingStart.getTime() + interview.duration * 60000,
-      );
-
-      return scheduledTime < existingEnd && endTime > existingStart;
+    const conflictingInterview = await Interview.findOne({
+      interviewerId: interviewData.interviewerId,
+      date: {
+        $gte: new Date(scheduledDate.getTime() - interviewData.duration * 60000),
+        $lte: endTime
+      },
+      status: { $ne: 'cancelled' }
     });
 
     if (conflictingInterview) {
@@ -90,19 +89,39 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    const interview = await db.createInterview({
+    // Create the interview
+    const interview = new Interview({
       candidateId: candidate._id.toString(),
       interviewerId: interviewer._id.toString(),
       scheduledBy: user.id,
-      scheduledAt: new Date(interviewData.scheduledAt),
+      date: scheduledDate,
+      time: interviewData.time,
       duration: interviewData.duration,
       type: interviewData.type,
       status: "scheduled",
     });
 
+    await interview.save();
+
+    console.log("✅ Interview created:", interview._id);
+
+    // Convert to the expected format
+    const responseInterview: MockInterview = {
+      id: interview._id.toString(),
+      candidateId: interview.candidateId,
+      interviewerId: interview.interviewerId,
+      scheduledBy: interview.scheduledBy,
+      scheduledAt: interview.date,
+      duration: interview.duration,
+      type: interview.type,
+      status: interview.status,
+      createdAt: interview.createdAt!,
+      updatedAt: interview.updatedAt!,
+    };
+
     res.status(201).json({
       success: true,
-      data: interview,
+      data: responseInterview,
     } as ApiResponse<MockInterview>);
   } catch (error) {
     console.error("Schedule interview error:", error);
@@ -118,63 +137,84 @@ export const getInterviews: RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
 
-    let interviews: MockInterview[] = [];
+    console.log("📋 Fetching interviews for user:", user.id, "role:", user.role);
+
+    let interviewQuery: any = {};
 
     if (user.role === "hr" || user.role === "admin") {
       // HR and Admin can see all interviews
-      const allUsers = await db.getAllUsers();
-      const allInterviews = await Promise.all(
-        allUsers.map((u) => db.getInterviewsByUser(u.id)),
-      );
-      interviews = allInterviews.flat();
+      interviewQuery = {};
     } else {
       // Employees and managers see only their interviews
-      interviews = await db.getInterviewsByUser(user.id);
+      interviewQuery = {
+        $or: [
+          { candidateId: user.id },
+          { interviewerId: user.id },
+          { scheduledBy: user.id }
+        ]
+      };
     }
+
+    const interviews = await Interview.find(interviewQuery)
+      .sort({ date: -1 })
+      .limit(50);
+
+    console.log("📋 Found interviews:", interviews.length);
 
     // Add user details to interviews
     const interviewsWithDetails = await Promise.all(
       interviews.map(async (interview) => {
-        const candidate = await db.getUserById(interview.candidateId);
-        const interviewer = await db.getUserById(interview.interviewerId);
-        const scheduledBy = await db.getUserById(interview.scheduledBy);
+        try {
+          const candidate = await EmployeeUser.findById(interview.candidateId).select("-password");
+          const interviewer = await EmployeeUser.findById(interview.interviewerId).select("-password");
+          const scheduledBy = await EmployeeUser.findById(interview.scheduledBy).select("-password");
 
-        return {
-          ...interview,
-          candidate: candidate
-            ? {
-                id: candidate.id,
-                firstName: candidate.firstName,
-                lastName: candidate.lastName,
-                email: candidate.email,
-                department: candidate.department,
-              }
-            : null,
-          interviewer: interviewer
-            ? {
-                id: interviewer.id,
-                firstName: interviewer.firstName,
-                lastName: interviewer.lastName,
-                email: interviewer.email,
-                department: interviewer.department,
-              }
-            : null,
-          scheduledByUser: scheduledBy
-            ? {
-                id: scheduledBy.id,
-                firstName: scheduledBy.firstName,
-                lastName: scheduledBy.lastName,
-                email: scheduledBy.email,
-              }
-            : null,
-        };
+          return {
+            id: interview._id.toString(),
+            candidateId: interview.candidateId,
+            interviewerId: interview.interviewerId,
+            scheduledBy: interview.scheduledBy,
+            scheduledAt: interview.date,
+            duration: interview.duration,
+            type: interview.type,
+            status: interview.status,
+            createdAt: interview.createdAt!,
+            updatedAt: interview.updatedAt!,
+            candidate: candidate ? {
+              id: candidate._id.toString(),
+              firstName: candidate.firstName,
+              lastName: candidate.lastName,
+              email: candidate.email,
+              department: candidate.department || "General",
+            } : null,
+            interviewer: interviewer ? {
+              id: interviewer._id.toString(),
+              firstName: interviewer.firstName,
+              lastName: interviewer.lastName,
+              email: interviewer.email,
+              department: interviewer.department || "General",
+            } : null,
+            scheduledByUser: scheduledBy ? {
+              id: scheduledBy._id.toString(),
+              firstName: scheduledBy.firstName,
+              lastName: scheduledBy.lastName,
+              email: scheduledBy.email,
+            } : null,
+          };
+        } catch (err) {
+          console.error("Error processing interview:", interview._id, err);
+          return null;
+        }
       }),
     );
 
+    // Filter out any null results
+    const validInterviews = interviewsWithDetails.filter(interview => interview !== null);
+
     res.json({
       success: true,
-      data: interviewsWithDetails,
-    } as ApiResponse<typeof interviewsWithDetails>);
+      data: validInterviews,
+    } as ApiResponse<typeof validInterviews>);
   } catch (error) {
     console.error("Get interviews error:", error);
     res.status(500).json({
@@ -191,7 +231,9 @@ export const updateInterviewStatus: RequestHandler = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    const interview = await db.getInterviewById(id);
+    console.log("🔄 Updating interview status:", id, "to:", status);
+
+    const interview = await Interview.findById(id);
     if (!interview) {
       return res.status(404).json({
         success: false,
@@ -211,12 +253,26 @@ export const updateInterviewStatus: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    // Update the interview status in memory (in a real app, this would update the database)
-    const updatedInterview = { ...interview, status, updatedAt: new Date() };
+    // Update the interview status
+    interview.status = status;
+    await interview.save();
+
+    const responseInterview: MockInterview = {
+      id: interview._id.toString(),
+      candidateId: interview.candidateId,
+      interviewerId: interview.interviewerId,
+      scheduledBy: interview.scheduledBy,
+      scheduledAt: interview.date,
+      duration: interview.duration,
+      type: interview.type,
+      status: interview.status,
+      createdAt: interview.createdAt!,
+      updatedAt: interview.updatedAt!,
+    };
 
     res.json({
       success: true,
-      data: updatedInterview,
+      data: responseInterview,
     } as ApiResponse<MockInterview>);
   } catch (error) {
     console.error("Update interview status error:", error);
@@ -233,7 +289,9 @@ export const submitFeedback: RequestHandler = async (req, res) => {
     const user = authReq.user!;
     const feedbackData: SubmitFeedbackRequest = req.body;
 
-    const interview = await db.getInterviewById(feedbackData.interviewId);
+    console.log("💬 Submitting feedback for interview:", feedbackData.interviewId);
+
+    const interview = await Interview.findById(feedbackData.interviewId);
     if (!interview) {
       return res.status(404).json({
         success: false,
@@ -241,26 +299,25 @@ export const submitFeedback: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    // Only the interviewer can submit feedback
-    if (user.id !== interview.interviewerId) {
+    // Anyone who has access to the interview can submit feedback
+    if (
+      user.role !== "hr" &&
+      user.role !== "admin" &&
+      user.id !== interview.interviewerId &&
+      user.id !== interview.candidateId
+    ) {
       return res.status(403).json({
         success: false,
-        error: "Only the interviewer can submit feedback",
+        error: "Only interviewers, candidates, HR, or admin can submit feedback",
       } as ApiResponse<never>);
     }
 
-    // Check if interview is completed
-    if (interview.status !== "completed") {
-      return res.status(400).json({
-        success: false,
-        error: "Can only submit feedback for completed interviews",
-      } as ApiResponse<never>);
-    }
+    // Check if feedback already exists for this user and interview
+    const existingFeedback = await InterviewFeedback.findOne({
+      interviewId: feedbackData.interviewId,
+      submittedBy: user.id
+    });
 
-    // Check if feedback already exists
-    const existingFeedback = await db.getFeedbackByInterview(
-      feedbackData.interviewId,
-    );
     if (existingFeedback) {
       return res.status(409).json({
         success: false,
@@ -268,12 +325,35 @@ export const submitFeedback: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    const feedback = await db.createFeedback(feedbackData);
+    // Create the feedback
+    const feedback = new InterviewFeedback({
+      interviewId: feedbackData.interviewId,
+      candidateId: feedbackData.candidateId,
+      submittedBy: user.id,
+      ratings: feedbackData.ratings,
+      writtenFeedback: feedbackData.writtenFeedback,
+    });
+
+    await feedback.save();
+
+    console.log("✅ Feedback created:", feedback._id);
+
+    // Convert to response format
+    const responseFeedback: IInterviewFeedback = {
+      id: feedback._id.toString(),
+      interviewId: feedback.interviewId.toString(),
+      candidateId: feedback.candidateId,
+      submittedBy: feedback.submittedBy,
+      ratings: feedback.ratings,
+      writtenFeedback: feedback.writtenFeedback,
+      createdAt: feedback.createdAt!,
+      updatedAt: feedback.updatedAt!,
+    };
 
     res.status(201).json({
       success: true,
-      data: feedback,
-    } as ApiResponse<InterviewFeedback>);
+      data: responseFeedback,
+    } as ApiResponse<IInterviewFeedback>);
   } catch (error) {
     console.error("Submit feedback error:", error);
     res.status(500).json({
@@ -289,7 +369,9 @@ export const getInterviewFeedback: RequestHandler = async (req, res) => {
     const user = authReq.user!;
     const { id } = req.params;
 
-    const interview = await db.getInterviewById(id);
+    console.log("📝 Getting feedback for interview:", id);
+
+    const interview = await Interview.findById(id);
     if (!interview) {
       return res.status(404).json({
         success: false,
@@ -310,18 +392,33 @@ export const getInterviewFeedback: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    const feedback = await db.getFeedbackByInterview(id);
-    if (!feedback) {
+    const feedbacks = await InterviewFeedback.find({ 
+      interviewId: id 
+    }).sort({ createdAt: -1 });
+
+    if (feedbacks.length === 0) {
       return res.status(404).json({
         success: false,
-        error: "Feedback not found",
+        error: "No feedback found for this interview",
       } as ApiResponse<never>);
     }
 
+    // Convert to response format
+    const responseFeedbacks = feedbacks.map(feedback => ({
+      id: feedback._id.toString(),
+      interviewId: feedback.interviewId.toString(),
+      candidateId: feedback.candidateId,
+      submittedBy: feedback.submittedBy,
+      ratings: feedback.ratings,
+      writtenFeedback: feedback.writtenFeedback,
+      createdAt: feedback.createdAt!,
+      updatedAt: feedback.updatedAt!,
+    }));
+
     res.json({
       success: true,
-      data: feedback,
-    } as ApiResponse<InterviewFeedback>);
+      data: responseFeedbacks,
+    } as ApiResponse<IInterviewFeedback[]>);
   } catch (error) {
     console.error("Get interview feedback error:", error);
     res.status(500).json({
@@ -355,7 +452,7 @@ export const getAvailableInterviewers: RequestHandler = async (req, res) => {
         firstName: u.firstName,
         lastName: u.lastName,
         email: u.email,
-        department: "General", // Default since not in current schema
+        department: u.department || "General",
         role: u.role.toLowerCase(),
       }));
 
