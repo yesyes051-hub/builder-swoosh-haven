@@ -273,6 +273,7 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
   try {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
+    console.log('🔍 Admin dashboard request - User from token:', user);
 
     // Try to get user from new Employee Management system first
     let fullUser;
