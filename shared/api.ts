@@ -95,15 +95,31 @@ export interface MockInterview {
 export interface InterviewFeedback {
   id: string;
   interviewId: string;
-  overallRating: number; // 1-10
-  technicalSkills: number; // 1-10
-  communication: number; // 1-10
-  problemSolving: number; // 1-10
-  strengths: string[];
-  areasForImprovement: string[];
-  detailedFeedback: string;
-  recommendations: string;
+  candidateId: string;
+  submittedBy: string;
+  ratings: {
+    communication: number; // 1-5
+    confidence: number; // 1-5
+    presenceOfMind: number; // 1-5
+    interpersonalSkills: number; // 1-5
+    bodyGesture: number; // 1-5
+    technicalQuestionHandling: number; // 1-5
+    codingElaboration: number; // 1-5
+    energyInInterview: number; // 1-5
+    analyticalThinking: number; // 1-5
+  };
+  writtenFeedback: string;
   createdAt: Date;
+  updatedAt: Date;
+  // Legacy compatibility
+  overallRating?: number; // calculated average
+  technicalSkills?: number;
+  communication?: number;
+  problemSolving?: number;
+  strengths?: string[];
+  areasForImprovement?: string[];
+  detailedFeedback?: string;
+  recommendations?: string;
 }
 
 export interface ScheduleInterviewRequest {
