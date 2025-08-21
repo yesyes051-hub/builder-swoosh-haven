@@ -105,7 +105,15 @@ import Interviews from "./pages/Interviews";
 import PMSNew from "./pages/PMSNew";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// Create QueryClient as a singleton to prevent recreation
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const AppContent = () => {
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
