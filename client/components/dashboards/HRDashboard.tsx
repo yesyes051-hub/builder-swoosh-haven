@@ -35,6 +35,12 @@ import {
 import DashboardLayout from "./DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import InterviewFeedbackModal from "@/components/interviews/InterviewFeedbackModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
 interface Props {
