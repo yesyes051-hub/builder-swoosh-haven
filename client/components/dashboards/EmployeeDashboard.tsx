@@ -27,9 +27,12 @@ import {
   User,
   Loader2,
   RefreshCw,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import DashboardLayout from "./DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface Props {
   data: EmployeeDashboardType;
