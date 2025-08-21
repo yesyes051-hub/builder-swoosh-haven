@@ -170,6 +170,8 @@ export default function ScheduleInterviewModal({
         candidateId,
         interviewerId,
         scheduledAt: scheduledDateTime,
+        date: selectedDate,
+        time: selectedTime,
         duration: parseInt(duration),
         type,
       };
