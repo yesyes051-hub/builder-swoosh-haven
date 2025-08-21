@@ -329,8 +329,7 @@ export default function HRDashboard({ data }: Props) {
                         <Badge className={getStatusColor(interview.status)}>
                           {interview.status}
                         </Badge>
-                        {(interview.status === "completed" ||
-                          interview.status === "in-progress") && (
+                        {interview.status !== "cancelled" && (
                           <div>
                             <Button
                               size="sm"
@@ -339,7 +338,7 @@ export default function HRDashboard({ data }: Props) {
                               className="text-xs h-7"
                             >
                               <Star className="h-3 w-3 mr-1" />
-                              Give Feedback
+                              {interview.status === "scheduled" ? "Pre-Interview Feedback" : "Give Feedback"}
                             </Button>
                           </div>
                         )}
