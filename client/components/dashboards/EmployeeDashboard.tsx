@@ -272,13 +272,27 @@ export default function EmployeeDashboard({ data }: Props) {
           {/* My Interviews */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Calendar className="h-5 w-5" />
-                <span>My Interviews</span>
-              </CardTitle>
-              <CardDescription>
-                Your scheduled mock interviews with detailed information
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Calendar className="h-5 w-5" />
+                    <span>My Interviews</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Your scheduled mock interviews with detailed information
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchMyInterviews}
+                  disabled={loadingInterviews}
+                  className="flex items-center space-x-1"
+                >
+                  <RefreshCw className={`h-4 w-4 ${loadingInterviews ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline">Refresh</span>
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {loadingInterviews ? (
