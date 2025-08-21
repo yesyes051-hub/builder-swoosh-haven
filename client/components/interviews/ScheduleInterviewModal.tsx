@@ -42,8 +42,6 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
-  const [candidateSearch, setCandidateSearch] = useState('');
-  const [interviewerSearch, setInterviewerSearch] = useState('');
 
   // Form state
   const [candidateId, setCandidateId] = useState('');
