@@ -65,6 +65,14 @@ export default function AdminDashboard({ data }: Props) {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
+  // Interview management state
+  const [interviews, setInterviews] = useState<MockInterview[]>([]);
+  const [interviewsLoading, setInterviewsLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedInterview, setSelectedInterview] = useState<MockInterview | null>(null);
+  const [interviewDetailModalOpen, setInterviewDetailModalOpen] = useState(false);
+  const [selectedInterviewFeedback, setSelectedInterviewFeedback] = useState<InterviewFeedback[]>([]);
+
   const testServerConnectivity = async () => {
     try {
       console.log('🔗 Testing server connectivity...');
