@@ -258,49 +258,85 @@ export default function EmployeeDashboard({ data }: Props) {
             </CardContent>
           </Card>
 
-          {/* Upcoming Interviews */}
+          {/* My Interviews */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5" />
-                <span>Upcoming Interviews</span>
+                <span>My Interviews</span>
               </CardTitle>
               <CardDescription>
-                Your scheduled mock interviews
+                Your scheduled mock interviews with detailed information
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {data.upcomingInterviews.length > 0 ? (
-                  data.upcomingInterviews.slice(0, 3).map((interview) => (
-                    <div key={interview.id} className="flex items-center space-x-4 p-3 border rounded-lg">
-                      <div className="bg-blue-100 p-2 rounded-lg">
-                        <Clock className="h-4 w-4 text-blue-600" />
+              {loadingInterviews ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                  <span className="ml-2">Loading interviews...</span>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {myInterviews.length > 0 ? (
+                    myInterviews.map((interview) => (
+                      <div key={interview.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <Badge className={getInterviewTypeColor(interview.type)}>
+                                {interview.type}
+                              </Badge>
+                              <Badge className={getStatusColor(interview.status)}>
+                                {interview.status}
+                              </Badge>
+                            </div>
+                            <h3 className="font-semibold text-lg mb-2">
+                              {interview.type.charAt(0).toUpperCase() + interview.type.slice(1)} Interview
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                              <div className="flex items-center space-x-2">
+                                <Calendar className="h-4 w-4 text-gray-500" />
+                                <span>
+                                  <strong>Date & Time:</strong> {formatDateTime(interview.scheduledAt)}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Clock className="h-4 w-4 text-gray-500" />
+                                <span>
+                                  <strong>Duration:</strong> {interview.duration} minutes
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <User className="h-4 w-4 text-gray-500" />
+                                <span>
+                                  <strong>Interviewer:</strong> {interview.interviewer?.firstName} {interview.interviewer?.lastName}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="h-4 w-4 text-gray-500" />
+                                <span>
+                                  <strong>Status:</strong> {interview.status.charAt(0).toUpperCase() + interview.status.slice(1)}
+                                </span>
+                              </div>
+                            </div>
+                            {interview.interviewer?.email && (
+                              <div className="mt-2 text-sm text-gray-600">
+                                <strong>Interviewer Email:</strong> {interview.interviewer.email}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="font-medium capitalize">{interview.type} Interview</p>
-                        <p className="text-sm text-gray-600">
-                          {new Date(interview.scheduledAt).toLocaleDateString()} at{' '}
-                          {new Date(interview.scheduledAt).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Duration: {interview.duration} minutes
-                        </p>
-                      </div>
-                      <Badge variant="outline">{interview.status}</Badge>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p>No scheduled interviews</p>
+                      <p className="text-sm">Your scheduled interviews will appear here</p>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>No upcoming interviews</p>
-                    <p className="text-sm">Your scheduled interviews will appear here</p>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
