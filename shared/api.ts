@@ -132,14 +132,28 @@ export interface ScheduleInterviewRequest {
 
 export interface SubmitFeedbackRequest {
   interviewId: string;
-  overallRating: number;
-  technicalSkills: number;
-  communication: number;
-  problemSolving: number;
-  strengths: string[];
-  areasForImprovement: string[];
-  detailedFeedback: string;
-  recommendations: string;
+  candidateId: string;
+  ratings: {
+    communication: number; // 1-5
+    confidence: number; // 1-5
+    presenceOfMind: number; // 1-5
+    interpersonalSkills: number; // 1-5
+    bodyGesture: number; // 1-5
+    technicalQuestionHandling: number; // 1-5
+    codingElaboration: number; // 1-5
+    energyInInterview: number; // 1-5
+    analyticalThinking: number; // 1-5
+  };
+  writtenFeedback: string;
+  // Legacy compatibility
+  overallRating?: number;
+  technicalSkills?: number;
+  communication?: number;
+  problemSolving?: number;
+  strengths?: string[];
+  areasForImprovement?: string[];
+  detailedFeedback?: string;
+  recommendations?: string;
 }
 
 // Leaderboard
