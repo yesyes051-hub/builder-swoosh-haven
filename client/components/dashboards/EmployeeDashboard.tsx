@@ -225,20 +225,20 @@ export default function EmployeeDashboard({ data }: Props) {
             <CardDescription>Common tasks you can do right now</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-3">
-              <Link to="/daily-updates">
-                <Button className="bg-blue-600 hover:bg-blue-700">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
+              <Link to="/daily-updates" className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700">
                   <Plus className="h-4 w-4 mr-2" />
                   Submit Daily Update
                 </Button>
               </Link>
-              <Link to="/pms">
-                <Button variant="outline">
+              <Link to="/pms" className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto">
                   <BarChart3 className="h-4 w-4 mr-2" />
                   View PMS
                 </Button>
               </Link>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto">
                 <Calendar className="h-4 w-4 mr-2" />
                 View Calendar
               </Button>
