@@ -18,7 +18,7 @@ import {
   User,
   Star
 } from 'lucide-react';
-import ScheduleInterviewForm from '@/components/interviews/ScheduleInterviewForm';
+import ScheduleInterviewModal from '@/components/interviews/ScheduleInterviewModal';
 import InterviewFeedbackForm from '@/components/interviews/InterviewFeedbackForm';
 import DashboardLayout from '@/components/dashboards/DashboardLayout';
 import { MockInterview, ApiResponse } from '@shared/api';
@@ -50,7 +50,7 @@ export default function Interviews() {
   const { user, token } = useAuth();
   const [interviews, setInterviews] = useState<InterviewWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showScheduleForm, setShowScheduleForm] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showFeedbackForm, setShowFeedbackForm] = useState<string | null>(null);
   const [error, setError] = useState('');
 
@@ -86,7 +86,7 @@ export default function Interviews() {
 
   const handleScheduleSuccess = (newInterview: MockInterview) => {
     fetchInterviews(); // Refresh the list
-    setShowScheduleForm(false);
+    setShowScheduleModal(false);
   };
 
   const handleFeedbackSuccess = () => {
@@ -160,29 +160,6 @@ export default function Interviews() {
     return null;
   }
 
-  if (showScheduleForm) {
-    return (
-      <DashboardLayout user={user}>
-        <div className="space-y-6">
-          <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowScheduleForm(false)}
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back to Interviews</span>
-            </Button>
-            <h1 className="text-2xl font-bold">Schedule Interview</h1>
-          </div>
-          <ScheduleInterviewForm 
-            onSuccess={handleScheduleSuccess}
-            onCancel={() => setShowScheduleForm(false)}
-          />
-        </div>
-      </DashboardLayout>
-    );
-  }
 
   if (showFeedbackForm) {
     return (
@@ -219,8 +196,8 @@ export default function Interviews() {
             <p className="text-gray-600">Manage mock interviews and feedback</p>
           </div>
           {(user.role === 'hr' || user.role === 'admin') && (
-            <Button 
-              onClick={() => setShowScheduleForm(true)}
+            <Button
+              onClick={() => setShowScheduleModal(true)}
               className="bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -244,99 +221,28 @@ export default function Interviews() {
             </CardContent>
           </Card>
         ) : (
-          <Tabs defaultValue={user.role === 'hr' || user.role === 'admin' ? 'all' : 'my'} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              {(user.role === 'hr' || user.role === 'admin') && (
-                <TabsTrigger value="all">All Interviews</TabsTrigger>
-              )}
-              <TabsTrigger value="my">My Interviews</TabsTrigger>
-              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+          <Tabs defaultValue="all" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-1">
+              <TabsTrigger value="all">Interviews</TabsTrigger>
             </TabsList>
 
-            {/* All Interviews Tab (HR/Admin only) */}
-            {(user.role === 'hr' || user.role === 'admin') && (
-              <TabsContent value="all" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Users className="h-5 w-5" />
-                      <span>All Interviews</span>
-                    </CardTitle>
-                    <CardDescription>
-                      Complete overview of all scheduled interviews
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {interviews.length > 0 ? (
-                      <div className="space-y-4">
-                        {interviews.map((interview) => (
-                          <div key={`all-${interview.id}`} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start mb-3">
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2 mb-2">
-                                  <Badge className={getInterviewTypeColor(interview.type)}>
-                                    {interview.type}
-                                  </Badge>
-                                  <Badge className={getStatusColor(interview.status)}>
-                                    {interview.status}
-                                  </Badge>
-                                </div>
-                                <h3 className="font-semibold text-lg mb-1">
-                                  {interview.candidate?.firstName} {interview.candidate?.lastName} 
-                                  <span className="text-gray-500 text-sm ml-2">interviewed by</span>
-                                  {interview.interviewer?.firstName} {interview.interviewer?.lastName}
-                                </h3>
-                                <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                                  <div className="flex items-center space-x-2">
-                                    <Calendar className="h-4 w-4" />
-                                    <span>{formatDateTime(interview.scheduledAt)}</span>
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                    <Clock className="h-4 w-4" />
-                                    <span>{interview.duration} minutes</span>
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                    <User className="h-4 w-4" />
-                                    <span>Candidate: {interview.candidate?.department}</span>
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                    <Star className="h-4 w-4" />
-                                    <span>Interviewer: {interview.interviewer?.department}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                        <p>No interviews scheduled</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            )}
-
-            {/* My Interviews Tab */}
-            <TabsContent value="my" className="space-y-4">
+            {/* Interviews Tab */}
+            <TabsContent value="all" className="space-y-4">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
-                    <User className="h-5 w-5" />
-                    <span>My Interviews</span>
+                    <Users className="h-5 w-5" />
+                    <span>All Interviews</span>
                   </CardTitle>
                   <CardDescription>
-                    Interviews where you are the candidate or interviewer
+                    Complete overview of all scheduled interviews
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {myInterviews.length > 0 ? (
+                  {interviews.length > 0 ? (
                     <div className="space-y-4">
-                      {myInterviews.map((interview) => (
-                        <div key={`my-${interview.id}`} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                      {interviews.map((interview) => (
+                        <div key={`all-${interview.id}`} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                           <div className="flex justify-between items-start mb-3">
                             <div className="flex-1">
                               <div className="flex items-center space-x-2 mb-2">
@@ -346,18 +252,18 @@ export default function Interviews() {
                                 <Badge className={getStatusColor(interview.status)}>
                                   {interview.status}
                                 </Badge>
-                                <Badge variant="outline">
-                                  {interview.candidateId === user.id ? 'Candidate' : 'Interviewer'}
-                                </Badge>
+                                {(interview.candidateId === user.id || interview.interviewerId === user.id) && (
+                                  <Badge variant="outline">
+                                    {interview.candidateId === user.id ? 'You are the candidate' : 'You are the interviewer'}
+                                  </Badge>
+                                )}
                               </div>
                               <h3 className="font-semibold text-lg mb-1">
-                                {interview.candidateId === user.id ? (
-                                  <>Interview with {interview.interviewer?.firstName} {interview.interviewer?.lastName}</>
-                                ) : (
-                                  <>Interview {interview.candidate?.firstName} {interview.candidate?.lastName}</>
-                                )}
+                                {interview.candidate?.firstName} {interview.candidate?.lastName}
+                                <span className="text-gray-500 text-sm ml-2">interviewed by</span>
+                                {interview.interviewer?.firstName} {interview.interviewer?.lastName}
                               </h3>
-                              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
+                              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
                                 <div className="flex items-center space-x-2">
                                   <Calendar className="h-4 w-4" />
                                   <span>{formatDateTime(interview.scheduledAt)}</span>
@@ -365,6 +271,14 @@ export default function Interviews() {
                                 <div className="flex items-center space-x-2">
                                   <Clock className="h-4 w-4" />
                                   <span>{interview.duration} minutes</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <User className="h-4 w-4" />
+                                  <span>Candidate: {interview.candidate?.department}</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Star className="h-4 w-4" />
+                                  <span>Interviewer: {interview.interviewer?.department}</span>
                                 </div>
                               </div>
                             </div>
@@ -408,67 +322,8 @@ export default function Interviews() {
                     </div>
                   ) : (
                     <div className="text-center py-8 text-gray-500">
-                      <User className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p>No interviews assigned to you</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Upcoming Interviews Tab */}
-            <TabsContent value="upcoming" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Calendar className="h-5 w-5" />
-                    <span>Upcoming Interviews</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Scheduled interviews happening soon
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {upcomingInterviews.length > 0 ? (
-                    <div className="space-y-4">
-                      {upcomingInterviews.map((interview) => (
-                        <div key={`upcoming-${interview.id}`} className="border-l-4 border-blue-500 pl-4 py-3 bg-blue-50 rounded-r-lg">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <div className="flex items-center space-x-2 mb-2">
-                                <Badge className={getInterviewTypeColor(interview.type)}>
-                                  {interview.type}
-                                </Badge>
-                                {(interview.candidateId === user.id || interview.interviewerId === user.id) && (
-                                  <Badge variant="outline">
-                                    {interview.candidateId === user.id ? 'You are the candidate' : 'You are the interviewer'}
-                                  </Badge>
-                                )}
-                              </div>
-                              <h3 className="font-semibold">
-                                {interview.candidate?.firstName} {interview.candidate?.lastName} 
-                                <span className="text-gray-500"> with </span>
-                                {interview.interviewer?.firstName} {interview.interviewer?.lastName}
-                              </h3>
-                              <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
-                                <div className="flex items-center space-x-1">
-                                  <Calendar className="h-4 w-4" />
-                                  <span>{formatDateTime(interview.scheduledAt)}</span>
-                                </div>
-                                <div className="flex items-center space-x-1">
-                                  <Clock className="h-4 w-4" />
-                                  <span>{interview.duration} minutes</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
                       <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p>No upcoming interviews</p>
+                      <p>No interviews scheduled</p>
                     </div>
                   )}
                 </CardContent>
@@ -476,6 +331,13 @@ export default function Interviews() {
             </TabsContent>
           </Tabs>
         )}
+
+        {/* Schedule Interview Modal */}
+        <ScheduleInterviewModal
+          isOpen={showScheduleModal}
+          onClose={() => setShowScheduleModal(false)}
+          onSuccess={handleScheduleSuccess}
+        />
       </div>
     </DashboardLayout>
   );

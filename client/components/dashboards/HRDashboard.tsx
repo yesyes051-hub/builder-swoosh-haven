@@ -1,26 +1,62 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { HRDashboard as HRDashboardType } from '@shared/api';
+import { HRDashboard as HRDashboardType, ApiResponse } from '@shared/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  Calendar, 
-  Users, 
-  MessageSquare, 
+import {
+  Calendar,
+  Users,
+  MessageSquare,
   Plus,
   Clock,
   CheckCircle,
   UserPlus,
-  FileText
+  FileText,
+  Loader2
 } from 'lucide-react';
 import DashboardLayout from './DashboardLayout';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Props {
   data: HRDashboardType;
 }
 
+interface EmployeeCount {
+  totalEmployees: number;
+}
+
 export default function HRDashboard({ data }: Props) {
+  const { token } = useAuth();
+  const [employeeCount, setEmployeeCount] = useState<number>(data.departmentStats.totalEmployees);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchEmployeeCount();
+  }, []);
+
+  const fetchEmployeeCount = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/employees/count', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result: ApiResponse<EmployeeCount> = await response.json();
+
+      if (response.ok && result.success && result.data) {
+        setEmployeeCount(result.data.totalEmployees);
+      }
+    } catch (error) {
+      console.error('Failed to fetch employee count:', error);
+      // Keep the original count from props if fetch fails
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatDateTime = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
@@ -51,8 +87,12 @@ export default function HRDashboard({ data }: Props) {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {data.departmentStats.totalEmployees}
+              <div className="text-2xl font-bold text-green-600 flex items-center">
+                {loading ? (
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                ) : (
+                  employeeCount
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 Active workforce
@@ -110,10 +150,6 @@ export default function HRDashboard({ data }: Props) {
                   Manage Interviews
                 </Button>
               </Link>
-              <Button variant="outline">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add Employee
-              </Button>
               <Button variant="outline">
                 <FileText className="h-4 w-4 mr-2" />
                 View Reports

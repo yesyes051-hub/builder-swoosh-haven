@@ -42,9 +42,9 @@ const EmployeeUserSchema = new Schema<IEmployeeUser>({
   createdAt: { type: Date, default: Date.now }
 });
 
-// Create connection to employemanagement database
+// Create connection to trackzen database
 const employeeManagementConnection = mongoose.createConnection(
-  'mongodb+srv://Nisarg:Shah@cluster0.ggpuny2.mongodb.net/employemanagement'
+  'mongodb+srv://Nisarg:Shah@cluster0.ggpuny2.mongodb.net/trackzen'
 );
 
 // Add connection event listeners

@@ -58,6 +58,9 @@ import { createUser, getAllUsers } from "./routes/users";
 import { getUserStats, getAllUsersForManagement } from "./routes/userStats";
 import { updateUser } from "./routes/updateUser";
 import { deleteUser } from "./routes/deleteUser";
+<<<<<<< HEAD
+import { getEmployeeCount, getAllEmployees, getEmployeesByRole } from "./routes/employees";
+=======
 import {
   createProjectAssignment,
   getRecentAssignments,
@@ -65,6 +68,7 @@ import {
   getEmployeeAssignments,
   updateAssignmentStatus,
 } from "./routes/projectAssignments";
+>>>>>>> refs/remotes/origin/main
 import { authenticateToken, requireRole } from "./middleware/auth";
 import { seedPMSData } from "./db/seedPMS";
 import { seedEmployeeManagementData } from "./db/seedEmployeeManagement";
@@ -304,6 +308,11 @@ export function createServer() {
     requireRole(["admin", "hr"]),
     getAllUsersForManagement,
   );
+
+  // Employee management endpoints
+  app.get("/api/employees/count", authenticateToken, getEmployeeCount);
+  app.get("/api/employees", authenticateToken, getAllEmployees);
+  app.get("/api/employees/role/:role", authenticateToken, getEmployeesByRole);
 
   // Enhanced Timesheet System
   app.post("/api/pms-new/timesheets", authenticateToken, createTimesheetEntry);
