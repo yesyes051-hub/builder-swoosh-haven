@@ -65,6 +65,7 @@ export default function EmployeeDashboard({ data }: Props) {
   const { token } = useAuth();
   const [myInterviews, setMyInterviews] = useState<InterviewWithDetails[]>([]);
   const [loadingInterviews, setLoadingInterviews] = useState(true);
+  const [actionLoading, setActionLoading] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     fetchMyInterviews();
