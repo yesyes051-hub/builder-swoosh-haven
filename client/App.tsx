@@ -326,7 +326,11 @@ const initializeApp = () => {
   } else {
     root = (container as any)._reactRoot;
     try {
-      root.render(<App />);
+      root.render(
+        <StrictMode>
+          <App />
+        </StrictMode>
+      );
     } catch (error) {
       console.error('Failed to re-render app:', error);
       // For re-renders, just log the error and let the existing content stay
