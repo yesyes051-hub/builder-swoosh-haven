@@ -15,7 +15,8 @@ import {
   Trophy,
   BarChart3,
   User,
-  Loader2
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import DashboardLayout from './DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
