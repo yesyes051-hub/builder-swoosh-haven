@@ -501,3 +501,182 @@ export const getAvailableInterviewers: RequestHandler = async (req, res) => {
     } as ApiResponse<never>);
   }
 };
+
+export const updateInterviewStatus: RequestHandler = async (req, res) => {
+  try {
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+    const { id } = req.params;
+    const { status } = req.body;
+
+    console.log(`🔄 Updating interview ${id} status to: ${status}`);
+
+    // Validate status
+    const validStatuses = ["pending", "accepted", "rejected", "scheduled", "in-progress", "completed", "cancelled"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid status",
+      } as ApiResponse<never>);
+    }
+
+    const interview = await Interview.findById(id);
+    if (!interview) {
+      return res.status(404).json({
+        success: false,
+        error: "Interview not found",
+      } as ApiResponse<never>);
+    }
+
+    // Check permissions - employees can only accept/reject their own interviews
+    if (user.role === "employee" && user.id !== interview.candidateId) {
+      return res.status(403).json({
+        success: false,
+        error: "You can only update your own interviews",
+      } as ApiResponse<never>);
+    }
+
+    // Only employees can accept/reject, HR/Admin can change any status
+    if (user.role === "employee" && !["accepted", "rejected"].includes(status)) {
+      return res.status(403).json({
+        success: false,
+        error: "Employees can only accept or reject interviews",
+      } as ApiResponse<never>);
+    }
+
+    const oldStatus = interview.status;
+    interview.status = status;
+    await interview.save();
+
+    // Create notification for HR when status changes
+    if (["accepted", "rejected"].includes(status) && user.role === "employee") {
+      const candidate = await EmployeeUser.findById(interview.candidateId).select("-password");
+      const candidateName = candidate ? `${candidate.firstName} ${candidate.lastName}` : "Unknown";
+
+      const message = `Candidate ${candidateName} ${status} interview on ${new Date(interview.date).toLocaleDateString()}`;
+
+      const notification = new Notification({
+        interviewId: interview._id,
+        candidateId: interview.candidateId,
+        message,
+        status: "unread",
+      });
+
+      await notification.save();
+      console.log(`📧 Created notification: ${message}`);
+    }
+
+    // Convert to response format
+    const responseInterview: MockInterview = {
+      id: interview._id.toString(),
+      candidateId: interview.candidateId,
+      interviewerId: interview.interviewerId,
+      scheduledBy: interview.scheduledBy,
+      scheduledAt: interview.date,
+      duration: interview.duration,
+      type: interview.type,
+      status: interview.status,
+      createdAt: interview.createdAt!,
+      updatedAt: interview.updatedAt!,
+    };
+
+    res.json({
+      success: true,
+      data: responseInterview,
+    } as ApiResponse<MockInterview>);
+  } catch (error) {
+    console.error("Update interview status error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    } as ApiResponse<never>);
+  }
+};
+
+export const getNotifications: RequestHandler = async (req, res) => {
+  try {
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+
+    // Only HR can view notifications
+    if (user.role !== "hr" && user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        error: "Only HR personnel can view notifications",
+      } as ApiResponse<never>);
+    }
+
+    const notifications = await Notification.find()
+      .sort({ createdAt: -1 })
+      .limit(50); // Get latest 50 notifications
+
+    const responseNotifications: INotification[] = notifications.map(notification => ({
+      id: notification._id.toString(),
+      interviewId: notification.interviewId.toString(),
+      candidateId: notification.candidateId,
+      message: notification.message,
+      status: notification.status,
+      createdAt: notification.createdAt!,
+      updatedAt: notification.updatedAt!,
+    }));
+
+    res.json({
+      success: true,
+      data: responseNotifications,
+    } as ApiResponse<INotification[]>);
+  } catch (error) {
+    console.error("Get notifications error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    } as ApiResponse<never>);
+  }
+};
+
+export const markNotificationAsRead: RequestHandler = async (req, res) => {
+  try {
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+    const { id } = req.params;
+
+    // Only HR can mark notifications as read
+    if (user.role !== "hr" && user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        error: "Only HR personnel can mark notifications as read",
+      } as ApiResponse<never>);
+    }
+
+    const notification = await Notification.findById(id);
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        error: "Notification not found",
+      } as ApiResponse<never>);
+    }
+
+    notification.status = "read";
+    await notification.save();
+
+    const responseNotification: INotification = {
+      id: notification._id.toString(),
+      interviewId: notification.interviewId.toString(),
+      candidateId: notification.candidateId,
+      message: notification.message,
+      status: notification.status,
+      createdAt: notification.createdAt!,
+      updatedAt: notification.updatedAt!,
+    };
+
+    res.json({
+      success: true,
+      data: responseNotification,
+    } as ApiResponse<INotification>);
+  } catch (error) {
+    console.error("Mark notification as read error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    } as ApiResponse<never>);
+  }
+};
