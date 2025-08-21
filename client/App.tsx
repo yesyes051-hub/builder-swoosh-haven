@@ -258,8 +258,18 @@ const AppContent = () => {
 const App = () => (
   <ErrorBoundary
     onError={(error, errorInfo) => {
-      console.error('App-level error:', error, errorInfo);
-      // You could send this to a logging service
+      // Filter out known React DOM errors
+      const errorMessage = error.message || '';
+      const isKnownError = (
+        errorMessage.includes('removeChild') ||
+        errorMessage.includes('not a child of this node') ||
+        errorMessage.includes('createRoot')
+      );
+
+      if (!isKnownError) {
+        console.error('App-level error:', error, errorInfo);
+        // You could send this to a logging service
+      }
     }}
   >
     <QueryClientProvider client={queryClient}>
