@@ -1,12 +1,13 @@
 import { RequestHandler } from 'express';
 import { db } from '../db/memory';
 import { AuthRequest } from '../middleware/auth';
-import { 
+import { EmployeeUser } from '../models/employeeManagement';
+import {
   ScheduleInterviewRequest,
   SubmitFeedbackRequest,
   MockInterview,
   InterviewFeedback,
-  ApiResponse 
+  ApiResponse
 } from '@shared/api';
 
 export const scheduleInterview: RequestHandler = async (req, res) => {
