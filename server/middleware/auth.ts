@@ -27,25 +27,15 @@ export const authenticateToken = async (
   console.log("🔍 Extracted token length:", token ? token.length : "N/A");
 
   if (!token) {
-<<<<<<< HEAD
-    console.log('❌ No token provided in request');
-    return res.status(401).json({ success: false, error: 'Access token required' });
-=======
     console.log("❌ No token provided");
     return res
       .status(401)
       .json({ success: false, error: "Access token required" });
->>>>>>> refs/remotes/origin/main
   }
 
   try {
     console.log("🔍 Verifying token with secret length:", JWT_SECRET.length);
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-<<<<<<< HEAD
-    console.log('🔍 Token decoded successfully:', decoded);
-
-    // In a real app, you'd fetch the full user from database
-=======
     console.log("✅ Token decoded successfully:", {
       userId: decoded.userId,
       email: decoded.email,
@@ -53,7 +43,6 @@ export const authenticateToken = async (
     });
 
     // Set minimal user object with the correct ID
->>>>>>> refs/remotes/origin/main
     req.user = {
       id: decoded.userId,
       email: decoded.email,
@@ -65,13 +54,6 @@ export const authenticateToken = async (
       isActive: true,
     };
 
-<<<<<<< HEAD
-    console.log('✅ User set in request:', req.user);
-    next();
-  } catch (error) {
-    console.log('❌ Token verification failed:', error);
-    return res.status(403).json({ success: false, error: 'Invalid or expired token' });
-=======
     next();
   } catch (error) {
     console.error(
@@ -84,7 +66,6 @@ export const authenticateToken = async (
     return res
       .status(403)
       .json({ success: false, error: "Invalid or expired token" });
->>>>>>> refs/remotes/origin/main
   }
 };
 
