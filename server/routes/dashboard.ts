@@ -209,15 +209,20 @@ export const getHRDashboard: RequestHandler = async (req, res) => {
 
     // Fallback to memory database
     if (!fullUser) {
+      console.log(`🔍 HR Dashboard - Looking for user by ID: ${user.id}`);
       fullUser = await db.getUserById(user.id);
       if (!fullUser) {
+        console.log(`🔍 HR Dashboard - User not found by ID, trying email: ${user.email}`);
         // Try to find user by email as a final fallback
         fullUser = await db.getUserByEmail(user.email);
         if (!fullUser) {
+          console.log(`❌ HR Dashboard - User not found by email either`);
           return res.status(404).json({
             success: false,
             error: 'User not found'
           } as ApiResponse<never>);
+        } else {
+          console.log(`✅ HR Dashboard - Found user by email: ${fullUser.email}`);
         }
       }
     }
