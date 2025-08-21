@@ -196,30 +196,9 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSuccess }: P
     }
   };
 
-  // Filter candidates and interviewers with search functionality
-  const filteredCandidates = employees
-    .filter(person => person.role === 'employee')
-    .filter(person => {
-      if (!candidateSearch) return true;
-      const searchTerm = candidateSearch.toLowerCase();
-      return (
-        person.firstName.toLowerCase().includes(searchTerm) ||
-        person.lastName.toLowerCase().includes(searchTerm) ||
-        person.email.toLowerCase().includes(searchTerm)
-      );
-    });
-
-  const filteredInterviewers = employees
-    .filter(person => person.role === 'employee' || person.role === 'manager')
-    .filter(person => {
-      if (!interviewerSearch) return true;
-      const searchTerm = interviewerSearch.toLowerCase();
-      return (
-        person.firstName.toLowerCase().includes(searchTerm) ||
-        person.lastName.toLowerCase().includes(searchTerm) ||
-        person.email.toLowerCase().includes(searchTerm)
-      );
-    });
+  // Filter candidates and interviewers
+  const candidates = employees.filter(person => person.role === 'employee');
+  const interviewers = employees.filter(person => person.role === 'employee' || person.role === 'manager');
 
   if (!isOpen) return null;
 
