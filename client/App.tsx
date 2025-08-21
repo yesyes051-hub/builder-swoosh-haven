@@ -7,11 +7,23 @@ initializeResizeObserverSuppression();
 
 // Additional aggressive suppression for ResizeObserver errors
 if (typeof window !== "undefined") {
+  // Helper function to check for ResizeObserver errors
+  const isResizeObserverError = (message: string) => {
+    const msg = message.toLowerCase();
+    return (
+      msg.includes("resizeobserver") ||
+      msg.includes("loop completed") ||
+      msg.includes("undelivered notifications") ||
+      msg.includes("loop limit exceeded") ||
+      msg.includes("resize observer")
+    );
+  };
+
   // Override the global error handler
   const originalOnError = window.onerror;
   window.onerror = (message, source, lineno, colno, error) => {
     const msg = String(message || "");
-    if (msg.toLowerCase().includes("resizeobserver")) {
+    if (isResizeObserverError(msg)) {
       return true; // Prevent default error handling
     }
     return originalOnError
@@ -23,13 +35,37 @@ if (typeof window !== "undefined") {
   const originalOnUnhandledRejection = window.onunhandledrejection;
   window.onunhandledrejection = (event) => {
     const msg = String(event.reason?.message || event.reason || "");
-    if (msg.toLowerCase().includes("resizeobserver")) {
+    if (isResizeObserverError(msg)) {
       event.preventDefault();
       return;
     }
     if (originalOnUnhandledRejection) {
       originalOnUnhandledRejection(event);
     }
+  };
+
+  // Also catch errors during the error event itself
+  window.addEventListener(
+    "error",
+    (event) => {
+      const msg = String(event.message || event.error?.message || "");
+      if (isResizeObserverError(msg)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return false;
+      }
+    },
+    true,
+  );
+
+  // Add a catch-all for any remaining console errors
+  const originalConsoleError = console.error;
+  console.error = (...args) => {
+    const msg = String(args[0] || "");
+    if (isResizeObserverError(msg)) {
+      return; // Suppress ResizeObserver console errors
+    }
+    originalConsoleError.apply(console, args);
   };
 }
 

@@ -24,6 +24,7 @@ import {
 import DashboardLayout from "./DashboardLayout";
 import ProjectAssignmentForm from "@/components/forms/ProjectAssignmentForm";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Props {
   data: ManagerDashboardType;
@@ -52,6 +53,7 @@ interface ProjectAssignment {
 }
 
 export default function ManagerDashboard({ data }: Props) {
+  const { token } = useAuth();
   const [teamMembers, setTeamMembers] = useState<Employee[]>([]);
   const [recentAssignments, setRecentAssignments] = useState<
     ProjectAssignment[]
@@ -84,23 +86,21 @@ export default function ManagerDashboard({ data }: Props) {
 
   const fetchTeamMembers = async () => {
     try {
-      const token = localStorage.getItem("token");
-
       if (!token) {
-        console.error("❌ No authentication token found");
+        console.error("❌ User not authenticated");
         return;
       }
 
       const response = await fetch("/api/project-assignments/team-members", {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
       });
 
       if (response.status === 401 || response.status === 403) {
-        console.error("❌ Authentication failed - token may be expired");
+        console.error("��� Authentication failed - token may be expired");
         toast.error("Session expired. Please log in again.");
         return;
       }
@@ -129,18 +129,16 @@ export default function ManagerDashboard({ data }: Props) {
 
   const fetchRecentAssignments = async () => {
     try {
-      const token = localStorage.getItem("token");
-
       if (!token) {
-        console.error("❌ No authentication token found");
+        console.error("❌ User not authenticated");
         return;
       }
 
       const response = await fetch("/api/project-assignments/recent?limit=5", {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
       });
 
@@ -174,13 +172,15 @@ export default function ManagerDashboard({ data }: Props) {
 
   useEffect(() => {
     const loadData = async () => {
+      if (!token) return;
+
       setIsLoading(true);
       await Promise.all([fetchTeamMembers(), fetchRecentAssignments()]);
       setIsLoading(false);
     };
 
     loadData();
-  }, []);
+  }, [token]);
 
   const handleAssignProject = (employee: Employee) => {
     setSelectedEmployee(employee);

@@ -1,18 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Clock, 
-  Plus, 
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Clock,
+  Plus,
   Edit,
   Send,
   Check,
@@ -20,10 +46,10 @@ import {
   Loader2,
   Timer,
   CheckCircle,
-  AlertTriangle
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { ApiResponse } from '@shared/api';
+  AlertTriangle,
+} from "lucide-react";
+import { format } from "date-fns";
+import { ApiResponse } from "@shared/api";
 
 interface Project {
   _id: string;
@@ -44,8 +70,14 @@ interface TimesheetEntry {
   endTime: string;
   hoursWorked: number;
   taskDescription: string;
-  category: 'Development' | 'Testing' | 'Meeting' | 'Documentation' | 'Support' | 'Other';
-  status: 'Draft' | 'Submitted' | 'Approved' | 'Rejected';
+  category:
+    | "Development"
+    | "Testing"
+    | "Meeting"
+    | "Documentation"
+    | "Support"
+    | "Other";
+  status: "Draft" | "Submitted" | "Approved" | "Rejected";
   billable: boolean;
   overtime: boolean;
 }
@@ -60,18 +92,18 @@ export default function TimesheetForm({ onRefresh }: Props) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Form state
   const [formData, setFormData] = useState({
-    projectId: '',
-    date: format(new Date(), 'yyyy-MM-dd'),
-    startTime: '09:00',
-    endTime: '17:00',
-    taskDescription: '',
-    category: 'Development' as const,
-    billable: true
+    projectId: "",
+    date: format(new Date(), "yyyy-MM-dd"),
+    startTime: "09:00",
+    endTime: "17:00",
+    taskDescription: "",
+    category: "Development" as const,
+    billable: true,
   });
 
   useEffect(() => {
@@ -81,76 +113,93 @@ export default function TimesheetForm({ onRefresh }: Props) {
 
   const loadTimesheets = async () => {
     try {
-      const response = await fetch('/api/pms-new/timesheets', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetch("/api/pms-new/timesheets", {
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data: ApiResponse<TimesheetEntry[]> = await response.json();
-      
+
       if (data.success) {
         setTimesheets(data.data);
       }
     } catch (error) {
-      console.error('Error loading timesheets:', error);
+      console.error("Error loading timesheets:", error);
     }
   };
 
   const loadProjects = async () => {
     try {
-      const response = await fetch('/api/pms/projects', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetch("/api/pms/projects", {
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data: ApiResponse<Project[]> = await response.json();
-      
+
       if (data.success) {
         setProjects(data.data);
       }
     } catch (error) {
-      console.error('Error loading projects:', error);
+      console.error("Error loading projects:", error);
     }
   };
 
   const resetForm = () => {
     setFormData({
-      projectId: '',
-      date: format(new Date(), 'yyyy-MM-dd'),
-      startTime: '09:00',
-      endTime: '17:00',
-      taskDescription: '',
-      category: 'Development',
-      billable: true
+      projectId: "",
+      date: format(new Date(), "yyyy-MM-dd"),
+      startTime: "09:00",
+      endTime: "17:00",
+      taskDescription: "",
+      category: "Development",
+      billable: true,
     });
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
+
+    // Validate that a project is selected
+    if (!formData.projectId) {
+      setError("Please select a project for this timesheet entry");
+      setLoading(false);
+      return;
+    }
+
+    // Validate that the selected project still exists
+    const selectedProject = projects.find((p) => p._id === formData.projectId);
+    if (!selectedProject) {
+      setError(
+        "The selected project is no longer available. Please select a different project.",
+      );
+      setLoading(false);
+      return;
+    }
 
     try {
-      const response = await fetch('/api/pms-new/timesheets', {
-        method: 'POST',
+      const response = await fetch("/api/pms-new/timesheets", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       const data: ApiResponse<TimesheetEntry> = await response.json();
 
       if (data.success) {
-        setSuccess('Timesheet entry created successfully!');
+        setSuccess("Timesheet entry created successfully!");
         resetForm();
         setIsFormOpen(false);
         loadTimesheets();
         onRefresh();
       } else {
-        setError(data.error || 'Failed to save timesheet entry');
+        setError(data.error || "Failed to save timesheet entry");
       }
     } catch (error) {
-      setError('An error occurred while saving the timesheet entry');
+      setError("An error occurred while saving the timesheet entry");
     } finally {
       setLoading(false);
     }
@@ -158,10 +207,10 @@ export default function TimesheetForm({ onRefresh }: Props) {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      'Draft': 'secondary',
-      'Submitted': 'outline',
-      'Approved': 'default',
-      'Rejected': 'destructive'
+      Draft: "secondary",
+      Submitted: "outline",
+      Approved: "default",
+      Rejected: "destructive",
     } as const;
 
     return (
@@ -177,7 +226,9 @@ export default function TimesheetForm({ onRefresh }: Props) {
       {success && (
         <Alert className="border-green-200 bg-green-50">
           <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">{success}</AlertDescription>
+          <AlertDescription className="text-green-800">
+            {success}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -208,8 +259,13 @@ export default function TimesheetForm({ onRefresh }: Props) {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="project">Project</Label>
-                <Select value={formData.projectId} onValueChange={(value) => setFormData(prev => ({ ...prev, projectId: value }))}>
+                <Label htmlFor="project">Project *</Label>
+                <Select
+                  value={formData.projectId}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, projectId: value }))
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a project" />
                   </SelectTrigger>
@@ -221,6 +277,12 @@ export default function TimesheetForm({ onRefresh }: Props) {
                     ))}
                   </SelectContent>
                 </Select>
+                {projects.length === 0 && (
+                  <p className="text-sm text-red-600">
+                    ⚠️ No projects available. Please create a project first
+                    before adding timesheet entries.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -228,7 +290,9 @@ export default function TimesheetForm({ onRefresh }: Props) {
                 <Input
                   type="date"
                   value={formData.date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, date: e.target.value }))
+                  }
                   required
                 />
               </div>
@@ -239,7 +303,12 @@ export default function TimesheetForm({ onRefresh }: Props) {
                   <Input
                     type="time"
                     value={formData.startTime}
-                    onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        startTime: e.target.value,
+                      }))
+                    }
                     required
                   />
                 </div>
@@ -248,7 +317,12 @@ export default function TimesheetForm({ onRefresh }: Props) {
                   <Input
                     type="time"
                     value={formData.endTime}
-                    onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        endTime: e.target.value,
+                      }))
+                    }
                     required
                   />
                 </div>
@@ -256,7 +330,12 @@ export default function TimesheetForm({ onRefresh }: Props) {
 
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
-                <Select value={formData.category} onValueChange={(value: any) => setFormData(prev => ({ ...prev, category: value }))}>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value: any) =>
+                    setFormData((prev) => ({ ...prev, category: value }))
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -276,7 +355,12 @@ export default function TimesheetForm({ onRefresh }: Props) {
                 <Textarea
                   placeholder="Describe what you worked on..."
                   value={formData.taskDescription}
-                  onChange={(e) => setFormData(prev => ({ ...prev, taskDescription: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      taskDescription: e.target.value,
+                    }))
+                  }
                   required
                 />
               </div>
@@ -286,7 +370,12 @@ export default function TimesheetForm({ onRefresh }: Props) {
                   type="checkbox"
                   id="billable"
                   checked={formData.billable}
-                  onChange={(e) => setFormData(prev => ({ ...prev, billable: e.target.checked }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      billable: e.target.checked,
+                    }))
+                  }
                 />
                 <Label htmlFor="billable">Billable</Label>
               </div>
@@ -296,7 +385,11 @@ export default function TimesheetForm({ onRefresh }: Props) {
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Add Entry
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsFormOpen(false)}
+                >
                   Cancel
                 </Button>
               </div>
@@ -322,13 +415,23 @@ export default function TimesheetForm({ onRefresh }: Props) {
             <TableBody>
               {timesheets.map((entry) => (
                 <TableRow key={entry._id}>
-                  <TableCell>{format(new Date(entry.date), 'MMM dd, yyyy')}</TableCell>
-                  <TableCell className="font-medium">{entry.projectName}</TableCell>
-                  <TableCell>{entry.startTime} - {entry.endTime}</TableCell>
+                  <TableCell>
+                    {format(new Date(entry.date), "MMM dd, yyyy")}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {entry.projectName}
+                  </TableCell>
+                  <TableCell>
+                    {entry.startTime} - {entry.endTime}
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
                       <span>{entry.hoursWorked.toFixed(1)}h</span>
-                      {entry.overtime && <Badge variant="secondary" className="text-xs">OT</Badge>}
+                      {entry.overtime && (
+                        <Badge variant="secondary" className="text-xs">
+                          OT
+                        </Badge>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -339,7 +442,10 @@ export default function TimesheetForm({ onRefresh }: Props) {
               ))}
               {timesheets.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-8 text-gray-500"
+                  >
                     No timesheet entries found. Add your first entry above.
                   </TableCell>
                 </TableRow>

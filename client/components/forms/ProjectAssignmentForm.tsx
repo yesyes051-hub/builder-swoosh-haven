@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { CalendarIcon, Loader2, User } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Form validation schema
 const projectAssignmentSchema = z.object({
@@ -62,6 +63,7 @@ export default function ProjectAssignmentForm({
   employee,
   onSuccess,
 }: ProjectAssignmentFormProps) {
+  const { token } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<ProjectAssignmentFormData>({
@@ -77,9 +79,13 @@ export default function ProjectAssignmentForm({
   const onSubmit = async (data: ProjectAssignmentFormData) => {
     if (!employee) return;
 
+    if (!token) {
+      toast.error("Authentication required. Please log in.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const token = localStorage.getItem("token");
       const response = await fetch("/api/project-assignments", {
         method: "POST",
         headers: {
