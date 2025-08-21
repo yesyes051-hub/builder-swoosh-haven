@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AdminDashboard as AdminDashboardType } from '@shared/api';
+import { AdminDashboard as AdminDashboardType, ApiResponse, MockInterview, InterviewFeedback } from '@shared/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,13 +14,32 @@ import {
   UserPlus,
   Calendar,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Clock,
+  Eye,
+  Filter,
+  Loader2
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import DashboardLayout from './DashboardLayout';
 import AddUserModal from '@/components/pms/AddUserModal';
 import UserManagementModal from '@/components/pms/UserManagementModal';
 import ViewAllUsersModal from '@/components/pms/ViewAllUsersModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from "sonner";
 
 interface Props {
   data: AdminDashboardType;
