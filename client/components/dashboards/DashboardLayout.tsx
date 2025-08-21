@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { User } from '@shared/api';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { User } from "@shared/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,15 +10,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/components/ui/sheet';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+} from "@/components/ui/sheet";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   BarChart3,
   Bell,
@@ -26,8 +26,8 @@ import {
   LogOut,
   User as UserIcon,
   Menu,
-  X
-} from 'lucide-react';
+  X,
+} from "lucide-react";
 
 interface Props {
   user: User;
@@ -45,12 +45,18 @@ export default function DashboardLayout({ user, children }: Props) {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-red-500';
-      case 'hr': return 'bg-green-500';
-      case 'manager': return 'bg-purple-500';
-      case 'employee': return 'bg-blue-500';
-      case 'interviewer': return 'bg-orange-500';
-      default: return 'bg-gray-500';
+      case "admin":
+        return "bg-red-500";
+      case "hr":
+        return "bg-green-500";
+      case "manager":
+        return "bg-purple-500";
+      case "employee":
+        return "bg-blue-500";
+      case "interviewer":
+        return "bg-orange-500";
+      default:
+        return "bg-gray-500";
     }
   };
 
@@ -90,21 +96,23 @@ export default function DashboardLayout({ user, children }: Props) {
                       to="/dashboard"
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                        location.pathname === '/dashboard'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        location.pathname === "/dashboard"
+                          ? "bg-blue-100 text-blue-700"
+                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                       }`}
                     >
                       Dashboard
                     </Link>
-                    {(user.role === 'employee' || user.role === 'manager' || user.role === 'admin') && (
+                    {(user.role === "employee" ||
+                      user.role === "manager" ||
+                      user.role === "admin") && (
                       <Link
                         to="/daily-updates"
                         onClick={() => setMobileMenuOpen(false)}
                         className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                          location.pathname === '/daily-updates'
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                          location.pathname === "/daily-updates"
+                            ? "bg-blue-100 text-blue-700"
+                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                         }`}
                       >
                         Daily Updates
@@ -114,9 +122,9 @@ export default function DashboardLayout({ user, children }: Props) {
                       to="/leaderboard"
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                        location.pathname === '/leaderboard'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        location.pathname === "/leaderboard"
+                          ? "bg-blue-100 text-blue-700"
+                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                       }`}
                     >
                       Leaderboard
@@ -125,32 +133,32 @@ export default function DashboardLayout({ user, children }: Props) {
                       to="/interviews"
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                        location.pathname === '/interviews'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        location.pathname === "/interviews"
+                          ? "bg-blue-100 text-blue-700"
+                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                       }`}
                     >
                       Interviews
                     </Link>
-                    {user.role !== 'admin' && (
+                    {user.role !== "admin" && (
                       <Link
                         to="/pms"
                         onClick={() => setMobileMenuOpen(false)}
                         className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                          location.pathname === '/pms'
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                          location.pathname === "/pms"
+                            ? "bg-blue-100 text-blue-700"
+                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                         }`}
                       >
                         PMS
                       </Link>
                     )}
-                    {(user.role === 'manager' || user.role === 'admin') && (
+                    {(user.role === "manager" || user.role === "admin") && (
                       <div className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-400">
                         Team Reports
                       </div>
                     )}
-                    {user.role === 'admin' && (
+                    {user.role === "admin" && (
                       <div className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-400">
                         Admin Panel
                       </div>
@@ -179,16 +187,22 @@ export default function DashboardLayout({ user, children }: Props) {
               <Link
                 to="/dashboard"
                 className={`text-sm font-medium transition-colors hover:text-blue-600 ${
-                  location.pathname === '/dashboard' ? 'text-blue-600' : 'text-gray-600'
+                  location.pathname === "/dashboard"
+                    ? "text-blue-600"
+                    : "text-gray-600"
                 }`}
               >
                 Dashboard
               </Link>
-              {(user.role === 'employee' || user.role === 'manager' || user.role === 'admin') && (
+              {(user.role === "employee" ||
+                user.role === "manager" ||
+                user.role === "admin") && (
                 <Link
                   to="/daily-updates"
                   className={`text-sm font-medium transition-colors hover:text-blue-600 ${
-                    location.pathname === '/daily-updates' ? 'text-blue-600' : 'text-gray-600'
+                    location.pathname === "/daily-updates"
+                      ? "text-blue-600"
+                      : "text-gray-600"
                   }`}
                 >
                   Daily Updates
@@ -197,7 +211,9 @@ export default function DashboardLayout({ user, children }: Props) {
               <Link
                 to="/leaderboard"
                 className={`text-sm font-medium transition-colors hover:text-blue-600 ${
-                  location.pathname === '/leaderboard' ? 'text-blue-600' : 'text-gray-600'
+                  location.pathname === "/leaderboard"
+                    ? "text-blue-600"
+                    : "text-gray-600"
                 }`}
               >
                 Leaderboard
@@ -205,27 +221,31 @@ export default function DashboardLayout({ user, children }: Props) {
               <Link
                 to="/interviews"
                 className={`text-sm font-medium transition-colors hover:text-blue-600 ${
-                  location.pathname === '/interviews' ? 'text-blue-600' : 'text-gray-600'
+                  location.pathname === "/interviews"
+                    ? "text-blue-600"
+                    : "text-gray-600"
                 }`}
               >
                 Interviews
               </Link>
-              {user.role !== 'admin' && (
+              {user.role !== "admin" && (
                 <Link
                   to="/pms"
                   className={`text-sm font-medium transition-colors hover:text-blue-600 ${
-                    location.pathname === '/pms' ? 'text-blue-600' : 'text-gray-600'
+                    location.pathname === "/pms"
+                      ? "text-blue-600"
+                      : "text-gray-600"
                   }`}
                 >
                   PMS
                 </Link>
               )}
-              {(user.role === 'manager' || user.role === 'admin') && (
+              {(user.role === "manager" || user.role === "admin") && (
                 <span className="text-sm font-medium text-gray-400 cursor-not-allowed">
                   Team Reports
                 </span>
               )}
-              {user.role === 'admin' && (
+              {user.role === "admin" && (
                 <span className="text-sm font-medium text-gray-400 cursor-not-allowed">
                   Admin Panel
                 </span>
@@ -246,9 +266,14 @@ export default function DashboardLayout({ user, children }: Props) {
               {/* User Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className={`${getRoleColor(user.role)} text-white text-sm font-semibold`}>
+                      <AvatarFallback
+                        className={`${getRoleColor(user.role)} text-white text-sm font-semibold`}
+                      >
                         {getInitials(user.firstName, user.lastName)}
                       </AvatarFallback>
                     </Avatar>
@@ -264,12 +289,18 @@ export default function DashboardLayout({ user, children }: Props) {
                         {user.email}
                       </p>
                       <div className="flex items-center space-x-2 mt-2">
-                        <span className={`inline-block w-2 h-2 rounded-full ${getRoleColor(user.role)}`}></span>
-                        <span className="text-xs text-gray-600">{getRoleLabel(user.role)}</span>
+                        <span
+                          className={`inline-block w-2 h-2 rounded-full ${getRoleColor(user.role)}`}
+                        ></span>
+                        <span className="text-xs text-gray-600">
+                          {getRoleLabel(user.role)}
+                        </span>
                         {user.department && (
                           <>
                             <span className="text-gray-300">•</span>
-                            <span className="text-xs text-gray-600">{user.department}</span>
+                            <span className="text-xs text-gray-600">
+                              {user.department}
+                            </span>
                           </>
                         )}
                       </div>
@@ -310,9 +341,15 @@ export default function DashboardLayout({ user, children }: Props) {
               <span>© 2024 TrackZen. All rights reserved.</span>
             </div>
             <div className="flex items-center space-x-6 text-sm text-gray-600">
-              <a href="#" className="hover:text-blue-600">Support</a>
-              <a href="#" className="hover:text-blue-600">Privacy</a>
-              <a href="#" className="hover:text-blue-600">Terms</a>
+              <a href="#" className="hover:text-blue-600">
+                Support
+              </a>
+              <a href="#" className="hover:text-blue-600">
+                Privacy
+              </a>
+              <a href="#" className="hover:text-blue-600">
+                Terms
+              </a>
             </div>
           </div>
         </div>

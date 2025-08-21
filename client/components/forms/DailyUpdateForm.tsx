@@ -1,23 +1,33 @@
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Slider } from '@/components/ui/slider';
-import { 
-  Plus, 
-  X, 
-  Target, 
+import React, { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Slider } from "@/components/ui/slider";
+import {
+  Plus,
+  X,
+  Target,
   CheckCircle,
   AlertTriangle,
   Calendar,
-  Loader2
-} from 'lucide-react';
-import { CreateDailyUpdateRequest, ApiResponse, DailyUpdate } from '@shared/api';
+  Loader2,
+} from "lucide-react";
+import {
+  CreateDailyUpdateRequest,
+  ApiResponse,
+  DailyUpdate,
+} from "@shared/api";
 
 interface Props {
   onSuccess?: (update: DailyUpdate) => void;
@@ -27,27 +37,27 @@ interface Props {
 export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Form state
-  const [tasks, setTasks] = useState<string[]>(['']);
-  const [accomplishments, setAccomplishments] = useState<string[]>(['']);
-  const [challenges, setChallenges] = useState<string[]>(['']);
-  const [nextDayPlans, setNextDayPlans] = useState<string[]>(['']);
+  const [tasks, setTasks] = useState<string[]>([""]);
+  const [accomplishments, setAccomplishments] = useState<string[]>([""]);
+  const [challenges, setChallenges] = useState<string[]>([""]);
+  const [nextDayPlans, setNextDayPlans] = useState<string[]>([""]);
   const [progressScore, setProgressScore] = useState([7]);
 
   const addItem = (
-    items: string[], 
-    setItems: React.Dispatch<React.SetStateAction<string[]>>
+    items: string[],
+    setItems: React.Dispatch<React.SetStateAction<string[]>>,
   ) => {
-    setItems([...items, '']);
+    setItems([...items, ""]);
   };
 
   const removeItem = (
-    index: number, 
-    items: string[], 
-    setItems: React.Dispatch<React.SetStateAction<string[]>>
+    index: number,
+    items: string[],
+    setItems: React.Dispatch<React.SetStateAction<string[]>>,
   ) => {
     if (items.length > 1) {
       setItems(items.filter((_, i) => i !== index));
@@ -55,10 +65,10 @@ export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
   };
 
   const updateItem = (
-    index: number, 
-    value: string, 
-    items: string[], 
-    setItems: React.Dispatch<React.SetStateAction<string[]>>
+    index: number,
+    value: string,
+    items: string[],
+    setItems: React.Dispatch<React.SetStateAction<string[]>>,
   ) => {
     const newItems = [...items];
     newItems[index] = value;
@@ -70,7 +80,7 @@ export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
     icon: React.ReactNode,
     items: string[],
     setItems: React.Dispatch<React.SetStateAction<string[]>>,
-    placeholder: string
+    placeholder: string,
   ) => (
     <div className="space-y-3">
       <Label className="text-sm font-medium flex items-center space-x-2">
@@ -113,22 +123,28 @@ export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     // Validate form
-    const filteredTasks = tasks.filter(task => task.trim() !== '');
-    const filteredAccomplishments = accomplishments.filter(acc => acc.trim() !== '');
-    const filteredChallenges = challenges.filter(challenge => challenge.trim() !== '');
-    const filteredNextDayPlans = nextDayPlans.filter(plan => plan.trim() !== '');
+    const filteredTasks = tasks.filter((task) => task.trim() !== "");
+    const filteredAccomplishments = accomplishments.filter(
+      (acc) => acc.trim() !== "",
+    );
+    const filteredChallenges = challenges.filter(
+      (challenge) => challenge.trim() !== "",
+    );
+    const filteredNextDayPlans = nextDayPlans.filter(
+      (plan) => plan.trim() !== "",
+    );
 
     if (filteredTasks.length === 0) {
-      setError('Please add at least one task');
+      setError("Please add at least one task");
       return;
     }
 
     if (filteredAccomplishments.length === 0) {
-      setError('Please add at least one accomplishment');
+      setError("Please add at least one accomplishment");
       return;
     }
 
@@ -140,39 +156,39 @@ export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
         accomplishments: filteredAccomplishments,
         challenges: filteredChallenges,
         nextDayPlans: filteredNextDayPlans,
-        progressScore: progressScore[0]
+        progressScore: progressScore[0],
       };
 
-      const response = await fetch('/api/daily-updates', {
-        method: 'POST',
+      const response = await fetch("/api/daily-updates", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(updateData)
+        body: JSON.stringify(updateData),
       });
 
       const data: ApiResponse<DailyUpdate> = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to submit daily update');
+        throw new Error(data.error || "Failed to submit daily update");
       }
 
-      setSuccess('Daily update submitted successfully!');
-      
+      setSuccess("Daily update submitted successfully!");
+
       // Reset form
-      setTasks(['']);
-      setAccomplishments(['']);
-      setChallenges(['']);
-      setNextDayPlans(['']);
+      setTasks([""]);
+      setAccomplishments([""]);
+      setChallenges([""]);
+      setNextDayPlans([""]);
       setProgressScore([7]);
 
       if (onSuccess && data.data) {
         onSuccess(data.data);
       }
     } catch (err) {
-      console.error('Submit daily update error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to submit update');
+      console.error("Submit daily update error:", err);
+      setError(err instanceof Error ? err.message : "Failed to submit update");
     } finally {
       setLoading(false);
     }
@@ -209,44 +225,44 @@ export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
             {/* Tasks */}
             <div className="space-y-4">
               {renderItemList(
-                'Tasks',
+                "Tasks",
                 <Target className="h-4 w-4 text-blue-600" />,
                 tasks,
                 setTasks,
-                'What are you working on today?'
+                "What are you working on today?",
               )}
             </div>
 
             {/* Accomplishments */}
             <div className="space-y-4">
               {renderItemList(
-                'Accomplishments',
+                "Accomplishments",
                 <CheckCircle className="h-4 w-4 text-green-600" />,
                 accomplishments,
                 setAccomplishments,
-                'What did you accomplish?'
+                "What did you accomplish?",
               )}
             </div>
 
             {/* Challenges */}
             <div className="space-y-4">
               {renderItemList(
-                'Challenges',
+                "Challenges",
                 <AlertTriangle className="h-4 w-4 text-orange-600" />,
                 challenges,
                 setChallenges,
-                'What challenges are you facing?'
+                "What challenges are you facing?",
               )}
             </div>
 
             {/* Next Day Plans */}
             <div className="space-y-4">
               {renderItemList(
-                'Tomorrow\'s Plans',
+                "Tomorrow's Plans",
                 <Calendar className="h-4 w-4 text-purple-600" />,
                 nextDayPlans,
                 setNextDayPlans,
-                'What do you plan to work on tomorrow?'
+                "What do you plan to work on tomorrow?",
               )}
             </div>
           </div>
@@ -272,14 +288,23 @@ export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
               </div>
             </div>
             <div className="flex justify-center">
-              <Badge 
-                variant={progressScore[0] >= 8 ? 'default' : 
-                        progressScore[0] >= 6 ? 'secondary' : 'destructive'}
+              <Badge
+                variant={
+                  progressScore[0] >= 8
+                    ? "default"
+                    : progressScore[0] >= 6
+                      ? "secondary"
+                      : "destructive"
+                }
                 className="text-sm"
               >
-                {progressScore[0] >= 8 ? 'Excellent' : 
-                 progressScore[0] >= 6 ? 'Good' : 
-                 progressScore[0] >= 4 ? 'Average' : 'Needs Improvement'}
+                {progressScore[0] >= 8
+                  ? "Excellent"
+                  : progressScore[0] >= 6
+                    ? "Good"
+                    : progressScore[0] >= 4
+                      ? "Average"
+                      : "Needs Improvement"}
               </Badge>
             </div>
           </div>
