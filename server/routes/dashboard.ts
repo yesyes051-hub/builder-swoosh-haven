@@ -1,14 +1,14 @@
-import { RequestHandler } from "express";
-import { db } from "../db/memory";
-import { EmployeeUser } from "../models/employeeManagement";
-import { AuthRequest } from "../middleware/auth";
+import { RequestHandler } from 'express';
+import { db } from '../db/memory';
+import { EmployeeUser } from '../models/employeeManagement';
+import { AuthRequest } from '../middleware/auth';
 import {
   EmployeeDashboard,
   ManagerDashboard,
   HRDashboard,
   AdminDashboard,
-  ApiResponse,
-} from "@shared/api";
+  ApiResponse
+} from '@shared/api';
 
 export const getEmployeeDashboard: RequestHandler = async (req, res) => {
   try {
@@ -18,9 +18,7 @@ export const getEmployeeDashboard: RequestHandler = async (req, res) => {
     // Try to get user from new Employee Management system first
     let fullUser;
     try {
-      const employeeUser = await EmployeeUser.findById(user.id).select(
-        "-password",
-      );
+      const employeeUser = await EmployeeUser.findById(user.id).select('-password');
       if (employeeUser) {
         fullUser = {
           id: employeeUser._id.toString(),
@@ -28,10 +26,10 @@ export const getEmployeeDashboard: RequestHandler = async (req, res) => {
           firstName: employeeUser.firstName,
           lastName: employeeUser.lastName,
           role: employeeUser.role.toLowerCase(),
-          department: "General", // Default department
+          department: 'General', // Default department
           isActive: true,
           createdAt: employeeUser.createdAt,
-          updatedAt: employeeUser.createdAt,
+          updatedAt: employeeUser.createdAt
         };
       }
     } catch (error) {
@@ -45,21 +43,12 @@ export const getEmployeeDashboard: RequestHandler = async (req, res) => {
       // Try by email first since ID formats might be different
       fullUser = await db.getUserByEmail(user.email);
       if (!fullUser) {
-<<<<<<< HEAD
         // As last resort, try by ID
         fullUser = await db.getUserById(user.id);
         if (!fullUser) {
           return res.status(404).json({
             success: false,
-            error: 'User not found'
-=======
-        // Try to find user by email as a final fallback
-        fullUser = await db.getUserByEmail(user.email);
-        if (!fullUser) {
-          return res.status(404).json({
-            success: false,
-            error: "User not found",
->>>>>>> refs/remotes/origin/main
+            error: "User not found"
           } as ApiResponse<never>);
         }
       }
@@ -79,36 +68,32 @@ export const getEmployeeDashboard: RequestHandler = async (req, res) => {
     }
 
     // Calculate performance stats
-    const avgProgressScore =
-      recentUpdates.length > 0
-        ? recentUpdates.reduce((sum, update) => sum + update.progressScore, 0) /
-          recentUpdates.length
-        : 0;
+    const avgProgressScore = recentUpdates.length > 0
+      ? recentUpdates.reduce((sum, update) => sum + update.progressScore, 0) / recentUpdates.length
+      : 0;
 
     const dashboardData: EmployeeDashboard = {
       user: fullUser,
       recentUpdates,
-      upcomingInterviews: upcomingInterviews.filter(
-        (i) => i.status === "scheduled",
-      ),
-      currentProjects: currentProjects.filter((p) => p.status === "active"),
+      upcomingInterviews: upcomingInterviews.filter(i => i.status === 'scheduled'),
+      currentProjects: currentProjects.filter(p => p.status === 'active'),
       leaderboardPosition: 1, // TODO: Calculate actual position
       performanceStats: {
         avgProgressScore: Math.round(avgProgressScore * 10) / 10,
         updateStreak: 0, // TODO: Calculate streak
-        totalUpdates: recentUpdates.length,
-      },
+        totalUpdates: recentUpdates.length
+      }
     };
 
     res.json({
       success: true,
-      data: dashboardData,
+      data: dashboardData
     } as ApiResponse<EmployeeDashboard>);
   } catch (error) {
-    console.error("Employee dashboard error:", error);
+    console.error('Employee dashboard error:', error);
     res.status(500).json({
       success: false,
-      error: "Internal server error",
+      error: 'Internal server error'
     } as ApiResponse<never>);
   }
 };
@@ -121,9 +106,7 @@ export const getManagerDashboard: RequestHandler = async (req, res) => {
     // Try to get user from new Employee Management system first
     let fullUser;
     try {
-      const employeeUser = await EmployeeUser.findById(user.id).select(
-        "-password",
-      );
+      const employeeUser = await EmployeeUser.findById(user.id).select('-password');
       if (employeeUser) {
         fullUser = {
           id: employeeUser._id.toString(),
@@ -131,10 +114,10 @@ export const getManagerDashboard: RequestHandler = async (req, res) => {
           firstName: employeeUser.firstName,
           lastName: employeeUser.lastName,
           role: employeeUser.role.toLowerCase(),
-          department: "General",
+          department: 'General',
           isActive: true,
           createdAt: employeeUser.createdAt,
-          updatedAt: employeeUser.createdAt,
+          updatedAt: employeeUser.createdAt
         };
       }
     } catch (error) {
@@ -148,21 +131,12 @@ export const getManagerDashboard: RequestHandler = async (req, res) => {
       // Try by email first since ID formats might be different
       fullUser = await db.getUserByEmail(user.email);
       if (!fullUser) {
-<<<<<<< HEAD
         // As last resort, try by ID
         fullUser = await db.getUserById(user.id);
         if (!fullUser) {
           return res.status(404).json({
             success: false,
-            error: 'User not found'
-=======
-        // Try to find user by email as a final fallback
-        fullUser = await db.getUserByEmail(user.email);
-        if (!fullUser) {
-          return res.status(404).json({
-            success: false,
-            error: "User not found",
->>>>>>> refs/remotes/origin/main
+            error: "User not found"
           } as ApiResponse<never>);
         }
       }
@@ -175,24 +149,24 @@ export const getManagerDashboard: RequestHandler = async (req, res) => {
 
     try {
       const allUsers = await db.getAllUsers();
-      teamMembers = allUsers.filter((u) => u.managerId === user.id);
-      const teamMemberIds = teamMembers.map((m) => m.id);
+      teamMembers = allUsers.filter(u => u.managerId === user.id);
+      const teamMemberIds = teamMembers.map(m => m.id);
       recentTeamUpdates = await db.getDailyUpdatesByTeam(teamMemberIds, 10);
       teamProjects = await db.getProjectsByUser(user.id);
     } catch (error) {
       // For new users from Employee Management system, use empty arrays
-      console.log("Manager dashboard: Using empty data for new user");
+      console.log('Manager dashboard: Using empty data for new user');
     }
 
     // Add user info to updates
-    const updatesWithUser = recentTeamUpdates.map((update) => {
-      const updateUser = teamMembers.find((u) => u.id === update.userId);
+    const updatesWithUser = recentTeamUpdates.map(update => {
+      const updateUser = teamMembers.find(u => u.id === update.userId);
       return {
         ...update,
         user: {
-          firstName: updateUser?.firstName || "",
-          lastName: updateUser?.lastName || "",
-        },
+          firstName: updateUser?.firstName || '',
+          lastName: updateUser?.lastName || ''
+        }
       };
     });
 
@@ -204,20 +178,19 @@ export const getManagerDashboard: RequestHandler = async (req, res) => {
       teamPerformanceStats: {
         teamSize: teamMembers.length,
         avgTeamScore: 8.5, // TODO: Calculate from actual data
-        activeProjects: teamProjects.filter((p) => p.status === "active")
-          .length,
-      },
+        activeProjects: teamProjects.filter(p => p.status === 'active').length
+      }
     };
 
     res.json({
       success: true,
-      data: dashboardData,
+      data: dashboardData
     } as ApiResponse<ManagerDashboard>);
   } catch (error) {
-    console.error("Manager dashboard error:", error);
+    console.error('Manager dashboard error:', error);
     res.status(500).json({
       success: false,
-      error: "Internal server error",
+      error: 'Internal server error'
     } as ApiResponse<never>);
   }
 };
@@ -230,9 +203,7 @@ export const getHRDashboard: RequestHandler = async (req, res) => {
     // Try to get user from new Employee Management system first
     let fullUser;
     try {
-      const employeeUser = await EmployeeUser.findById(user.id).select(
-        "-password",
-      );
+      const employeeUser = await EmployeeUser.findById(user.id).select('-password');
       if (employeeUser) {
         fullUser = {
           id: employeeUser._id.toString(),
@@ -240,10 +211,10 @@ export const getHRDashboard: RequestHandler = async (req, res) => {
           firstName: employeeUser.firstName,
           lastName: employeeUser.lastName,
           role: employeeUser.role.toLowerCase(),
-          department: "General",
+          department: 'General',
           isActive: true,
           createdAt: employeeUser.createdAt,
-          updatedAt: employeeUser.createdAt,
+          updatedAt: employeeUser.createdAt
         };
       }
     } catch (error) {
@@ -254,38 +225,24 @@ export const getHRDashboard: RequestHandler = async (req, res) => {
 
     // Fallback to memory database
     if (!fullUser) {
-<<<<<<< HEAD
+      console.log(`🔍 HR Dashboard - Looking for user by ID: ${user.id}`);
       // Try by email first since ID formats might be different
       fullUser = await db.getUserByEmail(user.email);
       if (!fullUser) {
         // As last resort, try by ID
         fullUser = await db.getUserById(user.id);
         if (!fullUser) {
+          console.log('❌ HR Dashboard - User not found in memory database');
           return res.status(404).json({
             success: false,
-            error: 'User not found'
+            error: "User not found"
           } as ApiResponse<never>);
-=======
-      console.log(`🔍 HR Dashboard - Looking for user by ID: ${user.id}`);
-      fullUser = await db.getUserById(user.id);
-      if (!fullUser) {
-        console.log(
-          `🔍 HR Dashboard - User not found by ID, trying email: ${user.email}`,
-        );
-        // Try to find user by email as a final fallback
-        fullUser = await db.getUserByEmail(user.email);
-        if (!fullUser) {
-          console.log(`❌ HR Dashboard - User not found by email either`);
-          return res.status(404).json({
-            success: false,
-            error: "User not found",
-          } as ApiResponse<never>);
-        } else {
-          console.log(
-            `✅ HR Dashboard - Found user by email: ${fullUser.email}`,
-          );
->>>>>>> refs/remotes/origin/main
         }
+      } else {
+        console.log(
+          '✅ HR Dashboard - Found user in memory database:',
+          fullUser.email,
+        );
       }
     }
 
@@ -298,35 +255,29 @@ export const getHRDashboard: RequestHandler = async (req, res) => {
       allUsers = await db.getAllUsers();
     } catch (error) {
       // For new users from Employee Management system, use empty arrays
-      console.log("HR dashboard: Using empty data for new user");
+      console.log('HR dashboard: Using empty data for new user');
     }
 
     const dashboardData: HRDashboard = {
       user: fullUser,
-      scheduledInterviews: scheduledInterviews.filter(
-        (i) => i.status === "scheduled",
-      ),
+      scheduledInterviews: scheduledInterviews.filter(i => i.status === 'scheduled'),
       recentFeedback: [], // TODO: Get recent feedback
       departmentStats: {
-        totalEmployees: allUsers.filter((u) => u.role === "employee").length,
-        pendingInterviews: scheduledInterviews.filter(
-          (i) => i.status === "scheduled",
-        ).length,
-        completedInterviews: scheduledInterviews.filter(
-          (i) => i.status === "completed",
-        ).length,
-      },
+        totalEmployees: allUsers.filter(u => u.role === 'employee').length,
+        pendingInterviews: scheduledInterviews.filter(i => i.status === 'scheduled').length,
+        completedInterviews: scheduledInterviews.filter(i => i.status === 'completed').length
+      }
     };
 
     res.json({
       success: true,
-      data: dashboardData,
+      data: dashboardData
     } as ApiResponse<HRDashboard>);
   } catch (error) {
-    console.error("HR dashboard error:", error);
+    console.error('HR dashboard error:', error);
     res.status(500).json({
       success: false,
-      error: "Internal server error",
+      error: 'Internal server error'
     } as ApiResponse<never>);
   }
 };
@@ -340,14 +291,10 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
     // Try to get user from new Employee Management system first
     let fullUser;
     try {
-<<<<<<< HEAD
       console.log('🔍 Admin dashboard - Looking for user by MongoDB ID:', user.id);
-      const employeeUser = await EmployeeUser.findById(user.id).select('-password');
-=======
       const employeeUser = await EmployeeUser.findById(user.id).select(
         "-password",
       );
->>>>>>> refs/remotes/origin/main
       if (employeeUser) {
         console.log('✅ Admin dashboard - Found user in Employee Management system:', employeeUser.email);
         fullUser = {
@@ -356,22 +303,19 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
           firstName: employeeUser.firstName,
           lastName: employeeUser.lastName,
           role: employeeUser.role.toLowerCase(),
-          department: "General",
+          department: 'General',
           isActive: true,
           createdAt: employeeUser.createdAt,
-          updatedAt: employeeUser.createdAt,
+          updatedAt: employeeUser.createdAt
         };
       } else {
         console.log('❌ Admin dashboard - User not found in Employee Management system by ID');
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.log('❌ Admin dashboard - Error finding user in Employee Management system:', error);
-=======
       console.log(
-        "User not found in Employee Management system, trying memory database",
+        "❌ Admin dashboard - Error finding user in Employee Management system:",
+        error,
       );
->>>>>>> refs/remotes/origin/main
     }
 
     // Fallback to memory database
@@ -379,21 +323,14 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
       // Try by email first since ID formats might be different
       fullUser = await db.getUserByEmail(user.email);
       if (!fullUser) {
-<<<<<<< HEAD
         // As last resort, try by ID
         fullUser = await db.getUserById(user.id);
         if (!fullUser) {
           return res.status(404).json({
             success: false,
-            error: 'User not found'
+            error: "User not found"
           } as ApiResponse<never>);
         }
-=======
-        return res.status(404).json({
-          success: false,
-          error: "User not found",
-        } as ApiResponse<never>);
->>>>>>> refs/remotes/origin/main
       }
     }
 
@@ -404,34 +341,34 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
       allUsers = await db.getAllUsers();
     } catch (error) {
       // For new users from Employee Management system, use empty arrays
-      console.log("Admin dashboard: Using empty data for new user");
+      console.log('Admin dashboard: Using empty data for new user');
     }
 
     const dashboardData: AdminDashboard = {
       user: fullUser,
       systemStats: {
         totalUsers: allUsers.length,
-        activeUsers: allUsers.filter((u) => u.isActive).length,
+        activeUsers: allUsers.filter(u => u.isActive).length,
         totalProjects: 0, // TODO: Get from projects
-        pendingInterviews: 0, // TODO: Get from interviews
+        pendingInterviews: 0 // TODO: Get from interviews
       },
       recentActivity: {
         newUsers: 0, // TODO: Calculate from recent signups
         newUpdates: 0, // TODO: Calculate from recent updates
-        completedInterviews: 0, // TODO: Calculate from recent interviews
-      },
+        completedInterviews: 0 // TODO: Calculate from recent interviews
+      }
     };
 
     console.log('✅ Admin dashboard - Sending successful response with data for user:', fullUser.email);
     res.json({
       success: true,
-      data: dashboardData,
+      data: dashboardData
     } as ApiResponse<AdminDashboard>);
   } catch (error) {
-    console.error("Admin dashboard error:", error);
+    console.error('Admin dashboard error:', error);
     res.status(500).json({
       success: false,
-      error: "Internal server error",
+      error: 'Internal server error'
     } as ApiResponse<never>);
   }
 };
