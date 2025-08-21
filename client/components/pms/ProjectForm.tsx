@@ -63,7 +63,13 @@ export default function ProjectForm({ onProjectCreated }: Props) {
     setSuccess('');
 
     if (!formData.projectName || !formData.description || !formData.startDate) {
-      setError('Please fill in all required fields');
+      setError('Please fill in all required fields including project name, description, and start date');
+      return;
+    }
+
+    // Validate dates
+    if (formData.endDate && formData.endDate <= formData.startDate) {
+      setError('End date must be after start date');
       return;
     }
 
@@ -72,23 +78,27 @@ export default function ProjectForm({ onProjectCreated }: Props) {
     try {
       setLoading(true);
 
+      const projectData = {
+        projectName: formData.projectName,
+        projectManager: formData.projectManager,
+        startDate: formData.startDate.toISOString(),
+        endDate: formData.endDate?.toISOString(),
+        status: formData.status,
+        priority: formData.priority,
+        description: formData.description,
+        teamMembers: filteredTeamMembers,
+        budget: formData.budget ? parseFloat(formData.budget) : undefined
+      };
+
+      console.log('🔍 Creating project with data:', projectData);
+
       const response = await fetch('/api/pms/projects', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          projectName: formData.projectName,
-          projectManager: formData.projectManager,
-          startDate: formData.startDate.toISOString(),
-          endDate: formData.endDate?.toISOString(),
-          status: formData.status,
-          priority: formData.priority,
-          description: formData.description,
-          teamMembers: filteredTeamMembers,
-          budget: formData.budget ? parseFloat(formData.budget) : undefined
-        })
+        body: JSON.stringify(projectData)
       });
 
       const data: ApiResponse<ProjectDetail> = await response.json();
