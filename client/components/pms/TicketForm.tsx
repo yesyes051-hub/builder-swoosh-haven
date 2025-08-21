@@ -260,8 +260,8 @@ export default function TicketForm({ onTicketCreated }: Props) {
 
             <div>
               <Label htmlFor="assignedTo">Assignee (Optional)</Label>
-              <Select 
-                value={formData.assignedTo} 
+              <Select
+                value={formData.assignedTo}
                 onValueChange={(value) => setFormData({...formData, assignedTo: value})}
               >
                 <SelectTrigger>
@@ -269,13 +269,24 @@ export default function TicketForm({ onTicketCreated }: Props) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unassigned">No assignee</SelectItem>
-                  {employees.map((employee) => (
-                    <SelectItem key={employee._id} value={employee._id}>
-                      {employee.firstName} {employee.lastName} ({employee.role})
+                  {employees.length > 0 ? (
+                    employees.map((employee) => (
+                      <SelectItem key={employee._id} value={employee._id}>
+                        {employee.firstName} {employee.lastName} ({employee.role})
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="limited" disabled>
+                      Employee list not available (permission required)
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
+              {employees.length === 0 && (
+                <p className="text-sm text-gray-500 mt-1">
+                  💡 Tip: Admin or HR role required to see employee list for assignment
+                </p>
+              )}
             </div>
           </div>
 
