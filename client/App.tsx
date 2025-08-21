@@ -35,7 +35,8 @@ if (typeof window !== "undefined") {
   const originalOnError = window.onerror;
   window.onerror = (message, source, lineno, colno, error) => {
     const msg = String(message || "");
-    if (isResizeObserverError(msg)) {
+    if (isResizeObserverError(msg) || isDOMManipulationError(msg)) {
+      console.warn('Suppressed known error:', msg);
       return true; // Prevent default error handling
     }
     return originalOnError
@@ -47,7 +48,8 @@ if (typeof window !== "undefined") {
   const originalOnUnhandledRejection = window.onunhandledrejection;
   window.onunhandledrejection = function (event: PromiseRejectionEvent) {
     const msg = String(event.reason?.message || event.reason || "");
-    if (isResizeObserverError(msg)) {
+    if (isResizeObserverError(msg) || isDOMManipulationError(msg)) {
+      console.warn('Suppressed known promise rejection:', msg);
       event.preventDefault();
       return;
     }
@@ -61,7 +63,8 @@ if (typeof window !== "undefined") {
     "error",
     (event) => {
       const msg = String(event.message || event.error?.message || "");
-      if (isResizeObserverError(msg)) {
+      if (isResizeObserverError(msg) || isDOMManipulationError(msg)) {
+        console.warn('Suppressed error event:', msg);
         event.preventDefault();
         event.stopImmediatePropagation();
         return false;
@@ -74,8 +77,8 @@ if (typeof window !== "undefined") {
   const originalConsoleError = console.error;
   console.error = (...args) => {
     const msg = String(args[0] || "");
-    if (isResizeObserverError(msg)) {
-      return; // Suppress ResizeObserver console errors
+    if (isResizeObserverError(msg) || isDOMManipulationError(msg)) {
+      return; // Suppress known console errors
     }
     originalConsoleError.apply(console, args);
   };
