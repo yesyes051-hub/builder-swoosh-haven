@@ -126,6 +126,8 @@ export interface ScheduleInterviewRequest {
   candidateId: string;
   interviewerId: string;
   scheduledAt: Date;
+  date: Date;
+  time: string;
   duration: number;
   type: MockInterview['type'];
 }
