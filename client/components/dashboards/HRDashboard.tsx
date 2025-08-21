@@ -86,6 +86,11 @@ export default function HRDashboard({ data }: Props) {
     useState<InterviewWithDetails | null>(null);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
 
+  // Notifications state
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<{ [key: string]: boolean }>({});
+
   useEffect(() => {
     fetchEmployeeCount();
     fetchInterviews();
