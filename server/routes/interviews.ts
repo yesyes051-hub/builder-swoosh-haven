@@ -32,8 +32,8 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
     }
 
     // Validate that candidate and interviewer exist and are employees
-    const candidate = await db.getUserById(interviewData.candidateId);
-    const interviewer = await db.getUserById(interviewData.interviewerId);
+    const candidate = await EmployeeUser.findById(interviewData.candidateId).select('-password');
+    const interviewer = await EmployeeUser.findById(interviewData.interviewerId).select('-password');
 
     if (!candidate || !interviewer) {
       return res.status(404).json({
@@ -42,7 +42,8 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    if (candidate.role !== 'employee' || (interviewer.role !== 'employee' && interviewer.role !== 'manager')) {
+    if (candidate.role.toLowerCase() !== 'employee' ||
+        (interviewer.role.toLowerCase() !== 'employee' && interviewer.role.toLowerCase() !== 'manager')) {
       return res.status(400).json({
         success: false,
         error: 'Candidates must be employees and interviewers must be employees or managers'
