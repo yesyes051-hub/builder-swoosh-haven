@@ -253,64 +253,6 @@ export const getInterviews: RequestHandler = async (req, res) => {
   }
 };
 
-export const updateInterviewStatus: RequestHandler = async (req, res) => {
-  try {
-    const authReq = req as AuthRequest;
-    const user = authReq.user!;
-    const { id } = req.params;
-    const { status } = req.body;
-
-    console.log("🔄 Updating interview status:", id, "to:", status);
-
-    const interview = await Interview.findById(id);
-    if (!interview) {
-      return res.status(404).json({
-        success: false,
-        error: "Interview not found",
-      } as ApiResponse<never>);
-    }
-
-    // Check permissions - only HR, admin, or the interviewer can update status
-    if (
-      user.role !== "hr" &&
-      user.role !== "admin" &&
-      user.id !== interview.interviewerId
-    ) {
-      return res.status(403).json({
-        success: false,
-        error: "Access denied",
-      } as ApiResponse<never>);
-    }
-
-    // Update the interview status
-    interview.status = status;
-    await interview.save();
-
-    const responseInterview: MockInterview = {
-      id: interview._id.toString(),
-      candidateId: interview.candidateId,
-      interviewerId: interview.interviewerId,
-      scheduledBy: interview.scheduledBy,
-      scheduledAt: interview.date,
-      duration: interview.duration,
-      type: interview.type,
-      status: interview.status,
-      createdAt: interview.createdAt!,
-      updatedAt: interview.updatedAt!,
-    };
-
-    res.json({
-      success: true,
-      data: responseInterview,
-    } as ApiResponse<MockInterview>);
-  } catch (error) {
-    console.error("Update interview status error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Internal server error",
-    } as ApiResponse<never>);
-  }
-};
 
 export const submitFeedback: RequestHandler = async (req, res) => {
   try {
