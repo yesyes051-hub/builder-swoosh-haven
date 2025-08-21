@@ -217,7 +217,8 @@ class MemoryDatabase {
       firstName: 'Bob',
       lastName: 'Wilson',
       role: 'interviewer',
-      department: 'Engineering'
+      department: 'Engineering',
+      isActive: true
     });
 
     console.log('✅ Database seeded with initial users');
