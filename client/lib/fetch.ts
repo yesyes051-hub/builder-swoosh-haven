@@ -62,6 +62,12 @@ export const apiRequest = async <T = any>(
   url: string,
   options: RequestInit = {}
 ): Promise<T> => {
+  // Import config dynamically to avoid circular dependencies
+  const { getApiUrl } = await import('./config');
+
+  // Build full URL if it's a relative path
+  const fullUrl = url.startsWith('http') ? url : getApiUrl(url);
+
   const defaultOptions: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
@@ -71,7 +77,7 @@ export const apiRequest = async <T = any>(
   };
 
   try {
-    const response = await safeFetch(url, defaultOptions);
+    const response = await safeFetch(fullUrl, defaultOptions);
 
     // Handle different response types
     if (!response.ok) {
