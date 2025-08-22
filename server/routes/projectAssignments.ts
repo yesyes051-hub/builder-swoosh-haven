@@ -16,12 +16,20 @@ const createAssignmentSchema = z.object({
 
 // Create new project assignment
 export const createProjectAssignment: RequestHandler = async (req, res) => {
+  console.log("🔍 Creating project assignment, request body:", req.body);
+  console.log("🔍 User context:", req.user);
+
   try {
     await connectToDatabase();
+
+    // Parse and validate the request data
     const validatedData = createAssignmentSchema.parse(req.body);
+    console.log("✅ Validated data:", validatedData);
+
     const managerId = req.user?.id;
 
     if (!managerId) {
+      console.log("❌ No manager ID found");
       return res.status(401).json({
         success: false,
         error: "Manager authentication required",
@@ -31,11 +39,14 @@ export const createProjectAssignment: RequestHandler = async (req, res) => {
     // Get employee details
     const employee = await PMSUser.findById(validatedData.employeeId);
     if (!employee) {
+      console.log("❌ Employee not found:", validatedData.employeeId);
       return res.status(404).json({
         success: false,
         error: "Employee not found",
       });
     }
+
+    console.log("✅ Found employee:", employee.firstName, employee.lastName);
 
     // Create assignment
     const assignment = new ProjectAssignment({
@@ -47,17 +58,25 @@ export const createProjectAssignment: RequestHandler = async (req, res) => {
       assignedBy: managerId,
     });
 
-    await assignment.save();
+    const savedAssignment = await assignment.save();
+    console.log("✅ Assignment created successfully:", savedAssignment._id);
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      data: assignment,
+      data: savedAssignment,
       message: "Project assignment created successfully",
     });
   } catch (error) {
-    console.error("Error creating project assignment:", error);
+    console.error("❌ Error creating project assignment:", error);
+
+    // Check if response was already sent
+    if (res.headersSent) {
+      console.error("❌ Headers already sent, cannot send error response");
+      return;
+    }
 
     if (error instanceof z.ZodError) {
+      console.log("❌ Validation error:", error.errors);
       return res.status(400).json({
         success: false,
         error: "Validation error",
@@ -68,6 +87,7 @@ export const createProjectAssignment: RequestHandler = async (req, res) => {
     return res.status(500).json({
       success: false,
       error: "Failed to create project assignment",
+      details: error instanceof Error ? error.message : "Unknown error",
     });
   }
 };
