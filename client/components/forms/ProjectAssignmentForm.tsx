@@ -34,8 +34,7 @@ import { useAuth } from "@/contexts/AuthContext";
 // Form validation schema
 const projectAssignmentSchema = z.object({
   projectName: z.string().min(1, "Project name is required"),
-  deadline: z.string().min(1, "Deadline is required"),
-  priority: z.enum(["High", "Medium", "Low"]).default("Medium"),
+  onBoarding: z.string().min(1, "On-Boarding date is required"),
   notes: z.string().optional(),
 });
 
@@ -70,8 +69,7 @@ export default function ProjectAssignmentForm({
     resolver: zodResolver(projectAssignmentSchema),
     defaultValues: {
       projectName: "",
-      deadline: "",
-      priority: "Medium",
+      onBoarding: "",
       notes: "",
     },
   });
@@ -187,13 +185,13 @@ export default function ProjectAssignmentForm({
               )}
             />
 
-            {/* Deadline */}
+            {/* On-Boarding */}
             <FormField
               control={form.control}
-              name="deadline"
+              name="onBoarding"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Deadline</FormLabel>
+                  <FormLabel>On-Boarding</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input
@@ -211,48 +209,6 @@ export default function ProjectAssignmentForm({
               )}
             />
 
-            {/* Priority */}
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priority</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isSubmitting}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="High">
-                        <span className="flex items-center">
-                          <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                          High
-                        </span>
-                      </SelectItem>
-                      <SelectItem value="Medium">
-                        <span className="flex items-center">
-                          <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                          Medium
-                        </span>
-                      </SelectItem>
-                      <SelectItem value="Low">
-                        <span className="flex items-center">
-                          <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                          Low
-                        </span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             {/* Notes */}
             <FormField
