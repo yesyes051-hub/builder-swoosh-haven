@@ -34,70 +34,77 @@ export class NetworkDiagnostics {
     const startTime = performance.now();
     try {
       // Test relative URL first (preferred for development)
-      const response = await fetch('/api/ping', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+      const response = await fetch("/api/ping", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
       });
       const duration = performance.now() - startTime;
 
       if (response.ok) {
         const data = await response.json();
         return {
-          test: 'Basic Connectivity',
+          test: "Basic Connectivity",
           success: true,
           message: `Connected successfully (${Math.round(duration)}ms)`,
           duration,
-          details: data
+          details: data,
         };
       } else {
         return {
-          test: 'Basic Connectivity',
+          test: "Basic Connectivity",
           success: false,
           message: `HTTP ${response.status}: ${response.statusText}`,
-          duration
+          duration,
         };
       }
     } catch (error) {
       const duration = performance.now() - startTime;
       return {
-        test: 'Basic Connectivity',
+        test: "Basic Connectivity",
         success: false,
         message: error instanceof Error ? error.message : String(error),
-        duration
+        duration,
       };
     }
   }
 
   private static async testConfiguration(): Promise<DiagnosticResult> {
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-                         (import.meta.env.MODE === 'production'
-                           ? 'https://your-render-app.onrender.com'
-                           : '');
+      const apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL ||
+        (import.meta.env.MODE === "production"
+          ? "https://your-render-app.onrender.com"
+          : "");
 
       const details = {
-        apiBaseUrl: apiBaseUrl || 'relative URLs (development)',
+        apiBaseUrl: apiBaseUrl || "relative URLs (development)",
         mode: import.meta.env.MODE,
-        isDevelopment: import.meta.env.MODE === 'development',
-        isProduction: import.meta.env.MODE === 'production',
+        isDevelopment: import.meta.env.MODE === "development",
+        isProduction: import.meta.env.MODE === "production",
         envVar: import.meta.env.VITE_API_BASE_URL,
-        usingRelativeUrls: !apiBaseUrl
+        usingRelativeUrls: !apiBaseUrl,
       };
 
-      const isValidConfig = import.meta.env.MODE === 'development' ? true :
-                           (apiBaseUrl && (apiBaseUrl.startsWith('http://') || apiBaseUrl.startsWith('https://')));
+      const isValidConfig =
+        import.meta.env.MODE === "development"
+          ? true
+          : apiBaseUrl &&
+            (apiBaseUrl.startsWith("http://") ||
+              apiBaseUrl.startsWith("https://"));
 
       return {
-        test: 'Configuration',
+        test: "Configuration",
         success: isValidConfig,
-        message: isValidConfig ? 'Configuration looks good' : 'Invalid API configuration for production',
-        details
+        message: isValidConfig
+          ? "Configuration looks good"
+          : "Invalid API configuration for production",
+        details,
       };
     } catch (error) {
       return {
-        test: 'Configuration',
+        test: "Configuration",
         success: false,
-        message: error instanceof Error ? error.message : String(error)
+        message: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -106,33 +113,35 @@ export class NetworkDiagnostics {
     const startTime = performance.now();
     try {
       // Test OPTIONS request (CORS preflight) using relative URL
-      const response = await fetch('/api/ping', {
-        method: 'OPTIONS',
+      const response = await fetch("/api/ping", {
+        method: "OPTIONS",
         headers: {
-          'Origin': window.location.origin,
-          'Access-Control-Request-Method': 'GET',
-          'Access-Control-Request-Headers': 'Content-Type'
-        }
+          Origin: window.location.origin,
+          "Access-Control-Request-Method": "GET",
+          "Access-Control-Request-Headers": "Content-Type",
+        },
       });
       const duration = performance.now() - startTime;
 
       return {
-        test: 'CORS Preflight',
+        test: "CORS Preflight",
         success: response.ok,
-        message: response.ok ? 'CORS configured correctly' : `CORS issue: ${response.status}`,
+        message: response.ok
+          ? "CORS configured correctly"
+          : `CORS issue: ${response.status}`,
         duration,
         details: {
           status: response.status,
-          headers: Object.fromEntries(response.headers.entries())
-        }
+          headers: Object.fromEntries(response.headers.entries()),
+        },
       };
     } catch (error) {
       const duration = performance.now() - startTime;
       return {
-        test: 'CORS Preflight',
+        test: "CORS Preflight",
         success: false,
         message: error instanceof Error ? error.message : String(error),
-        duration
+        duration,
       };
     }
   }
@@ -140,30 +149,33 @@ export class NetworkDiagnostics {
   private static async testAuthEndpoint(): Promise<DiagnosticResult> {
     const startTime = performance.now();
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'test', password: 'test' })
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "test", password: "test" }),
       });
       const duration = performance.now() - startTime;
 
       // We expect a 401 or similar for invalid credentials, not a connection error
-      const isReachable = response.status === 401 || response.status === 400 || response.ok;
+      const isReachable =
+        response.status === 401 || response.status === 400 || response.ok;
 
       return {
-        test: 'Auth Endpoint',
+        test: "Auth Endpoint",
         success: isReachable,
-        message: isReachable ? 'Auth endpoint reachable' : `Unexpected status: ${response.status}`,
+        message: isReachable
+          ? "Auth endpoint reachable"
+          : `Unexpected status: ${response.status}`,
         duration,
-        details: { status: response.status, statusText: response.statusText }
+        details: { status: response.status, statusText: response.statusText },
       };
     } catch (error) {
       const duration = performance.now() - startTime;
       return {
-        test: 'Auth Endpoint',
+        test: "Auth Endpoint",
         success: false,
         message: error instanceof Error ? error.message : String(error),
-        duration
+        duration,
       };
     }
   }
@@ -175,23 +187,25 @@ export class NetworkDiagnostics {
 
       const details = {
         online: onlineStatus,
-        connectionType: connection?.effectiveType || 'unknown',
-        downlink: connection?.downlink || 'unknown',
-        rtt: connection?.rtt || 'unknown',
-        userAgent: navigator.userAgent.slice(0, 100) + '...'
+        connectionType: connection?.effectiveType || "unknown",
+        downlink: connection?.downlink || "unknown",
+        rtt: connection?.rtt || "unknown",
+        userAgent: navigator.userAgent.slice(0, 100) + "...",
       };
 
       return {
-        test: 'Network Conditions',
+        test: "Network Conditions",
         success: onlineStatus,
-        message: onlineStatus ? 'Network appears online' : 'Network appears offline',
-        details
+        message: onlineStatus
+          ? "Network appears online"
+          : "Network appears offline",
+        details,
       };
     } catch (error) {
       return {
-        test: 'Network Conditions',
+        test: "Network Conditions",
         success: false,
-        message: error instanceof Error ? error.message : String(error)
+        message: error instanceof Error ? error.message : String(error),
       };
     }
   }

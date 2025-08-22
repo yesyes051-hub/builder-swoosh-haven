@@ -11,23 +11,27 @@ This guide explains how to deploy TrackZen with the frontend on Vercel and the b
 ## Frontend Deployment (Vercel)
 
 ### Prerequisites
+
 1. GitHub repository with your code
 2. Vercel account (free tier available)
 
 ### Setup Steps
 
 1. **Connect to Vercel**
+
    - Go to [vercel.com](https://vercel.com) and sign in with GitHub
    - Click "New Project" and import your repository
    - Vercel will automatically detect it's a Vite project
 
 2. **Configure Build Settings** (Vercel should auto-detect these)
+
    - Build Command: `npm run build:client`
    - Output Directory: `dist/spa`
    - Install Command: `npm install`
    - Node.js Version: `18.x`
 
 3. **Environment Variables**
+
    - In Vercel dashboard, go to Project Settings → Environment Variables
    - Add:
      ```
@@ -41,6 +45,7 @@ This guide explains how to deploy TrackZen with the frontend on Vercel and the b
 ### Build Configuration
 
 The project includes a `vercel.json` file with:
+
 - SPA routing configuration (all routes redirect to index.html)
 - Security headers
 - Static asset caching
@@ -49,6 +54,7 @@ The project includes a `vercel.json` file with:
 ## Backend Deployment (Render)
 
 ### Prerequisites
+
 1. GitHub repository with your code
 2. Render account (free tier available)
 3. MongoDB database (MongoDB Atlas recommended)
@@ -56,11 +62,13 @@ The project includes a `vercel.json` file with:
 ### Setup Steps
 
 1. **Connect to Render**
+
    - Go to [render.com](https://render.com) and sign in with GitHub
    - Click "New Web Service" and connect your repository
    - Select the repository and branch
 
 2. **Configure Service Settings**
+
    - Name: `trackzen-api` (or your preferred name)
    - Runtime: `Node`
    - Build Command: `npm run build:server`
@@ -68,6 +76,7 @@ The project includes a `vercel.json` file with:
    - Plan: `Starter` (free tier)
 
 3. **Environment Variables**
+
    - In Render dashboard, go to Environment Variables
    - Add the following variables:
      ```
@@ -85,10 +94,12 @@ The project includes a `vercel.json` file with:
 ### Database Setup (MongoDB Atlas)
 
 1. **Create MongoDB Atlas Account**
+
    - Go to [mongodb.com/atlas](https://www.mongodb.com/atlas)
    - Create a free cluster
 
 2. **Configure Database**
+
    - Create a database user
    - Whitelist IP addresses (or use 0.0.0.0/0 for all IPs in development)
    - Get the connection string
@@ -99,10 +110,13 @@ The project includes a `vercel.json` file with:
 ## Configuration Files
 
 ### render.yaml
+
 The project includes a `render.yaml` file for automated deployment configuration.
 
 ### vercel.json
+
 Configures Vercel deployment with:
+
 - SPA routing
 - Security headers
 - Caching rules
@@ -111,11 +125,13 @@ Configures Vercel deployment with:
 ## Environment Variables Reference
 
 ### Frontend (Vercel)
+
 ```bash
 VITE_API_BASE_URL=https://your-render-app.onrender.com
 ```
 
 ### Backend (Render)
+
 ```bash
 NODE_ENV=production
 PORT=10000
@@ -128,10 +144,12 @@ PING_MESSAGE=TrackZen API is running
 ## Post-Deployment Configuration
 
 1. **Update Frontend API Calls**
+
    - The frontend is configured to use `VITE_API_BASE_URL` environment variable
    - Ensure all API calls use this base URL
 
 2. **Test the Deployment**
+
    - Visit your Vercel frontend URL
    - Check that API calls work correctly
    - Test authentication and main features
@@ -143,11 +161,13 @@ PING_MESSAGE=TrackZen API is running
 ## Monitoring and Maintenance
 
 ### Vercel
+
 - Check deployment logs in Vercel dashboard
 - Monitor build performance and errors
 - Set up notifications for failed deployments
 
 ### Render
+
 - Monitor service health in Render dashboard
 - Check application logs for errors
 - Set up notifications for service downtime
@@ -157,14 +177,17 @@ PING_MESSAGE=TrackZen API is running
 ### Common Issues
 
 1. **CORS Errors**
+
    - Ensure `CORS_ORIGIN` is set correctly in Render
    - Check that frontend URL matches exactly
 
 2. **API Not Found Errors**
+
    - Verify `VITE_API_BASE_URL` is set correctly in Vercel
    - Check that Render service is running and healthy
 
 3. **Build Failures**
+
    - Check build logs in respective dashboards
    - Ensure all dependencies are listed in `package.json`
    - Verify Node.js version compatibility
@@ -177,6 +200,7 @@ PING_MESSAGE=TrackZen API is running
 ### Performance Optimization
 
 1. **Frontend**
+
    - Enable Vercel Analytics
    - Use Vercel Edge Functions for dynamic content
    - Implement proper caching strategies
@@ -189,13 +213,15 @@ PING_MESSAGE=TrackZen API is running
 ## Security Considerations
 
 1. **Environment Variables**
+
    - Never commit secrets to version control
    - Use secure, random values for JWT secrets
    - Regularly rotate sensitive credentials
 
 2. **CORS Configuration**
+
    - Only allow necessary origins
-   - Don't use wildcard (*) in production
+   - Don't use wildcard (\*) in production
 
 3. **Database Security**
    - Use MongoDB Atlas network access controls
@@ -207,21 +233,25 @@ PING_MESSAGE=TrackZen API is running
 ### Free Tier Limitations
 
 **Vercel (Hobby Plan)**
+
 - 100GB bandwidth per month
 - Serverless functions execution time limits
 - No custom authentication
 
 **Render (Free Plan)**
+
 - Service spins down after 15 minutes of inactivity
 - 750 hours per month (shared across services)
 - Limited to 512MB RAM
 
 **MongoDB Atlas (Free Tier)**
+
 - 512MB storage
 - No backups
 - Limited connection pooling
 
 ### Scaling Options
+
 - Consider upgrading to paid plans as your application grows
 - Monitor usage and performance metrics
 - Plan for traffic spikes and growth
@@ -236,6 +266,7 @@ PING_MESSAGE=TrackZen API is running
 ---
 
 **Next Steps:**
+
 1. Set up MongoDB Atlas database
 2. Deploy backend to Render with environment variables
 3. Deploy frontend to Vercel with API URL configuration

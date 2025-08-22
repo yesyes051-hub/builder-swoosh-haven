@@ -89,11 +89,12 @@ const InterviewFeedbackSchema: Schema = new Schema(
   },
 );
 
-export const Interview = mongoose.models.Interview || mongoose.model<IInterview>(
-  "Interview",
-  InterviewSchema,
-);
-export const InterviewFeedback = mongoose.models.InterviewFeedback || mongoose.model<IInterviewFeedback>(
-  "InterviewFeedback",
-  InterviewFeedbackSchema,
-);
+export const Interview =
+  mongoose.models.Interview ||
+  mongoose.model<IInterview>("Interview", InterviewSchema);
+export const InterviewFeedback =
+  mongoose.models.InterviewFeedback ||
+  mongoose.model<IInterviewFeedback>(
+    "InterviewFeedback",
+    InterviewFeedbackSchema,
+  );

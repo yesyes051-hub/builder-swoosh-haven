@@ -1,26 +1,30 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { apiRequest } from '@/lib/fetch';
-import { useAuth } from '@/contexts/AuthContext';
-import { NetworkDiagnostics, DiagnosticResult } from '@/lib/diagnostics';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiRequest } from "@/lib/fetch";
+import { useAuth } from "@/contexts/AuthContext";
+import { NetworkDiagnostics, DiagnosticResult } from "@/lib/diagnostics";
 
 export default function ApiTest() {
-  const [testResult, setTestResult] = useState<string>('');
-  const [diagnosticsResult, setDiagnosticsResult] = useState<DiagnosticResult[]>([]);
+  const [testResult, setTestResult] = useState<string>("");
+  const [diagnosticsResult, setDiagnosticsResult] = useState<
+    DiagnosticResult[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const { token } = useAuth();
 
   const testPing = async () => {
     setLoading(true);
     try {
-      console.log('Testing ping endpoint...');
-      const result = await apiRequest('/api/ping');
-      console.log('Ping result:', result);
+      console.log("Testing ping endpoint...");
+      const result = await apiRequest("/api/ping");
+      console.log("Ping result:", result);
       setTestResult(`✅ Ping success: ${JSON.stringify(result)}`);
     } catch (error) {
-      console.error('Ping error:', error);
-      setTestResult(`❌ Ping failed: ${error instanceof Error ? error.message : String(error)}`);
+      console.error("Ping error:", error);
+      setTestResult(
+        `❌ Ping failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -28,23 +32,25 @@ export default function ApiTest() {
 
   const testDashboard = async () => {
     if (!token) {
-      setTestResult('❌ No token available');
+      setTestResult("❌ No token available");
       return;
     }
 
     setLoading(true);
     try {
-      console.log('Testing dashboard endpoint...');
-      const result = await apiRequest('/api/dashboard/admin', {
+      console.log("Testing dashboard endpoint...");
+      const result = await apiRequest("/api/dashboard/admin", {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      console.log('Dashboard result:', result);
+      console.log("Dashboard result:", result);
       setTestResult(`✅ Dashboard success: ${JSON.stringify(result)}`);
     } catch (error) {
-      console.error('Dashboard error:', error);
-      setTestResult(`❌ Dashboard failed: ${error instanceof Error ? error.message : String(error)}`);
+      console.error("Dashboard error:", error);
+      setTestResult(
+        `❌ Dashboard failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -53,14 +59,16 @@ export default function ApiTest() {
   const testFetchDirect = async () => {
     setLoading(true);
     try {
-      console.log('Testing direct fetch with relative URL...');
-      const response = await fetch('/api/ping');
+      console.log("Testing direct fetch with relative URL...");
+      const response = await fetch("/api/ping");
       const result = await response.json();
-      console.log('Direct fetch result:', result);
+      console.log("Direct fetch result:", result);
       setTestResult(`✅ Direct fetch success: ${JSON.stringify(result)}`);
     } catch (error) {
-      console.error('Direct fetch error:', error);
-      setTestResult(`❌ Direct fetch failed: ${error instanceof Error ? error.message : String(error)}`);
+      console.error("Direct fetch error:", error);
+      setTestResult(
+        `❌ Direct fetch failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -69,14 +77,16 @@ export default function ApiTest() {
   const runDiagnostics = async () => {
     setLoading(true);
     try {
-      console.log('Running network diagnostics...');
+      console.log("Running network diagnostics...");
       const results = await NetworkDiagnostics.runAll();
-      console.log('Diagnostics results:', results);
+      console.log("Diagnostics results:", results);
       setDiagnosticsResult(results);
-      setTestResult('✅ Diagnostics completed - see results below');
+      setTestResult("✅ Diagnostics completed - see results below");
     } catch (error) {
-      console.error('Diagnostics error:', error);
-      setTestResult(`❌ Diagnostics failed: ${error instanceof Error ? error.message : String(error)}`);
+      console.error("Diagnostics error:", error);
+      setTestResult(
+        `❌ Diagnostics failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -102,7 +112,7 @@ export default function ApiTest() {
             Run Diagnostics
           </Button>
         </div>
-        
+
         {testResult && (
           <div className="p-4 bg-gray-50 rounded-lg">
             <h4 className="font-semibold mb-2">Test Result:</h4>
@@ -116,17 +126,27 @@ export default function ApiTest() {
           <div className="space-y-2">
             <h4 className="font-semibold">Diagnostic Results:</h4>
             {diagnosticsResult.map((result, index) => (
-              <div key={index} className={`p-3 rounded-lg border ${result.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+              <div
+                key={index}
+                className={`p-3 rounded-lg border ${result.success ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}`}
+              >
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{result.test}</span>
-                  <span className={`text-sm ${result.success ? 'text-green-600' : 'text-red-600'}`}>
-                    {result.success ? '✅' : '❌'} {result.duration ? `(${Math.round(result.duration)}ms)` : ''}
+                  <span
+                    className={`text-sm ${result.success ? "text-green-600" : "text-red-600"}`}
+                  >
+                    {result.success ? "✅" : "❌"}{" "}
+                    {result.duration
+                      ? `(${Math.round(result.duration)}ms)`
+                      : ""}
                   </span>
                 </div>
                 <p className="text-sm mt-1">{result.message}</p>
                 {result.details && (
                   <details className="mt-2">
-                    <summary className="text-xs text-gray-500 cursor-pointer">Show details</summary>
+                    <summary className="text-xs text-gray-500 cursor-pointer">
+                      Show details
+                    </summary>
                     <pre className="text-xs mt-1 bg-gray-100 p-2 rounded overflow-auto">
                       {JSON.stringify(result.details, null, 2)}
                     </pre>
@@ -138,9 +158,19 @@ export default function ApiTest() {
         )}
 
         <div className="text-sm text-gray-600">
-          <p><strong>Current Environment:</strong> {import.meta.env.MODE}</p>
-          <p><strong>API Base URL:</strong> {import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'development' ? 'relative URLs' : 'not set')}</p>
-          <p><strong>Has Token:</strong> {token ? 'Yes' : 'No'}</p>
+          <p>
+            <strong>Current Environment:</strong> {import.meta.env.MODE}
+          </p>
+          <p>
+            <strong>API Base URL:</strong>{" "}
+            {import.meta.env.VITE_API_BASE_URL ||
+              (import.meta.env.MODE === "development"
+                ? "relative URLs"
+                : "not set")}
+          </p>
+          <p>
+            <strong>Has Token:</strong> {token ? "Yes" : "No"}
+          </p>
         </div>
       </CardContent>
     </Card>
