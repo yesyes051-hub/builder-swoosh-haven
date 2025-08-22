@@ -8,10 +8,9 @@ import { z } from "zod";
 const createAssignmentSchema = z.object({
   employeeId: z.string().min(1, "Employee ID is required"),
   projectName: z.string().min(1, "Project name is required"),
-  deadline: z
+  onBoarding: z
     .string()
-    .refine((date) => !isNaN(Date.parse(date)), "Invalid deadline format"),
-  priority: z.enum(["High", "Medium", "Low"]).default("Medium"),
+    .refine((date) => !isNaN(Date.parse(date)), "Invalid onBoarding date format"),
   notes: z.string().optional(),
 });
 
@@ -43,8 +42,7 @@ export const createProjectAssignment: RequestHandler = async (req, res) => {
       employeeId: validatedData.employeeId,
       employeeName: `${employee.firstName} ${employee.lastName}`,
       projectName: validatedData.projectName,
-      deadline: new Date(validatedData.deadline),
-      priority: validatedData.priority,
+      onBoarding: new Date(validatedData.onBoarding),
       notes: validatedData.notes,
       assignedBy: managerId,
     });
