@@ -84,6 +84,11 @@ export default function ProjectAssignmentForm({
 
     setIsSubmitting(true);
     try {
+      console.log("🔍 Submitting project assignment:", {
+        employeeId: employee._id,
+        ...data,
+      });
+
       const response = await fetch("/api/project-assignments", {
         method: "POST",
         headers: {
@@ -96,7 +101,24 @@ export default function ProjectAssignmentForm({
         }),
       });
 
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        // Try to get error message from response
+        let errorMessage = "Failed to create project assignment";
+        try {
+          const errorData = await response.text(); // Use text() instead of json() to avoid parsing issues
+          const parsedError = JSON.parse(errorData);
+          errorMessage = parsedError.error || errorMessage;
+        } catch (parseError) {
+          console.error("Error parsing error response:", parseError);
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Only try to parse JSON if response is ok
       const result = await response.json();
+      console.log("✅ Project assignment response:", result);
 
       if (result.success) {
         toast.success("Project assignment created successfully!");
@@ -104,11 +126,12 @@ export default function ProjectAssignmentForm({
         onClose();
         onSuccess();
       } else {
-        toast.error(result.error || "Failed to create project assignment");
+        throw new Error(result.error || "Failed to create project assignment");
       }
     } catch (error) {
       console.error("Error creating project assignment:", error);
-      toast.error("Failed to create project assignment");
+      const errorMessage = error instanceof Error ? error.message : "Failed to create project assignment";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
