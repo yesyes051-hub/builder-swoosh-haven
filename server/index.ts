@@ -42,7 +42,6 @@ import {
   createAccessory,
   getBirthdays,
   createBirthday,
-  getInterviewFeedback,
   createInterviewFeedback,
   addAdminComments,
   getTimesheetReminders,
