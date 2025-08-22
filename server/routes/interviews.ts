@@ -506,13 +506,13 @@ export const getPendingInterviews: RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
 
-    console.log("📋 Fetching pending interviews for admin user:", user.id);
+    console.log("📋 Fetching pending interviews for user:", user.id, "role:", user.role);
 
-    // Only Admin can access this endpoint
-    if (user.role !== "admin") {
+    // Only Admin and HR can access this endpoint
+    if (user.role !== "admin" && user.role !== "hr") {
       return res.status(403).json({
         success: false,
-        error: "Only administrators can access pending interviews",
+        error: "Only administrators and HR personnel can access pending interviews",
       } as ApiResponse<never>);
     }
 
