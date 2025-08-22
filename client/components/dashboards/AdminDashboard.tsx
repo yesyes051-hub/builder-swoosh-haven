@@ -21,14 +21,13 @@ import {
   Calendar,
   CheckCircle,
   AlertTriangle,
-} from 'lucide-react';
-import DashboardLayout from './DashboardLayout';
-import AddUserModal from '@/components/pms/AddUserModal';
-import UserManagementModal from '@/components/pms/UserManagementModal';
-import ViewAllUsersModal from '@/components/pms/ViewAllUsersModal';
-import PendingInterviewsModal from '@/components/interviews/PendingInterviewsModal';
-import { useAuth } from '@/contexts/AuthContext';
-
+} from "lucide-react";
+import DashboardLayout from "./DashboardLayout";
+import AddUserModal from "@/components/pms/AddUserModal";
+import UserManagementModal from "@/components/pms/UserManagementModal";
+import ViewAllUsersModal from "@/components/pms/ViewAllUsersModal";
+import PendingInterviewsModal from "@/components/interviews/PendingInterviewsModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Props {
   data: AdminDashboardType;
@@ -51,11 +50,11 @@ export default function AdminDashboard({ data }: Props) {
   const [isUserManagementModalOpen, setIsUserManagementModalOpen] =
     useState(false);
   const [isViewAllUsersModalOpen, setIsViewAllUsersModalOpen] = useState(false);
-  const [isPendingInterviewsModalOpen, setIsPendingInterviewsModalOpen] = useState(false);
+  const [isPendingInterviewsModalOpen, setIsPendingInterviewsModalOpen] =
+    useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
-
 
   useEffect(() => {
     if (!token) {
@@ -92,7 +91,10 @@ export default function AdminDashboard({ data }: Props) {
       } catch (error) {
         // Only log non-abort errors
         if (error instanceof Error && error.name !== "AbortError") {
-          console.warn("Failed to fetch user stats, using fallback data:", error.message);
+          console.warn(
+            "Failed to fetch user stats, using fallback data:",
+            error.message,
+          );
         }
         // Always fallback to null on error (component will show fallback data)
         if (!controller.signal.aborted) {

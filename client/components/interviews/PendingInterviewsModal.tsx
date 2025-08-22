@@ -1,23 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Calendar, 
-  Clock, 
-  User, 
-  ChevronDown, 
-  ChevronRight, 
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import {
+  Calendar,
+  Clock,
+  User,
+  ChevronDown,
+  ChevronRight,
   Star,
   MessageSquare,
   Users,
-  AlertCircle
-} from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+  AlertCircle,
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PendingInterview {
   id: string;
@@ -26,7 +41,7 @@ interface PendingInterview {
   scheduledBy: string;
   date: Date;
   time: string;
-  type: 'technical' | 'behavioral' | 'system-design' | 'general';
+  type: "technical" | "behavioral" | "system-design" | "general";
   duration: number;
   status: string;
   createdAt: Date;
@@ -75,10 +90,14 @@ interface Props {
 
 export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
   const { token } = useAuth();
-  const [pendingInterviews, setPendingInterviews] = useState<PendingInterview[]>([]);
+  const [pendingInterviews, setPendingInterviews] = useState<
+    PendingInterview[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [expandedInterviews, setExpandedInterviews] = useState<Set<string>>(new Set());
+  const [expandedInterviews, setExpandedInterviews] = useState<Set<string>>(
+    new Set(),
+  );
 
   useEffect(() => {
     if (isOpen && token) {
@@ -93,10 +112,10 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
     setError(null);
 
     try {
-      const response = await fetch('/api/interviews/pending', {
+      const response = await fetch("/api/interviews/pending", {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       });
 
@@ -123,11 +142,11 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
       if (result.success) {
         setPendingInterviews(result.data);
       } else {
-        throw new Error(result.error || 'Failed to fetch pending interviews');
+        throw new Error(result.error || "Failed to fetch pending interviews");
       }
     } catch (err) {
-      console.error('Error fetching pending interviews:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error("Error fetching pending interviews:", err);
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -144,26 +163,26 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
   };
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(date).toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'technical':
-        return 'bg-blue-100 text-blue-800';
-      case 'behavioral':
-        return 'bg-green-100 text-green-800';
-      case 'system-design':
-        return 'bg-purple-100 text-purple-800';
-      case 'general':
-        return 'bg-gray-100 text-gray-800';
+      case "technical":
+        return "bg-blue-100 text-blue-800";
+      case "behavioral":
+        return "bg-green-100 text-green-800";
+      case "system-design":
+        return "bg-purple-100 text-purple-800";
+      case "general":
+        return "bg-gray-100 text-gray-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -174,7 +193,7 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
           <Star
             key={star}
             className={`h-4 w-4 ${
-              star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+              star <= rating ? "text-yellow-400 fill-current" : "text-gray-300"
             }`}
           />
         ))}
@@ -183,7 +202,7 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
     );
   };
 
-  const renderFeedbackSection = (feedback: PendingInterview['feedback']) => {
+  const renderFeedbackSection = (feedback: PendingInterview["feedback"]) => {
     if (!feedback) {
       return (
         <div className="flex items-center space-x-2 text-gray-500">
@@ -209,23 +228,33 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span>Communication:</span>
-                <span className="font-medium">{feedback.ratings.communication}/5</span>
+                <span className="font-medium">
+                  {feedback.ratings.communication}/5
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Confidence:</span>
-                <span className="font-medium">{feedback.ratings.confidence}/5</span>
+                <span className="font-medium">
+                  {feedback.ratings.confidence}/5
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Presence of Mind:</span>
-                <span className="font-medium">{feedback.ratings.presenceOfMind}/5</span>
+                <span className="font-medium">
+                  {feedback.ratings.presenceOfMind}/5
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Interpersonal Skills:</span>
-                <span className="font-medium">{feedback.ratings.interpersonalSkills}/5</span>
+                <span className="font-medium">
+                  {feedback.ratings.interpersonalSkills}/5
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Body Gesture:</span>
-                <span className="font-medium">{feedback.ratings.bodyGesture}/5</span>
+                <span className="font-medium">
+                  {feedback.ratings.bodyGesture}/5
+                </span>
               </div>
             </div>
           </div>
@@ -235,19 +264,27 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span>Technical Questions:</span>
-                <span className="font-medium">{feedback.ratings.technicalQuestionHandling}/5</span>
+                <span className="font-medium">
+                  {feedback.ratings.technicalQuestionHandling}/5
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Coding Elaboration:</span>
-                <span className="font-medium">{feedback.ratings.codingElaboration}/5</span>
+                <span className="font-medium">
+                  {feedback.ratings.codingElaboration}/5
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Energy in Interview:</span>
-                <span className="font-medium">{feedback.ratings.energyInInterview}/5</span>
+                <span className="font-medium">
+                  {feedback.ratings.energyInInterview}/5
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Analytical Thinking:</span>
-                <span className="font-medium">{feedback.ratings.analyticalThinking}/5</span>
+                <span className="font-medium">
+                  {feedback.ratings.analyticalThinking}/5
+                </span>
               </div>
             </div>
           </div>
@@ -313,7 +350,8 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
                         <CardTitle className="text-lg flex items-center space-x-2">
                           <Users className="h-5 w-5" />
                           <span>
-                            {interview.candidate?.firstName} {interview.candidate?.lastName}
+                            {interview.candidate?.firstName}{" "}
+                            {interview.candidate?.lastName}
                           </span>
                           <Badge className={getTypeColor(interview.type)}>
                             {interview.type}
@@ -326,12 +364,15 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
                           </div>
                           <div className="flex items-center space-x-1">
                             <Clock className="h-4 w-4" />
-                            <span>{interview.time} ({interview.duration} min)</span>
+                            <span>
+                              {interview.time} ({interview.duration} min)
+                            </span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <User className="h-4 w-4" />
                             <span>
-                              Interviewer: {interview.interviewer?.firstName} {interview.interviewer?.lastName}
+                              Interviewer: {interview.interviewer?.firstName}{" "}
+                              {interview.interviewer?.lastName}
                             </span>
                           </div>
                         </div>
@@ -357,21 +398,33 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
                     <CollapsibleContent>
                       <CardContent className="pt-0">
                         <Separator className="mb-4" />
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                           <div className="space-y-2">
                             <h3 className="font-medium">Candidate Details</h3>
                             <div className="text-sm space-y-1">
-                              <p><strong>Email:</strong> {interview.candidate?.email}</p>
-                              <p><strong>Department:</strong> {interview.candidate?.department}</p>
+                              <p>
+                                <strong>Email:</strong>{" "}
+                                {interview.candidate?.email}
+                              </p>
+                              <p>
+                                <strong>Department:</strong>{" "}
+                                {interview.candidate?.department}
+                              </p>
                             </div>
                           </div>
-                          
+
                           <div className="space-y-2">
                             <h3 className="font-medium">Interviewer Details</h3>
                             <div className="text-sm space-y-1">
-                              <p><strong>Email:</strong> {interview.interviewer?.email}</p>
-                              <p><strong>Department:</strong> {interview.interviewer?.department}</p>
+                              <p>
+                                <strong>Email:</strong>{" "}
+                                {interview.interviewer?.email}
+                              </p>
+                              <p>
+                                <strong>Department:</strong>{" "}
+                                {interview.interviewer?.department}
+                              </p>
                             </div>
                           </div>
                         </div>

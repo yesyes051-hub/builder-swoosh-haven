@@ -506,19 +506,25 @@ export const getPendingInterviews: RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
 
-    console.log("📋 Fetching pending interviews for user:", user.id, "role:", user.role);
+    console.log(
+      "📋 Fetching pending interviews for user:",
+      user.id,
+      "role:",
+      user.role,
+    );
 
     // Only Admin and HR can access this endpoint
     if (user.role !== "admin" && user.role !== "hr") {
       return res.status(403).json({
         success: false,
-        error: "Only administrators and HR personnel can access pending interviews",
+        error:
+          "Only administrators and HR personnel can access pending interviews",
       } as ApiResponse<never>);
     }
 
     // Get all interviews with status "scheduled" (pending)
     const pendingInterviews = await Interview.find({
-      status: "scheduled"
+      status: "scheduled",
     }).sort({ date: 1, time: 1 }); // Sort by date and time
 
     console.log("📋 Found pending interviews:", pendingInterviews.length);
@@ -527,19 +533,26 @@ export const getPendingInterviews: RequestHandler = async (req, res) => {
     const interviewsWithDetails = await Promise.all(
       pendingInterviews.map(async (interview) => {
         try {
-          const candidate = await EmployeeUser.findById(interview.candidateId).select("-password");
-          const interviewer = await EmployeeUser.findById(interview.interviewerId).select("-password");
+          const candidate = await EmployeeUser.findById(
+            interview.candidateId,
+          ).select("-password");
+          const interviewer = await EmployeeUser.findById(
+            interview.interviewerId,
+          ).select("-password");
 
           // Get feedback for this interview
           const feedback = await InterviewFeedback.findOne({
-            interviewId: interview._id
+            interviewId: interview._id,
           });
 
           // Calculate average rating if feedback exists
           let averageRating = null;
           if (feedback) {
             const ratings = feedback.ratings;
-            const totalRating = Object.values(ratings).reduce((sum, rating) => sum + rating, 0);
+            const totalRating = Object.values(ratings).reduce(
+              (sum, rating) => sum + rating,
+              0,
+            );
             averageRating = totalRating / Object.keys(ratings).length;
           }
 
@@ -555,31 +568,37 @@ export const getPendingInterviews: RequestHandler = async (req, res) => {
             status: interview.status,
             createdAt: interview.createdAt!,
             updatedAt: interview.updatedAt!,
-            candidate: candidate ? {
-              id: candidate._id.toString(),
-              firstName: candidate.firstName,
-              lastName: candidate.lastName,
-              email: candidate.email,
-              department: candidate.department || "General",
-            } : null,
-            interviewer: interviewer ? {
-              id: interviewer._id.toString(),
-              firstName: interviewer.firstName,
-              lastName: interviewer.lastName,
-              email: interviewer.email,
-              department: interviewer.department || "General",
-            } : null,
-            feedback: feedback ? {
-              id: feedback._id.toString(),
-              interviewId: feedback.interviewId.toString(),
-              candidateId: feedback.candidateId,
-              submittedBy: feedback.submittedBy,
-              ratings: feedback.ratings,
-              averageRating: Math.round(averageRating! * 10) / 10,
-              writtenFeedback: feedback.writtenFeedback,
-              createdAt: feedback.createdAt!,
-              updatedAt: feedback.updatedAt!,
-            } : null,
+            candidate: candidate
+              ? {
+                  id: candidate._id.toString(),
+                  firstName: candidate.firstName,
+                  lastName: candidate.lastName,
+                  email: candidate.email,
+                  department: candidate.department || "General",
+                }
+              : null,
+            interviewer: interviewer
+              ? {
+                  id: interviewer._id.toString(),
+                  firstName: interviewer.firstName,
+                  lastName: interviewer.lastName,
+                  email: interviewer.email,
+                  department: interviewer.department || "General",
+                }
+              : null,
+            feedback: feedback
+              ? {
+                  id: feedback._id.toString(),
+                  interviewId: feedback.interviewId.toString(),
+                  candidateId: feedback.candidateId,
+                  submittedBy: feedback.submittedBy,
+                  ratings: feedback.ratings,
+                  averageRating: Math.round(averageRating! * 10) / 10,
+                  writtenFeedback: feedback.writtenFeedback,
+                  createdAt: feedback.createdAt!,
+                  updatedAt: feedback.updatedAt!,
+                }
+              : null,
           };
         } catch (err) {
           console.error("Error processing interview:", interview._id, err);
