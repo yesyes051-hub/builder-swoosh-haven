@@ -16,6 +16,7 @@ import { Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiRequest } from '@/lib/fetch';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import ApiTest from '@/components/ApiTest';
 
 export default function Dashboard() {
   const { user, token, logout } = useAuth();
@@ -90,8 +91,8 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="p-8 max-w-lg w-full">
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <Card className="p-8 max-w-lg w-full mb-4">
           <CardContent className="text-center space-y-4">
             <div className="flex items-center justify-center mb-4">
               <AlertTriangle className="h-12 w-12 text-red-500" />
@@ -129,6 +130,9 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* API Test Component for debugging */}
+        <ApiTest />
       </div>
     );
   }
