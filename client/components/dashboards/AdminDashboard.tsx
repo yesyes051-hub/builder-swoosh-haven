@@ -160,7 +160,48 @@ export default function AdminDashboard({ data }: Props) {
     }
 
     const controller = new AbortController();
-    fetchUserStats(controller.signal);
+
+    // Simple fetch function without complex retry logic
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+
+        const response = await fetch("/api/user-stats", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        if (result.success && !controller.signal.aborted) {
+          setUserStats(result.data);
+          console.log("✅ User stats fetched successfully");
+        }
+      } catch (error) {
+        // Only log non-abort errors
+        if (error instanceof Error && error.name !== "AbortError") {
+          console.warn("Failed to fetch user stats, using fallback data:", error.message);
+        }
+        // Always fallback to null on error (component will show fallback data)
+        if (!controller.signal.aborted) {
+          setUserStats(null);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setStatsLoading(false);
+        }
+      }
+    };
+
+    fetchStats();
 
     // Cleanup function to abort the request if component unmounts or effect re-runs
     return () => {
