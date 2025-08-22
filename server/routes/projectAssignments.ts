@@ -17,12 +17,16 @@ const createAssignmentSchema = z.object({
 // Create new project assignment
 export const createProjectAssignment: RequestHandler = async (req, res) => {
   console.log("🔍 Creating project assignment, request body:", req.body);
+  console.log("🔍 Request body keys:", Object.keys(req.body || {}));
+  console.log("🔍 Request body values:", Object.values(req.body || {}));
   console.log("🔍 User context:", req.user);
+  console.log("🔍 Validation schema expecting:", ["employeeId", "projectName", "onBoarding", "notes"]);
 
   try {
     await connectToDatabase();
 
     // Parse and validate the request data
+    console.log("🔍 About to validate with schema...");
     const validatedData = createAssignmentSchema.parse(req.body);
     console.log("✅ Validated data:", validatedData);
 
