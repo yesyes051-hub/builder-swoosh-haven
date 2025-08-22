@@ -53,7 +53,6 @@ export default function AdminDashboard({ data }: Props) {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
-
   const fetchUserStats = async (retryCount = 0) => {
     if (!token) {
       console.warn("No token available for fetching user stats");
@@ -64,7 +63,6 @@ export default function AdminDashboard({ data }: Props) {
     try {
       setStatsLoading(true);
       console.log(`Fetching user stats (attempt ${retryCount + 1})`);
-
 
       // Add timeout to the fetch request
       const controller = new AbortController();
@@ -81,7 +79,11 @@ export default function AdminDashboard({ data }: Props) {
       });
 
       clearTimeout(timeoutId);
-      console.log("✅ User stats response:", response.status, response.statusText);
+      console.log(
+        "✅ User stats response:",
+        response.status,
+        response.statusText,
+      );
 
       if (!response.ok) {
         let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
@@ -129,7 +131,6 @@ export default function AdminDashboard({ data }: Props) {
       }
     }
   };
-
 
   useEffect(() => {
     if (token) {
