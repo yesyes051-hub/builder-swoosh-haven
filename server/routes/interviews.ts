@@ -500,3 +500,108 @@ export const getAvailableInterviewers: RequestHandler = async (req, res) => {
     } as ApiResponse<never>);
   }
 };
+
+export const getPendingInterviews: RequestHandler = async (req, res) => {
+  try {
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+
+    console.log("📋 Fetching pending interviews for admin user:", user.id);
+
+    // Only Admin can access this endpoint
+    if (user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        error: "Only administrators can access pending interviews",
+      } as ApiResponse<never>);
+    }
+
+    // Get all interviews with status "scheduled" (pending)
+    const pendingInterviews = await Interview.find({
+      status: "scheduled"
+    }).sort({ date: 1, time: 1 }); // Sort by date and time
+
+    console.log("📋 Found pending interviews:", pendingInterviews.length);
+
+    // Get user details and feedback for each interview
+    const interviewsWithDetails = await Promise.all(
+      pendingInterviews.map(async (interview) => {
+        try {
+          const candidate = await EmployeeUser.findById(interview.candidateId).select("-password");
+          const interviewer = await EmployeeUser.findById(interview.interviewerId).select("-password");
+
+          // Get feedback for this interview
+          const feedback = await InterviewFeedback.findOne({
+            interviewId: interview._id
+          });
+
+          // Calculate average rating if feedback exists
+          let averageRating = null;
+          if (feedback) {
+            const ratings = feedback.ratings;
+            const totalRating = Object.values(ratings).reduce((sum, rating) => sum + rating, 0);
+            averageRating = totalRating / Object.keys(ratings).length;
+          }
+
+          return {
+            id: interview._id.toString(),
+            candidateId: interview.candidateId,
+            interviewerId: interview.interviewerId,
+            scheduledBy: interview.scheduledBy,
+            date: interview.date,
+            time: interview.time,
+            type: interview.type,
+            duration: interview.duration,
+            status: interview.status,
+            createdAt: interview.createdAt!,
+            updatedAt: interview.updatedAt!,
+            candidate: candidate ? {
+              id: candidate._id.toString(),
+              firstName: candidate.firstName,
+              lastName: candidate.lastName,
+              email: candidate.email,
+              department: candidate.department || "General",
+            } : null,
+            interviewer: interviewer ? {
+              id: interviewer._id.toString(),
+              firstName: interviewer.firstName,
+              lastName: interviewer.lastName,
+              email: interviewer.email,
+              department: interviewer.department || "General",
+            } : null,
+            feedback: feedback ? {
+              id: feedback._id.toString(),
+              interviewId: feedback.interviewId.toString(),
+              candidateId: feedback.candidateId,
+              submittedBy: feedback.submittedBy,
+              ratings: feedback.ratings,
+              averageRating: Math.round(averageRating! * 10) / 10,
+              writtenFeedback: feedback.writtenFeedback,
+              createdAt: feedback.createdAt!,
+              updatedAt: feedback.updatedAt!,
+            } : null,
+          };
+        } catch (err) {
+          console.error("Error processing interview:", interview._id, err);
+          return null;
+        }
+      }),
+    );
+
+    // Filter out any null results
+    const validInterviews = interviewsWithDetails.filter(
+      (interview) => interview !== null,
+    );
+
+    res.json({
+      success: true,
+      data: validInterviews,
+    } as ApiResponse<typeof validInterviews>);
+  } catch (error) {
+    console.error("Get pending interviews error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    } as ApiResponse<never>);
+  }
+};
