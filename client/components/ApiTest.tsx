@@ -53,8 +53,8 @@ export default function ApiTest() {
   const testFetchDirect = async () => {
     setLoading(true);
     try {
-      console.log('Testing direct fetch...');
-      const response = await fetch('http://localhost:8080/api/ping');
+      console.log('Testing direct fetch with relative URL...');
+      const response = await fetch('/api/ping');
       const result = await response.json();
       console.log('Direct fetch result:', result);
       setTestResult(`✅ Direct fetch success: ${JSON.stringify(result)}`);
@@ -139,7 +139,7 @@ export default function ApiTest() {
 
         <div className="text-sm text-gray-600">
           <p><strong>Current Environment:</strong> {import.meta.env.MODE}</p>
-          <p><strong>API Base URL:</strong> {import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}</p>
+          <p><strong>API Base URL:</strong> {import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'development' ? 'relative URLs' : 'not set')}</p>
           <p><strong>Has Token:</strong> {token ? 'Yes' : 'No'}</p>
         </div>
       </CardContent>
