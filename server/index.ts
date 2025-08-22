@@ -170,7 +170,7 @@ export function createServer() {
   app.get(
     "/api/interviews/pending",
     authenticateToken,
-    requireRole(["admin"]),
+    requireRole(["admin", "hr"]),
     getPendingInterviews,
   );
 
