@@ -33,7 +33,8 @@ export class NetworkDiagnostics {
   private static async testBasicConnectivity(): Promise<DiagnosticResult> {
     const startTime = performance.now();
     try {
-      const response = await fetch('http://localhost:8080/api/ping', {
+      // Test relative URL first (preferred for development)
+      const response = await fetch('/api/ping', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -69,25 +70,27 @@ export class NetworkDiagnostics {
 
   private static async testConfiguration(): Promise<DiagnosticResult> {
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                         (import.meta.env.MODE === 'production' 
-                           ? 'https://your-render-app.onrender.com' 
-                           : 'http://localhost:8080');
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
+                         (import.meta.env.MODE === 'production'
+                           ? 'https://your-render-app.onrender.com'
+                           : '');
 
       const details = {
-        apiBaseUrl,
+        apiBaseUrl: apiBaseUrl || 'relative URLs (development)',
         mode: import.meta.env.MODE,
         isDevelopment: import.meta.env.MODE === 'development',
         isProduction: import.meta.env.MODE === 'production',
-        envVar: import.meta.env.VITE_API_BASE_URL
+        envVar: import.meta.env.VITE_API_BASE_URL,
+        usingRelativeUrls: !apiBaseUrl
       };
 
-      const isValidUrl = apiBaseUrl.startsWith('http://') || apiBaseUrl.startsWith('https://');
+      const isValidConfig = import.meta.env.MODE === 'development' ? true :
+                           (apiBaseUrl && (apiBaseUrl.startsWith('http://') || apiBaseUrl.startsWith('https://')));
 
       return {
         test: 'Configuration',
-        success: isValidUrl,
-        message: isValidUrl ? 'Configuration looks good' : 'Invalid API base URL',
+        success: isValidConfig,
+        message: isValidConfig ? 'Configuration looks good' : 'Invalid API configuration for production',
         details
       };
     } catch (error) {
@@ -102,8 +105,8 @@ export class NetworkDiagnostics {
   private static async testCORS(): Promise<DiagnosticResult> {
     const startTime = performance.now();
     try {
-      // Test OPTIONS request (CORS preflight)
-      const response = await fetch('http://localhost:8080/api/ping', {
+      // Test OPTIONS request (CORS preflight) using relative URL
+      const response = await fetch('/api/ping', {
         method: 'OPTIONS',
         headers: {
           'Origin': window.location.origin,
@@ -137,7 +140,7 @@ export class NetworkDiagnostics {
   private static async testAuthEndpoint(): Promise<DiagnosticResult> {
     const startTime = performance.now();
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: 'test', password: 'test' })
