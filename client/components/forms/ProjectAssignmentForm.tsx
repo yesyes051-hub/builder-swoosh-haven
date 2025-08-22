@@ -121,10 +121,7 @@ export default function ProjectAssignmentForm({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          employeeId: employee._id,
-          ...data,
-        }),
+        body: JSON.stringify(submitData),
       });
 
       // Check if response is ok before trying to parse JSON
