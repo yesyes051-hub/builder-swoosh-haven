@@ -168,6 +168,12 @@ export function createServer() {
     requireRole(["hr", "admin"]),
     getAvailableInterviewers,
   );
+  app.get(
+    "/api/interviews/pending",
+    authenticateToken,
+    requireRole(["admin"]),
+    getPendingInterviews,
+  );
 
   // PMS (Performance Management System) routes (protected)
   app.get(
