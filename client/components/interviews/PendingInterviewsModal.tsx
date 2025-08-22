@@ -321,7 +321,7 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
                             {interview.type}
                           </Badge>
                         </CardTitle>
-                        <CardDescription className="flex flex-wrap items-center gap-4">
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center space-x-1">
                             <Calendar className="h-4 w-4" />
                             <span>{formatDate(interview.date)}</span>
@@ -336,7 +336,7 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
                               Interviewer: {interview.interviewer?.firstName} {interview.interviewer?.lastName}
                             </span>
                           </div>
-                        </CardDescription>
+                        </div>
                       </div>
                       <Button
                         variant="ghost"
