@@ -53,20 +53,6 @@ export default function AdminDashboard({ data }: Props) {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
-  const testServerConnectivity = async () => {
-    try {
-      console.log("🔗 Testing server connectivity...");
-      const response = await fetch("/api/ping", {
-        method: "GET",
-        headers: { Accept: "application/json" },
-      });
-      console.log("📡 Ping response:", response.status, response.statusText);
-      return response.ok;
-    } catch (error) {
-      console.error("❌ Server connectivity test failed:", error);
-      return false;
-    }
-  };
 
   const fetchUserStats = async (retryCount = 0) => {
     if (!token) {
@@ -77,20 +63,12 @@ export default function AdminDashboard({ data }: Props) {
 
     try {
       setStatsLoading(true);
-      console.log(`Attempting to fetch user stats (attempt ${retryCount + 1})`);
-      console.log("Token preview:", token.substring(0, 20) + "...");
+      console.log(`Fetching user stats (attempt ${retryCount + 1})`);
 
-      // Test connectivity first on initial attempt
-      if (retryCount === 0) {
-        const isConnected = await testServerConnectivity();
-        if (!isConnected) {
-          throw new Error("Server connectivity test failed");
-        }
-      }
 
       // Add timeout to the fetch request
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
       const response = await fetch("/api/user-stats", {
         method: "GET",
@@ -103,7 +81,7 @@ export default function AdminDashboard({ data }: Props) {
       });
 
       clearTimeout(timeoutId);
-      console.log("Response received:", response.status, response.statusText);
+      console.log("✅ User stats response:", response.status, response.statusText);
 
       if (!response.ok) {
         let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
@@ -119,17 +97,17 @@ export default function AdminDashboard({ data }: Props) {
       const result = await response.json();
       if (result.success) {
         setUserStats(result.data);
-        console.log("User stats fetched successfully:", result.data);
+        console.log("✅ User stats fetched successfully:", result.data);
       } else {
         throw new Error(result.error || "API returned unsuccessful response");
       }
     } catch (error) {
-      console.error("Error fetching user stats:", error);
+      console.error("❌ Error fetching user stats:", error);
 
       // Provide more specific error information and retry logic
       if (error instanceof Error) {
         if (error.name === "AbortError") {
-          console.error("Request timed out after 8 seconds");
+          console.error("Request timed out after 10 seconds");
         } else if (error.message.includes("Failed to fetch")) {
           console.error("Network error - server may be unreachable");
 
@@ -146,7 +124,7 @@ export default function AdminDashboard({ data }: Props) {
       // Fallback to showing the original dashboard data on error
       setUserStats(null);
     } finally {
-      if (retryCount === 0) {
+      if (retryCount <= 2) {
         setStatsLoading(false);
       }
     }
