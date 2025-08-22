@@ -20,18 +20,32 @@ class RobustFetch {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
+        console.log(`Fetch attempt ${attempt}:`, { input, init });
+
         // Use the original fetch to bypass any external interceptors
         const response = await this.originalFetch(input, init);
-        
+
+        console.log(`Fetch attempt ${attempt} response:`, {
+          status: response.status,
+          ok: response.ok,
+          url: response.url
+        });
+
         // If we get a response, return it
         if (response) {
           return response;
         }
-        
+
         throw new Error('No response received');
       } catch (error) {
         console.warn(`Fetch attempt ${attempt} failed:`, error);
-        
+        console.warn('Error details:', {
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          input,
+          init
+        });
+
         // If this is the last attempt, throw the error
         if (attempt === maxRetries) {
           // Check if the error is due to external service interference
@@ -41,7 +55,7 @@ class RobustFetch {
           }
           throw error;
         }
-        
+
         // Wait before retrying
         await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
       }
@@ -73,7 +87,13 @@ export const apiRequest = async <T = any>(
 
   // Debug logging for development
   if (import.meta.env.MODE === 'development') {
-    console.log('API Request:', { url, fullUrl, baseUrl: apiBaseUrl });
+    console.log('API Request:', {
+      originalUrl: url,
+      fullUrl,
+      baseUrl: apiBaseUrl,
+      mode: import.meta.env.MODE,
+      headers: defaultOptions.headers
+    });
   }
 
   const defaultOptions: RequestInit = {
