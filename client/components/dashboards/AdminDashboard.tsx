@@ -229,13 +229,8 @@ export default function AdminDashboard({ data }: Props) {
               <div className="text-2xl font-bold text-orange-600">
                 {data.systemStats.pendingInterviews}
               </div>
-<<<<<<< HEAD
-              <p className="text-xs text-muted-foreground">
-                Click to view details
-              </p>
-=======
               <p className="text-xs text-muted-foreground">Scheduled</p>
->>>>>>> refs/remotes/origin/main
+        refs/remotes/origin/main
             </CardContent>
           </Card>
         </div>
