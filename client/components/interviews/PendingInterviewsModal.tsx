@@ -101,7 +101,22 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch pending interviews: ${response.statusText}`);
+        const errorText = await response.text();
+        let errorMessage = `Failed to fetch pending interviews (${response.status}): ${response.statusText}`;
+
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch {
+          // If response is not JSON, use the text content
+          if (errorText) {
+            errorMessage = errorText;
+          }
+        }
+
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
