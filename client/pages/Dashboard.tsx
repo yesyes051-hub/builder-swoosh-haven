@@ -46,6 +46,8 @@ export default function Dashboard() {
 
       const endpoint = `/api/dashboard/${dashboardType}`;
 
+      console.log('Dashboard request:', { endpoint, userRole: user.role, dashboardType });
+
       const data: ApiResponse<any> = await apiRequest(endpoint, {
         headers: {
           'Authorization': `Bearer ${token}`

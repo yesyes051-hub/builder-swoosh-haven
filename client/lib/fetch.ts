@@ -113,15 +113,23 @@ export const apiRequest = async <T = any>(
     return text as unknown as T;
   } catch (error) {
     console.error('API request failed:', error);
-    
+    console.error('Request details:', { url: fullUrl, options: defaultOptions });
+
     // Enhance error message for better debugging
     if (error instanceof Error) {
       if (error.message.includes('Failed to fetch')) {
+        // Check if it's a local development issue
+        if (fullUrl.includes('localhost')) {
+          throw new Error('Network error: Unable to connect to local server. Please ensure the dev server is running on port 8080.');
+        }
         throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
+      }
+      if (error.message.includes('NetworkError')) {
+        throw new Error('Network error: Request blocked or server unavailable.');
       }
       throw error;
     }
-    
+
     throw new Error('An unexpected error occurred during the API request.');
   }
 };
