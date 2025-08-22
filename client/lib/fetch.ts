@@ -20,16 +20,20 @@ class RobustFetch {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`Fetch attempt ${attempt}:`, { input, init });
+        if (import.meta.env.MODE === 'development') {
+          console.log(`Fetch attempt ${attempt}:`, input);
+        }
 
         // Use the original fetch to bypass any external interceptors
         const response = await this.originalFetch(input, init);
 
-        console.log(`Fetch attempt ${attempt} response:`, {
-          status: response.status,
-          ok: response.ok,
-          url: response.url
-        });
+        if (import.meta.env.MODE === 'development') {
+          console.log(`Fetch attempt ${attempt} success:`, {
+            status: response.status,
+            ok: response.ok,
+            url: response.url
+          });
+        }
 
         // If we get a response, return it
         if (response) {
@@ -38,13 +42,7 @@ class RobustFetch {
 
         throw new Error('No response received');
       } catch (error) {
-        console.warn(`Fetch attempt ${attempt} failed:`, error);
-        console.warn('Error details:', {
-          message: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-          input,
-          init
-        });
+        console.warn(`Fetch attempt ${attempt} failed:`, error instanceof Error ? error.message : String(error));
 
         // If this is the last attempt, throw the error
         if (attempt === maxRetries) {
