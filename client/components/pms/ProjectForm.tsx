@@ -270,7 +270,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                     mode="single"
                     selected={formData.startDate}
                     onSelect={(date) => {
-                      console.log('🔍 Date selected:', date);
+                      console.log("🔍 Date selected:", date);
                       setFormData({ ...formData, startDate: date });
                     }}
                     disabled={(date) =>
@@ -303,7 +303,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                     mode="single"
                     selected={formData.endDate}
                     onSelect={(date) => {
-                      console.log('🔍 End date selected:', date);
+                      console.log("🔍 End date selected:", date);
                       setFormData({ ...formData, endDate: date });
                     }}
                     disabled={(date) =>

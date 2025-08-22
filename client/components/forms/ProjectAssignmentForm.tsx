@@ -153,7 +153,10 @@ export default function ProjectAssignmentForm({
       }
     } catch (error) {
       console.error("Error creating project assignment:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to create project assignment";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to create project assignment";
       toast.error(errorMessage);
       // Reset submission protection on error so user can retry
       setLastSubmissionTime(0);
@@ -258,7 +261,6 @@ export default function ProjectAssignmentForm({
                 </FormItem>
               )}
             />
-
 
             {/* Notes */}
             <FormField

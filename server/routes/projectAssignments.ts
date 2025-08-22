@@ -10,7 +10,10 @@ const createAssignmentSchema = z.object({
   projectName: z.string().min(1, "Project name is required"),
   onBoarding: z
     .string()
-    .refine((date) => !isNaN(Date.parse(date)), "Invalid onBoarding date format"),
+    .refine(
+      (date) => !isNaN(Date.parse(date)),
+      "Invalid onBoarding date format",
+    ),
   notes: z.string().optional(),
 });
 
@@ -20,7 +23,12 @@ export const createProjectAssignment: RequestHandler = async (req, res) => {
   console.log("🔍 Request body keys:", Object.keys(req.body || {}));
   console.log("🔍 Request body values:", Object.values(req.body || {}));
   console.log("🔍 User context:", req.user);
-  console.log("🔍 Validation schema expecting:", ["employeeId", "projectName", "onBoarding", "notes"]);
+  console.log("🔍 Validation schema expecting:", [
+    "employeeId",
+    "projectName",
+    "onBoarding",
+    "notes",
+  ]);
 
   try {
     await connectToDatabase();
@@ -178,7 +186,8 @@ export const getTeamMembers: RequestHandler = async (req, res) => {
         // Create real employees with proper MongoDB ObjectIds
         const employee1 = new PMSUser({
           email: "john.doe@company.com",
-          password: "$2a$10$8K1p/a0l6L6LK.2FZQJZ8uWyThUNFy5RQH0gzJPCf6QzQLWYoH0/e", // hashed "password123"
+          password:
+            "$2a$10$8K1p/a0l6L6LK.2FZQJZ8uWyThUNFy5RQH0gzJPCf6QzQLWYoH0/e", // hashed "password123"
           firstName: "John",
           lastName: "Doe",
           role: "employee",
@@ -191,7 +200,8 @@ export const getTeamMembers: RequestHandler = async (req, res) => {
 
         const employee2 = new PMSUser({
           email: "jane.smith@company.com",
-          password: "$2a$10$8K1p/a0l6L6LK.2FZQJZ8uWyThUNFy5RQH0gzJPCf6QzQLWYoH0/e", // hashed "password123"
+          password:
+            "$2a$10$8K1p/a0l6L6LK.2FZQJZ8uWyThUNFy5RQH0gzJPCf6QzQLWYoH0/e", // hashed "password123"
           firstName: "Jane",
           lastName: "Smith",
           role: "employee",
@@ -209,7 +219,7 @@ export const getTeamMembers: RequestHandler = async (req, res) => {
         console.log("✅ Created real employees:", employee1._id, employee2._id);
 
         // Return the newly created employees
-        teamMembers = [employee1, employee2].map(emp => ({
+        teamMembers = [employee1, employee2].map((emp) => ({
           _id: emp._id,
           firstName: emp.firstName,
           lastName: emp.lastName,

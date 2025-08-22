@@ -191,7 +191,6 @@ export default function ManagerDashboard({ data }: Props) {
     toast.success("Project assigned successfully!");
   };
 
-
   return (
     <DashboardLayout user={data.user}>
       <div className="space-y-6">
