@@ -1,27 +1,28 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useEffect, useState, useCallback } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   EmployeeDashboard as EmployeeDashboardType,
   ManagerDashboard as ManagerDashboardType,
   HRDashboard as HRDashboardType,
   AdminDashboard as AdminDashboardType,
-  ApiResponse
-} from '@shared/api';
-import EmployeeDashboard from '@/components/dashboards/EmployeeDashboard';
-import ManagerDashboard from '@/components/dashboards/ManagerDashboard';
-import HRDashboard from '@/components/dashboards/HRDashboard';
-import AdminDashboard from '@/components/dashboards/AdminDashboard';
-import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { apiRequest } from '@/lib/fetch';
-import ErrorBoundary from '@/components/ErrorBoundary';
+  ApiResponse,
+} from "@shared/api";
+import EmployeeDashboard from "@/components/dashboards/EmployeeDashboard";
+import ManagerDashboard from "@/components/dashboards/ManagerDashboard";
+import HRDashboard from "@/components/dashboards/HRDashboard";
+import AdminDashboard from "@/components/dashboards/AdminDashboard";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2, RefreshCw, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { apiRequest } from "@/lib/fetch";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import ApiTest from "@/components/ApiTest";
 
 export default function Dashboard() {
   const { user, token, logout } = useAuth();
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (user && token) {
@@ -34,32 +35,39 @@ export default function Dashboard() {
 
     try {
       setLoading(true);
-      setError(''); // Clear any previous errors
+      setError(""); // Clear any previous errors
 
       // Determine the correct dashboard endpoint
       let dashboardType = user.role;
 
       // Special handling for admin functionality in HR role
-      if (user.role === 'hr' && user.email === 'admin@trackzen.com') {
-        dashboardType = 'admin';
+      if (user.role === "hr" && user.email === "admin@trackzen.com") {
+        dashboardType = "admin";
       }
 
       const endpoint = `/api/dashboard/${dashboardType}`;
 
+      console.log("Dashboard request:", {
+        endpoint,
+        userRole: user.role,
+        dashboardType,
+      });
+
       const data: ApiResponse<any> = await apiRequest(endpoint, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch dashboard data');
+        throw new Error(data.error || "Failed to fetch dashboard data");
       }
 
       setDashboardData(data.data);
     } catch (err) {
-      console.error('Dashboard fetch error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard';
+      console.error("Dashboard fetch error:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load dashboard";
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -88,19 +96,22 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="p-8 max-w-lg w-full">
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <Card className="p-8 max-w-lg w-full mb-4">
           <CardContent className="text-center space-y-4">
             <div className="flex items-center justify-center mb-4">
               <AlertTriangle className="h-12 w-12 text-red-500" />
             </div>
-            <h3 className="font-semibold text-red-600 text-lg">Error Loading Dashboard</h3>
+            <h3 className="font-semibold text-red-600 text-lg">
+              Error Loading Dashboard
+            </h3>
             <p className="text-sm text-gray-600 leading-relaxed">{error}</p>
 
-            {error.includes('Network error') && (
+            {error.includes("Network error") && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                 <p className="text-sm text-yellow-800">
-                  <strong>Network Issue:</strong> Please check your internet connection and try again.
+                  <strong>Network Issue:</strong> Please check your internet
+                  connection and try again.
                 </p>
               </div>
             )}
@@ -127,6 +138,9 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* API Test Component for debugging */}
+        <ApiTest />
       </div>
     );
   }
@@ -134,28 +148,36 @@ export default function Dashboard() {
   // Render appropriate dashboard based on user role
   const renderDashboard = () => {
     switch (user.role) {
-      case 'employee':
-        return <EmployeeDashboard data={dashboardData as EmployeeDashboardType} />;
-      case 'manager':
-        return <ManagerDashboard data={dashboardData as ManagerDashboardType} />;
-      case 'hr':
+      case "employee":
+        return (
+          <EmployeeDashboard data={dashboardData as EmployeeDashboardType} />
+        );
+      case "manager":
+        return (
+          <ManagerDashboard data={dashboardData as ManagerDashboardType} />
+        );
+      case "hr":
         // For users with admin-like permissions (HR role in new system), show admin dashboard
-        if (user.email === 'admin@trackzen.com') {
+        if (user.email === "admin@trackzen.com") {
           return <AdminDashboard data={dashboardData as AdminDashboardType} />;
         }
         return <HRDashboard data={dashboardData as HRDashboardType} />;
-      case 'admin':
+      case "admin":
         return <AdminDashboard data={dashboardData as AdminDashboardType} />;
-      case 'interviewer':
+      case "interviewer":
         // For now, show employee dashboard for interviewers
-        return <EmployeeDashboard data={dashboardData as EmployeeDashboardType} />;
+        return (
+          <EmployeeDashboard data={dashboardData as EmployeeDashboardType} />
+        );
       default:
         return (
           <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <Card className="p-8">
               <CardContent className="text-center">
                 <h3 className="font-semibold text-red-600">Unknown Role</h3>
-                <p className="text-sm text-gray-600">Your account role is not recognized.</p>
+                <p className="text-sm text-gray-600">
+                  Your account role is not recognized.
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -166,7 +188,7 @@ export default function Dashboard() {
   return (
     <ErrorBoundary
       onError={(error, errorInfo) => {
-        console.error('Dashboard component error:', error, errorInfo);
+        console.error("Dashboard component error:", error, errorInfo);
       }}
     >
       {renderDashboard()}
