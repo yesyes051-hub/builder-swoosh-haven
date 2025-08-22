@@ -505,6 +505,11 @@ export default function AdminDashboard({ data }: Props) {
         isOpen={isViewAllUsersModalOpen}
         onClose={() => setIsViewAllUsersModalOpen(false)}
       />
+
+      <PendingInterviewsModal
+        isOpen={isPendingInterviewsModalOpen}
+        onClose={() => setIsPendingInterviewsModalOpen(false)}
+      />
     </DashboardLayout>
   );
 }
