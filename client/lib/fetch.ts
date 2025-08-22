@@ -62,11 +62,19 @@ export const apiRequest = async <T = any>(
   url: string,
   options: RequestInit = {}
 ): Promise<T> => {
-  // Import config dynamically to avoid circular dependencies
-  const { getApiUrl } = await import('./config');
+  // Get API base URL directly to avoid dynamic imports
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
+                     (import.meta.env.MODE === 'production'
+                       ? 'https://your-render-app.onrender.com'
+                       : 'http://localhost:8080');
 
   // Build full URL if it's a relative path
-  const fullUrl = url.startsWith('http') ? url : getApiUrl(url);
+  const fullUrl = url.startsWith('http') ? url : `${apiBaseUrl}${url.startsWith('/') ? url : `/${url}`}`;
+
+  // Debug logging for development
+  if (import.meta.env.MODE === 'development') {
+    console.log('API Request:', { url, fullUrl, baseUrl: apiBaseUrl });
+  }
 
   const defaultOptions: RequestInit = {
     headers: {
