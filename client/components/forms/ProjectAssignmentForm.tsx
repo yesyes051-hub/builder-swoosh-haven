@@ -107,10 +107,13 @@ export default function ProjectAssignmentForm({
 
     setIsSubmitting(true);
     try {
-      console.log("🔍 Submitting project assignment:", {
+      const submitData = {
         employeeId: employee._id,
         ...data,
-      });
+      };
+      console.log("🔍 Submitting project assignment:", submitData);
+      console.log("🔍 Data fields:", Object.keys(submitData));
+      console.log("🔍 Form data:", data);
 
       const response = await fetch("/api/project-assignments", {
         method: "POST",
