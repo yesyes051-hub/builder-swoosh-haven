@@ -56,7 +56,7 @@ export default function AdminDashboard({ data }: Props) {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
-  const fetchUserStats = async (retryCount = 0) => {
+  const fetchUserStats = async (signal?: AbortSignal, retryCount = 0) => {
     if (!token) {
       console.warn("No token available for fetching user stats");
       setStatsLoading(false);
@@ -67,10 +67,6 @@ export default function AdminDashboard({ data }: Props) {
       setStatsLoading(true);
       console.log(`Fetching user stats (attempt ${retryCount + 1})`);
 
-      // Add timeout to the fetch request
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
       const response = await fetch("/api/user-stats", {
         method: "GET",
         headers: {
@@ -78,10 +74,9 @@ export default function AdminDashboard({ data }: Props) {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        signal: controller.signal,
+        signal,
       });
 
-      clearTimeout(timeoutId);
       console.log(
         "✅ User stats response:",
         response.status,
@@ -107,22 +102,24 @@ export default function AdminDashboard({ data }: Props) {
         throw new Error(result.error || "API returned unsuccessful response");
       }
     } catch (error) {
+      // Don't log errors for aborted requests (normal behavior)
+      if (error instanceof Error && error.name === "AbortError") {
+        console.log("User stats request was cancelled");
+        return;
+      }
+
       console.error("❌ Error fetching user stats:", error);
 
       // Provide more specific error information and retry logic
-      if (error instanceof Error) {
-        if (error.name === "AbortError") {
-          console.error("Request timed out after 10 seconds");
-        } else if (error.message.includes("Failed to fetch")) {
-          console.error("Network error - server may be unreachable");
+      if (error instanceof Error && error.message.includes("Failed to fetch")) {
+        console.error("Network error - server may be unreachable");
 
-          // Retry up to 2 times with exponential backoff
-          if (retryCount < 2) {
-            const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s delays
-            console.log(`Retrying in ${delay}ms...`);
-            setTimeout(() => fetchUserStats(retryCount + 1), delay);
-            return;
-          }
+        // Retry up to 2 times with exponential backoff
+        if (retryCount < 2 && signal && !signal.aborted) {
+          const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s delays
+          console.log(`Retrying in ${delay}ms...`);
+          setTimeout(() => fetchUserStats(signal, retryCount + 1), delay);
+          return;
         }
       }
 
@@ -136,11 +133,18 @@ export default function AdminDashboard({ data }: Props) {
   };
 
   useEffect(() => {
-    if (token) {
-      fetchUserStats();
-    } else {
+    if (!token) {
       setStatsLoading(false);
+      return;
     }
+
+    const controller = new AbortController();
+    fetchUserStats(controller.signal);
+
+    // Cleanup function to abort the request if component unmounts or effect re-runs
+    return () => {
+      controller.abort();
+    };
   }, [token, refreshTrigger]);
 
   const handleUserAdded = () => {
