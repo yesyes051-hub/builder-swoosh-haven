@@ -44,7 +44,6 @@ export interface IProjectDetail extends Document {
   startDate: Date;
   endDate?: Date;
   status: 'Planning' | 'In Progress' | 'In Review' | 'Completed' | 'On Hold';
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
   description: string;
   teamMembers: string[];
   budget?: number;
@@ -58,7 +57,6 @@ const ProjectDetailSchema = new Schema<IProjectDetail>({
   startDate: { type: Date, required: true },
   endDate: { type: Date },
   status: { type: String, enum: ['Planning', 'In Progress', 'In Review', 'Completed', 'On Hold'], default: 'Planning' },
-  priority: { type: String, enum: ['Low', 'Medium', 'High', 'Critical'], default: 'Medium' },
   description: { type: String, required: true },
   teamMembers: [{ type: String }],
   budget: { type: Number },
