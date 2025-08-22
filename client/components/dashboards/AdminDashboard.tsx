@@ -26,6 +26,7 @@ import DashboardLayout from "./DashboardLayout";
 import AddUserModal from "@/components/pms/AddUserModal";
 import UserManagementModal from "@/components/pms/UserManagementModal";
 import ViewAllUsersModal from "@/components/pms/ViewAllUsersModal";
+import PendingInterviewsModal from "@/components/interviews/PendingInterviewsModal";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Props {
@@ -49,95 +50,69 @@ export default function AdminDashboard({ data }: Props) {
   const [isUserManagementModalOpen, setIsUserManagementModalOpen] =
     useState(false);
   const [isViewAllUsersModalOpen, setIsViewAllUsersModalOpen] = useState(false);
+  const [isPendingInterviewsModalOpen, setIsPendingInterviewsModalOpen] =
+    useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
-  const fetchUserStats = async (retryCount = 0) => {
+  useEffect(() => {
     if (!token) {
-      console.warn("No token available for fetching user stats");
       setStatsLoading(false);
       return;
     }
 
-    try {
-      setStatsLoading(true);
-      console.log(`Fetching user stats (attempt ${retryCount + 1})`);
+    const controller = new AbortController();
 
-      // Add timeout to the fetch request
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    // Simple fetch function without complex retry logic
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
 
-      const response = await fetch("/api/user-stats", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        signal: controller.signal,
-      });
+        const response = await fetch("/api/user-stats", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          signal: controller.signal,
+        });
 
-      clearTimeout(timeoutId);
-      console.log(
-        "✅ User stats response:",
-        response.status,
-        response.statusText,
-      );
-
-      if (!response.ok) {
-        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch {
-          // Keep the HTTP status message if JSON parsing fails
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        throw new Error(errorMessage);
-      }
 
-      const result = await response.json();
-      if (result.success) {
-        setUserStats(result.data);
-        console.log("✅ User stats fetched successfully:", result.data);
-      } else {
-        throw new Error(result.error || "API returned unsuccessful response");
-      }
-    } catch (error) {
-      console.error("❌ Error fetching user stats:", error);
-
-      // Provide more specific error information and retry logic
-      if (error instanceof Error) {
-        if (error.name === "AbortError") {
-          console.error("Request timed out after 10 seconds");
-        } else if (error.message.includes("Failed to fetch")) {
-          console.error("Network error - server may be unreachable");
-
-          // Retry up to 2 times with exponential backoff
-          if (retryCount < 2) {
-            const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s delays
-            console.log(`Retrying in ${delay}ms...`);
-            setTimeout(() => fetchUserStats(retryCount + 1), delay);
-            return;
-          }
+        const result = await response.json();
+        if (result.success && !controller.signal.aborted) {
+          setUserStats(result.data);
+          console.log("✅ User stats fetched successfully");
+        }
+      } catch (error) {
+        // Only log non-abort errors
+        if (error instanceof Error && error.name !== "AbortError") {
+          console.warn(
+            "Failed to fetch user stats, using fallback data:",
+            error.message,
+          );
+        }
+        // Always fallback to null on error (component will show fallback data)
+        if (!controller.signal.aborted) {
+          setUserStats(null);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setStatsLoading(false);
         }
       }
+    };
 
-      // Fallback to showing the original dashboard data on error
-      setUserStats(null);
-    } finally {
-      if (retryCount <= 2) {
-        setStatsLoading(false);
-      }
-    }
-  };
+    fetchStats();
 
-  useEffect(() => {
-    if (token) {
-      fetchUserStats();
-    } else {
-      setStatsLoading(false);
-    }
+    // Cleanup function to abort the request if component unmounts or effect re-runs
+    return () => {
+      controller.abort();
+    };
   }, [token, refreshTrigger]);
 
   const handleUserAdded = () => {
@@ -212,7 +187,10 @@ export default function AdminDashboard({ data }: Props) {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card
+            className="cursor-pointer transition-all hover:shadow-md hover:scale-105"
+            onClick={() => setIsPendingInterviewsModalOpen(true)}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Pending Interviews
@@ -437,6 +415,11 @@ export default function AdminDashboard({ data }: Props) {
       <ViewAllUsersModal
         isOpen={isViewAllUsersModalOpen}
         onClose={() => setIsViewAllUsersModalOpen(false)}
+      />
+
+      <PendingInterviewsModal
+        isOpen={isPendingInterviewsModalOpen}
+        onClose={() => setIsPendingInterviewsModalOpen(false)}
       />
     </DashboardLayout>
   );

@@ -23,6 +23,7 @@ import {
   submitFeedback,
   getInterviewFeedback,
   getAvailableInterviewers,
+  getPendingInterviews,
 } from "./routes/interviews";
 import {
   getUserPerformanceData,
@@ -41,7 +42,6 @@ import {
   createAccessory,
   getBirthdays,
   createBirthday,
-  getInterviewFeedback,
   createInterviewFeedback,
   addAdminComments,
   getTimesheetReminders,
@@ -166,6 +166,12 @@ export function createServer() {
     authenticateToken,
     requireRole(["hr", "admin"]),
     getAvailableInterviewers,
+  );
+  app.get(
+    "/api/interviews/pending",
+    authenticateToken,
+    requireRole(["admin", "hr"]),
+    getPendingInterviews,
   );
 
   // PMS (Performance Management System) routes (protected)
