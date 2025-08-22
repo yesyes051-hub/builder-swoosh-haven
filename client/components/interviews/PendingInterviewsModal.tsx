@@ -89,6 +89,7 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
   const fetchPendingInterviews = async () => {
     if (!token) return;
 
+    console.log('🔍 Fetching pending interviews...');
     setLoading(true);
     setError(null);
 
