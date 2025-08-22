@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { db } from "../db/memory";
 import { EmployeeUser } from "../models/employeeManagement";
+import { Interview } from "../models/interview";
 import { AuthRequest } from "../middleware/auth";
 import {
   EmployeeDashboard,
