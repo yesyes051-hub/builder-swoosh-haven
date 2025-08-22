@@ -153,6 +153,8 @@ export default function ProjectAssignmentForm({
 
   const handleClose = () => {
     form.reset();
+    setIsSubmitting(false);
+    setLastSubmissionTime(0); // Reset submission protection
     onClose();
   };
 
