@@ -83,6 +83,19 @@ export default function ProjectAssignmentForm({
       return;
     }
 
+    // Prevent duplicate submissions within 2 seconds
+    const now = Date.now();
+    if (now - lastSubmissionTime < 2000) {
+      console.log("🚫 Preventing duplicate submission");
+      return;
+    }
+    setLastSubmissionTime(now);
+
+    if (isSubmitting) {
+      console.log("🚫 Already submitting, preventing duplicate");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       console.log("🔍 Submitting project assignment:", {
