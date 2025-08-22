@@ -78,10 +78,18 @@ export const apiRequest = async <T = any>(
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                      (import.meta.env.MODE === 'production'
                        ? 'https://your-render-app.onrender.com'
-                       : 'http://localhost:8080');
+                       : '');
 
   // Build full URL if it's a relative path
-  const fullUrl = url.startsWith('http') ? url : `${apiBaseUrl}${url.startsWith('/') ? url : `/${url}`}`;
+  let fullUrl;
+  if (url.startsWith('http')) {
+    fullUrl = url;
+  } else if (apiBaseUrl) {
+    fullUrl = `${apiBaseUrl}${url.startsWith('/') ? url : `/${url}`}`;
+  } else {
+    // For development, use relative URLs (Express middleware handles routing)
+    fullUrl = url.startsWith('/') ? url : `/${url}`;
+  }
 
   const defaultOptions: RequestInit = {
     headers: {
