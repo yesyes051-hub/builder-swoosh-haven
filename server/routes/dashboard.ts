@@ -459,14 +459,6 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
       } as ApiResponse<AdminDashboard>);
     }
 
-    console.log(
-      "✅ Admin dashboard - Sending successful response with data for user:",
-      fullUser.email,
-    );
-    res.json({
-      success: true,
-      data: dashboardData,
-    } as ApiResponse<AdminDashboard>);
   } catch (error) {
     console.error("Admin dashboard error:", error);
     res.status(500).json({
