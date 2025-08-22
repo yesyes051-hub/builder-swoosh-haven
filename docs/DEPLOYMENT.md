@@ -1,106 +1,56 @@
-# Deployment Setup Guide
+# Quick Deployment Guide - Vercel & Render
 
-This guide explains how to set up automatic deployment to Netlify using GitHub Actions.
+This is a quick reference guide for deploying TrackZen. For detailed instructions, see `DEPLOYMENT.md` in the root directory.
 
-## Prerequisites
+## Architecture
+- **Frontend**: Vercel (React SPA)
+- **Backend**: Render (Node.js/Express API)
+- **Database**: MongoDB Atlas (recommended)
 
-1. **Netlify Account**: You need a Netlify account
-2. **GitHub Repository**: Your code should be in a GitHub repository
-3. **Netlify Site**: Create a new site on Netlify connected to your GitHub repo
+## Quick Setup
 
-## Setup Steps
+### 1. Database Setup (MongoDB Atlas)
+1. Create free account at [mongodb.com/atlas](https://www.mongodb.com/atlas)
+2. Create a new cluster
+3. Create database user and get connection string
+4. Whitelist IP addresses (0.0.0.0/0 for all IPs)
 
-### 1. Connect Netlify to Your Repository
+### 2. Backend Deployment (Render)
+1. Go to [render.com](https://render.com) and connect GitHub
+2. Create "New Web Service" from your repository
+3. Configure:
+   - Build Command: `npm run build:server`
+   - Start Command: `npm start`
+4. Add environment variables:
+   ```
+   NODE_ENV=production
+   MONGODB_URI=your_mongodb_connection_string
+   JWT_SECRET=your_secure_jwt_secret
+   CORS_ORIGIN=https://your-vercel-app.vercel.app
+   ```
 
-1. Go to [Netlify](https://netlify.com) and sign in
-2. Click "Add new site" → "Import an existing project"
-3. Choose GitHub and authorize Netlify
-4. Select your repository: `yesyes051-hub/builder-swoosh-haven`
-5. Configure build settings:
-   - **Build command**: `npm run build:netlify`
-   - **Publish directory**: `dist/spa`
-   - **Node version**: `18`
+### 3. Frontend Deployment (Vercel)
+1. Go to [vercel.com](https://vercel.com) and connect GitHub
+2. Import your repository (auto-detects Vite project)
+3. Add environment variable:
+   ```
+   VITE_API_BASE_URL=https://your-render-app.onrender.com
+   ```
 
-### 2. Get Netlify Credentials
+### 4. Update CORS
+After deploying frontend, update the `CORS_ORIGIN` environment variable in Render with your actual Vercel URL.
 
-After creating the site, you'll need these values:
+## Testing
+1. Visit your Vercel frontend URL
+2. Try logging in with: `admin@trackzen.com` / `admin123`
+3. Check that all features work correctly
 
-1. **Site ID**: Found in Site settings → General → Site details
-2. **Auth Token**: 
-   - Go to User settings → Applications → Personal access tokens
-   - Click "New access token"
-   - Give it a name and generate the token
+## Configuration Files
+- `vercel.json` - Vercel deployment configuration
+- `render.yaml` - Render deployment configuration
+- `.env.example` - Environment variables template
 
-### 3. Add GitHub Secrets
-
-In your GitHub repository, go to Settings → Secrets and variables → Actions, and add:
-
-- `NETLIFY_AUTH_TOKEN`: Your Netlify personal access token
-- `NETLIFY_SITE_ID`: Your Netlify site ID
-
-### 4. Deployment Workflow
-
-The CI/CD pipeline is configured to:
-
-- **On Pull Requests**: Create preview deployments with unique URLs
-- **On Main Branch**: Deploy to production automatically
-- **Quality Checks**: Run tests and type checking before deployment
-
-## Files Created
-
-- `.github/workflows/deploy.yml`: GitHub Actions workflow
-- `netlify.toml`: Netlify configuration
-- `docs/DEPLOYMENT.md`: This documentation
-
-## Environment Variables (Optional)
-
-If your app needs environment variables in production:
-
-1. In Netlify dashboard, go to Site settings → Environment variables
-2. Add your production environment variables
-3. They'll be available during the build process
-
-## Manual Deployment
-
-To deploy manually:
-
-```bash
-# Install Netlify CLI
-npm install -g netlify-cli
-
-# Login to Netlify
-netlify login
-
-# Deploy
-netlify deploy --prod --dir=dist/spa
-```
-
-## Troubleshooting
-
-### Build Fails
-- Check the build logs in Netlify dashboard
-- Ensure all dependencies are in `package.json`
-- Verify Node.js version compatibility
-
-### 404 Errors on Refresh
-- The `netlify.toml` file includes SPA redirects
-- All routes redirect to `index.html` for client-side routing
-
-### API Calls Fail
-- Update API endpoints to use absolute URLs in production
-- Consider using environment variables for API base URLs
-
-## Production Considerations
-
-1. **Environment Variables**: Set production API URLs
-2. **Domain**: Configure custom domain in Netlify
-3. **SSL**: Netlify provides free SSL certificates
-4. **Performance**: Consider enabling branch deploys for testing
-
-## Branch Protection
-
-Consider setting up branch protection rules:
-1. Go to GitHub repo → Settings → Branches
-2. Add rule for `main` branch
-3. Require status checks (tests, type check)
-4. Require pull request reviews
+## Support
+- [Detailed Deployment Guide](../DEPLOYMENT.md)
+- [Vercel Docs](https://vercel.com/docs)
+- [Render Docs](https://render.com/docs)
