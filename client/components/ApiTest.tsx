@@ -3,9 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { apiRequest } from '@/lib/fetch';
 import { useAuth } from '@/contexts/AuthContext';
+import { NetworkDiagnostics, DiagnosticResult } from '@/lib/diagnostics';
 
 export default function ApiTest() {
   const [testResult, setTestResult] = useState<string>('');
+  const [diagnosticsResult, setDiagnosticsResult] = useState<DiagnosticResult[]>([]);
   const [loading, setLoading] = useState(false);
   const { token } = useAuth();
 
@@ -64,6 +66,22 @@ export default function ApiTest() {
     }
   };
 
+  const runDiagnostics = async () => {
+    setLoading(true);
+    try {
+      console.log('Running network diagnostics...');
+      const results = await NetworkDiagnostics.runAll();
+      console.log('Diagnostics results:', results);
+      setDiagnosticsResult(results);
+      setTestResult('✅ Diagnostics completed - see results below');
+    } catch (error) {
+      console.error('Diagnostics error:', error);
+      setTestResult(`❌ Diagnostics failed: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Card className="w-full max-w-2xl mx-auto m-4">
       <CardHeader>
@@ -80,6 +98,9 @@ export default function ApiTest() {
           <Button onClick={testFetchDirect} disabled={loading}>
             Test Direct Fetch
           </Button>
+          <Button onClick={runDiagnostics} disabled={loading} variant="outline">
+            Run Diagnostics
+          </Button>
         </div>
         
         {testResult && (
@@ -88,6 +109,31 @@ export default function ApiTest() {
             <pre className="text-sm whitespace-pre-wrap break-words">
               {testResult}
             </pre>
+          </div>
+        )}
+
+        {diagnosticsResult.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="font-semibold">Diagnostic Results:</h4>
+            {diagnosticsResult.map((result, index) => (
+              <div key={index} className={`p-3 rounded-lg border ${result.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{result.test}</span>
+                  <span className={`text-sm ${result.success ? 'text-green-600' : 'text-red-600'}`}>
+                    {result.success ? '✅' : '❌'} {result.duration ? `(${Math.round(result.duration)}ms)` : ''}
+                  </span>
+                </div>
+                <p className="text-sm mt-1">{result.message}</p>
+                {result.details && (
+                  <details className="mt-2">
+                    <summary className="text-xs text-gray-500 cursor-pointer">Show details</summary>
+                    <pre className="text-xs mt-1 bg-gray-100 p-2 rounded overflow-auto">
+                      {JSON.stringify(result.details, null, 2)}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
