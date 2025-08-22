@@ -130,36 +130,13 @@ export default function AdminDashboard({ data }: Props) {
     }
   };
 
-  const testAuth = async () => {
-    if (!token) return false;
-
-    try {
-      console.log("🔐 Testing authentication...");
-      const response = await fetch("/api/auth/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("👤 Auth test response:", response.status);
-      return response.ok;
-    } catch (error) {
-      console.error("❌ Auth test failed:", error);
-      return false;
-    }
-  };
 
   useEffect(() => {
-    const initializeData = async () => {
-      if (token) {
-        const authValid = await testAuth();
-        if (authValid) {
-          fetchUserStats();
-        } else {
-          console.error("❌ Authentication failed, cannot fetch user stats");
-          setStatsLoading(false);
-        }
-      }
-    };
-
-    initializeData();
+    if (token) {
+      fetchUserStats();
+    } else {
+      setStatsLoading(false);
+    }
   }, [token, refreshTrigger]);
 
   const handleUserAdded = () => {
