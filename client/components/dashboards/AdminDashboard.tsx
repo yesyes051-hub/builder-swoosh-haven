@@ -248,7 +248,10 @@ export default function AdminDashboard({ data }: Props) {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card
+            className="cursor-pointer transition-all hover:shadow-md hover:scale-105"
+            onClick={() => setIsPendingInterviewsModalOpen(true)}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending Interviews</CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -258,7 +261,7 @@ export default function AdminDashboard({ data }: Props) {
                 {data.systemStats.pendingInterviews}
               </div>
               <p className="text-xs text-muted-foreground">
-                Scheduled
+                Click to view details
               </p>
             </CardContent>
           </Card>
