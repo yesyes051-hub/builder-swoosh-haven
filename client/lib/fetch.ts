@@ -101,11 +101,12 @@ export const apiRequest = async <T = any>(
 
   // Debug logging for development
   if (import.meta.env.MODE === 'development') {
-    console.log('API Request:', {
+    console.log('🚀 API Request:', {
       originalUrl: url,
       fullUrl,
-      baseUrl: apiBaseUrl,
+      baseUrl: apiBaseUrl || 'relative URLs',
       mode: import.meta.env.MODE,
+      method: defaultOptions.method || 'GET',
       headers: defaultOptions.headers
     });
   }
@@ -128,12 +129,22 @@ export const apiRequest = async <T = any>(
       throw new Error(errorMessage);
     }
 
+    // Debug logging for successful responses
+    if (import.meta.env.MODE === 'development') {
+      console.log('✅ API Response:', {
+        url: fullUrl,
+        status: response.status,
+        ok: response.ok,
+        contentType: response.headers.get('content-type')
+      });
+    }
+
     // Check if response has content
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       return await response.json();
     }
-    
+
     // For non-JSON responses, return the response text
     const text = await response.text();
     return text as unknown as T;
