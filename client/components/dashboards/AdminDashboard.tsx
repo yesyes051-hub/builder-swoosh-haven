@@ -63,6 +63,12 @@ export default function AdminDashboard({ data }: Props) {
       return;
     }
 
+    // Check if the request was already cancelled
+    if (signal?.aborted) {
+      console.log("User stats request was already cancelled");
+      return;
+    }
+
     try {
       setStatsLoading(true);
       console.log(`Fetching user stats (attempt ${retryCount + 1})`);
@@ -110,17 +116,32 @@ export default function AdminDashboard({ data }: Props) {
 
       console.error("❌ Error fetching user stats:", error);
 
-      // Provide more specific error information and retry logic
-      if (error instanceof Error && error.message.includes("Failed to fetch")) {
-        console.error("Network error - server may be unreachable");
+      // Only retry if it's a network error and we haven't been cancelled
+      if (error instanceof Error &&
+          error.message.includes("Failed to fetch") &&
+          retryCount < 2 &&
+          signal &&
+          !signal.aborted) {
 
-        // Retry up to 2 times with exponential backoff
-        if (retryCount < 2 && signal && !signal.aborted) {
-          const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s delays
-          console.log(`Retrying in ${delay}ms...`);
-          setTimeout(() => fetchUserStats(signal, retryCount + 1), delay);
-          return;
+        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s delays
+        console.log(`Network error - retrying in ${delay}ms... (attempt ${retryCount + 2}/3)`);
+
+        // Create a new timeout that respects the abort signal
+        const timeoutId = setTimeout(() => {
+          // Check again if we've been cancelled before retrying
+          if (!signal.aborted) {
+            fetchUserStats(signal, retryCount + 1);
+          }
+        }, delay);
+
+        // Clear timeout if signal is aborted
+        if (signal) {
+          signal.addEventListener('abort', () => {
+            clearTimeout(timeoutId);
+          });
         }
+
+        return;
       }
 
       // Fallback to showing the original dashboard data on error
