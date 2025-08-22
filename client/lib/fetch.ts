@@ -83,6 +83,14 @@ export const apiRequest = async <T = any>(
   // Build full URL if it's a relative path
   const fullUrl = url.startsWith('http') ? url : `${apiBaseUrl}${url.startsWith('/') ? url : `/${url}`}`;
 
+  const defaultOptions: RequestInit = {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  };
+
   // Debug logging for development
   if (import.meta.env.MODE === 'development') {
     console.log('API Request:', {
@@ -93,14 +101,6 @@ export const apiRequest = async <T = any>(
       headers: defaultOptions.headers
     });
   }
-
-  const defaultOptions: RequestInit = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  };
 
   try {
     const response = await safeFetch(fullUrl, defaultOptions);
