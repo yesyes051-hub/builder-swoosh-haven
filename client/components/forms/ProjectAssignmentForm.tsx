@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -34,8 +34,7 @@ import { useAuth } from "@/contexts/AuthContext";
 // Form validation schema
 const projectAssignmentSchema = z.object({
   projectName: z.string().min(1, "Project name is required"),
-  deadline: z.string().min(1, "Deadline is required"),
-  priority: z.enum(["High", "Medium", "Low"]).default("Medium"),
+  onBoarding: z.string().min(1, "On-Boarding date is required"),
   notes: z.string().optional(),
 });
 
@@ -65,16 +64,25 @@ export default function ProjectAssignmentForm({
 }: ProjectAssignmentFormProps) {
   const { token } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastSubmissionTime, setLastSubmissionTime] = useState(0);
 
   const form = useForm<ProjectAssignmentFormData>({
     resolver: zodResolver(projectAssignmentSchema),
     defaultValues: {
       projectName: "",
-      deadline: "",
-      priority: "Medium",
+      onBoarding: "",
       notes: "",
     },
   });
+
+  // Reset form when dialog opens or employee changes
+  useEffect(() => {
+    if (isOpen) {
+      form.reset();
+      setIsSubmitting(false);
+      setLastSubmissionTime(0);
+    }
+  }, [isOpen, employee?.id, form]);
 
   const onSubmit = async (data: ProjectAssignmentFormData) => {
     if (!employee) return;
@@ -84,21 +92,56 @@ export default function ProjectAssignmentForm({
       return;
     }
 
+    // Prevent duplicate submissions within 2 seconds
+    const now = Date.now();
+    if (now - lastSubmissionTime < 2000) {
+      console.log("🚫 Preventing duplicate submission");
+      return;
+    }
+    setLastSubmissionTime(now);
+
+    if (isSubmitting) {
+      console.log("🚫 Already submitting, preventing duplicate");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      const submitData = {
+        employeeId: employee._id,
+        ...data,
+      };
+      console.log("🔍 Submitting project assignment:", submitData);
+      console.log("🔍 Data fields:", Object.keys(submitData));
+      console.log("🔍 Form data:", data);
+
       const response = await fetch("/api/project-assignments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          employeeId: employee._id,
-          ...data,
-        }),
+        body: JSON.stringify(submitData),
       });
 
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        // Try to get error message from response
+        let errorMessage = "Failed to create project assignment";
+        try {
+          const errorData = await response.text(); // Use text() instead of json() to avoid parsing issues
+          const parsedError = JSON.parse(errorData);
+          errorMessage = parsedError.error || errorMessage;
+        } catch (parseError) {
+          console.error("Error parsing error response:", parseError);
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Only try to parse JSON if response is ok
       const result = await response.json();
+      console.log("✅ Project assignment response:", result);
 
       if (result.success) {
         toast.success("Project assignment created successfully!");
@@ -106,11 +149,17 @@ export default function ProjectAssignmentForm({
         onClose();
         onSuccess();
       } else {
-        toast.error(result.error || "Failed to create project assignment");
+        throw new Error(result.error || "Failed to create project assignment");
       }
     } catch (error) {
       console.error("Error creating project assignment:", error);
-      toast.error("Failed to create project assignment");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to create project assignment";
+      toast.error(errorMessage);
+      // Reset submission protection on error so user can retry
+      setLastSubmissionTime(0);
     } finally {
       setIsSubmitting(false);
     }
@@ -118,6 +167,8 @@ export default function ProjectAssignmentForm({
 
   const handleClose = () => {
     form.reset();
+    setIsSubmitting(false);
+    setLastSubmissionTime(0); // Reset submission protection
     onClose();
   };
 
@@ -187,13 +238,13 @@ export default function ProjectAssignmentForm({
               )}
             />
 
-            {/* Deadline */}
+            {/* On-Boarding */}
             <FormField
               control={form.control}
-              name="deadline"
+              name="onBoarding"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Deadline</FormLabel>
+                  <FormLabel>On-Boarding</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input
@@ -206,49 +257,6 @@ export default function ProjectAssignmentForm({
                       <CalendarIcon className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     </div>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Priority */}
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priority</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isSubmitting}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="High">
-                        <span className="flex items-center">
-                          <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                          High
-                        </span>
-                      </SelectItem>
-                      <SelectItem value="Medium">
-                        <span className="flex items-center">
-                          <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                          Medium
-                        </span>
-                      </SelectItem>
-                      <SelectItem value="Low">
-                        <span className="flex items-center">
-                          <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                          Low
-                        </span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

@@ -58,7 +58,7 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";
 import BirthdayManager from "@/components/pms/BirthdayManager";
-import ProjectForm from "@/components/pms/ProjectForm";
+import SimpleProjectForm from "@/components/pms/SimpleProjectForm";
 import TimesheetForm from "@/components/pms/TimesheetForm";
 import TicketForm from "@/components/pms/TicketForm";
 import UserManagement from "@/components/pms/UserManagement";
@@ -399,7 +399,7 @@ export default function PMSNew() {
                     </CardDescription>
                   </div>
                   {(user.role === "admin" || user.role === "manager") && (
-                    <ProjectForm
+                    <SimpleProjectForm
                       onProjectCreated={(project) => {
                         setProjects([project, ...projects]);
                       }}

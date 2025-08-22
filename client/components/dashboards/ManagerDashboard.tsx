@@ -45,8 +45,7 @@ interface ProjectAssignment {
   employeeId: string;
   employeeName: string;
   projectName: string;
-  deadline: string;
-  priority: "High" | "Medium" | "Low";
+  onBoarding: string;
   notes?: string;
   assignedAt: string;
   status: "Assigned" | "In Progress" | "Completed" | "Cancelled";
@@ -190,19 +189,6 @@ export default function ManagerDashboard({ data }: Props) {
   const handleAssignmentSuccess = () => {
     fetchRecentAssignments();
     toast.success("Project assigned successfully!");
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "High":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "Medium":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "Low":
-        return "bg-green-100 text-green-800 border-green-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
   };
 
   return (
@@ -405,19 +391,13 @@ export default function ManagerDashboard({ data }: Props) {
                             {formatTimeAgo(assignment.assignedAt)}
                           </p>
                         </div>
-                        <Badge
-                          className={`text-xs ${getPriorityColor(assignment.priority)}`}
-                          variant="outline"
-                        >
-                          {assignment.priority}
-                        </Badge>
                       </div>
                       <p className="text-sm text-gray-700 mb-1">
                         <strong>Project:</strong> {assignment.projectName}
                       </p>
                       <p className="text-sm text-gray-600">
-                        <strong>Deadline:</strong>{" "}
-                        {formatDate(new Date(assignment.deadline))}
+                        <strong>On-Boarding:</strong>{" "}
+                        {formatDate(new Date(assignment.onBoarding))}
                       </p>
                       {assignment.notes && (
                         <p className="text-sm text-gray-500 mt-1 italic">

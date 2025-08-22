@@ -5,8 +5,7 @@ export interface IProjectAssignment extends Document {
   employeeId: string; // Employee ID from PMSUser
   employeeName: string; // Employee name for easy display
   projectName: string;
-  deadline: Date;
-  priority: "High" | "Medium" | "Low";
+  onBoarding: Date;
   notes?: string;
   assignedBy: string; // Manager ID
   assignedAt: Date;
@@ -20,12 +19,7 @@ const ProjectAssignmentSchema = new Schema<IProjectAssignment>(
     employeeId: { type: String, required: true },
     employeeName: { type: String, required: true },
     projectName: { type: String, required: true },
-    deadline: { type: Date, required: true },
-    priority: {
-      type: String,
-      enum: ["High", "Medium", "Low"],
-      default: "Medium",
-    },
+    onBoarding: { type: Date, required: true },
     notes: { type: String },
     assignedBy: { type: String, required: true },
     assignedAt: { type: Date, default: Date.now },

@@ -44,7 +44,6 @@ interface ProjectDetail {
   startDate: string;
   endDate?: string;
   status: "Planning" | "In Progress" | "In Review" | "Completed" | "On Hold";
-  priority: "Low" | "Medium" | "High" | "Critical";
   description: string;
   teamMembers: string[];
   budget?: number;
@@ -68,7 +67,6 @@ export default function ProjectForm({ onProjectCreated }: Props) {
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined,
     status: "Planning" as const,
-    priority: "Medium" as const,
     description: "",
     teamMembers: [""],
     budget: "",
@@ -105,7 +103,6 @@ export default function ProjectForm({ onProjectCreated }: Props) {
         startDate: formData.startDate.toISOString(),
         endDate: formData.endDate?.toISOString(),
         status: formData.status,
-        priority: formData.priority,
         description: formData.description,
         teamMembers: filteredTeamMembers,
         budget: formData.budget ? parseFloat(formData.budget) : undefined,
@@ -135,7 +132,6 @@ export default function ProjectForm({ onProjectCreated }: Props) {
         startDate: undefined,
         endDate: undefined,
         status: "Planning",
-        priority: "Medium",
         description: "",
         teamMembers: [""],
         budget: "",
@@ -273,9 +269,10 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                   <Calendar
                     mode="single"
                     selected={formData.startDate}
-                    onSelect={(date) =>
-                      setFormData({ ...formData, startDate: date })
-                    }
+                    onSelect={(date) => {
+                      console.log("🔍 Date selected:", date);
+                      setFormData({ ...formData, startDate: date });
+                    }}
                     disabled={(date) =>
                       date < new Date(new Date().setHours(0, 0, 0, 0))
                     }
@@ -305,9 +302,10 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                   <Calendar
                     mode="single"
                     selected={formData.endDate}
-                    onSelect={(date) =>
-                      setFormData({ ...formData, endDate: date })
-                    }
+                    onSelect={(date) => {
+                      console.log("🔍 End date selected:", date);
+                      setFormData({ ...formData, endDate: date });
+                    }}
                     disabled={(date) =>
                       formData.startDate
                         ? date < formData.startDate
@@ -320,7 +318,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="status">Status</Label>
               <Select
@@ -338,26 +336,6 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                   <SelectItem value="In Review">In Review</SelectItem>
                   <SelectItem value="Completed">Completed</SelectItem>
                   <SelectItem value="On Hold">On Hold</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="priority">Priority</Label>
-              <Select
-                value={formData.priority}
-                onValueChange={(value: any) =>
-                  setFormData({ ...formData, priority: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Low">Low</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
-                  <SelectItem value="Critical">Critical</SelectItem>
                 </SelectContent>
               </Select>
             </div>
