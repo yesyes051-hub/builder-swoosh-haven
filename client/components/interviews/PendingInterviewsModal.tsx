@@ -122,6 +122,7 @@ export default function PendingInterviewsModal({ isOpen, onClose }: Props) {
 
       const result = await response.json();
       if (result.success) {
+        console.log('✅ Pending interviews fetched successfully:', result.data);
         setPendingInterviews(result.data);
       } else {
         throw new Error(result.error || 'Failed to fetch pending interviews');
