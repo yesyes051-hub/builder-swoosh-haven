@@ -360,30 +360,104 @@ export const getAdminDashboard: RequestHandler = async (req, res) => {
       }
     }
 
-    // Safely get data from memory database, providing defaults for new users
+    // Get data from both memory database and MongoDB
     let allUsers = [];
+    let pendingInterviewsCount = 0;
+    let totalEmployees = 0;
+    let recentNewUsers = 0;
+    let completedInterviews = 0;
 
     try {
-      allUsers = await db.getAllUsers();
-    } catch (error) {
-      // For new users from Employee Management system, use empty arrays
-      console.log("Admin dashboard: Using empty data for new user");
-    }
+      // Get all users from Employee Management MongoDB
+      const allEmployeeUsers = await EmployeeUser.find({}).select("-password");
+      totalEmployees = allEmployeeUsers.length;
 
-    const dashboardData: AdminDashboard = {
-      user: fullUser,
-      systemStats: {
-        totalUsers: allUsers.length,
-        activeUsers: allUsers.filter((u) => u.isActive).length,
-        totalProjects: 0, // TODO: Get from projects
-        pendingInterviews: 0, // TODO: Get from interviews
-      },
-      recentActivity: {
-        newUsers: 0, // TODO: Calculate from recent signups
-        newUpdates: 0, // TODO: Calculate from recent updates
-        completedInterviews: 0, // TODO: Calculate from recent interviews
-      },
-    };
+      // Calculate new users in last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      recentNewUsers = allEmployeeUsers.filter(user =>
+        user.createdAt >= thirtyDaysAgo
+      ).length;
+
+      // Fallback to memory database for legacy data
+      try {
+        allUsers = await db.getAllUsers();
+      } catch (error) {
+        console.log("Admin dashboard: Memory database not available");
+      }
+
+      // Combine counts (avoid double counting)
+      const totalUsers = Math.max(totalEmployees, allUsers.length);
+      const activeUsers = totalEmployees; // All Employee Management users are considered active
+
+      // Get pending interviews (scheduled status)
+      pendingInterviewsCount = await Interview.countDocuments({
+        status: "scheduled"
+      });
+
+      // Get completed interviews in last 30 days
+      completedInterviews = await Interview.countDocuments({
+        status: "completed",
+        updatedAt: { $gte: thirtyDaysAgo }
+      });
+
+      const dashboardData: AdminDashboard = {
+        user: fullUser,
+        systemStats: {
+          totalUsers,
+          activeUsers,
+          totalProjects: 0, // TODO: Get from projects when available
+          pendingInterviews: pendingInterviewsCount,
+        },
+        recentActivity: {
+          newUsers: recentNewUsers,
+          newUpdates: 0, // TODO: Calculate from daily updates when available
+          completedInterviews,
+        },
+      };
+
+      console.log("✅ Admin dashboard - Real data fetched:", {
+        totalUsers,
+        activeUsers,
+        pendingInterviews: pendingInterviewsCount,
+        recentNewUsers,
+        completedInterviews
+      });
+
+      res.json({
+        success: true,
+        data: dashboardData,
+      } as ApiResponse<AdminDashboard>);
+    } catch (error) {
+      console.error("Error fetching admin dashboard data:", error);
+
+      // Fallback to memory database data
+      try {
+        allUsers = await db.getAllUsers();
+      } catch (dbError) {
+        console.log("Admin dashboard: Using empty data for new user");
+      }
+
+      const dashboardData: AdminDashboard = {
+        user: fullUser,
+        systemStats: {
+          totalUsers: allUsers.length,
+          activeUsers: allUsers.filter((u) => u.isActive).length,
+          totalProjects: 0,
+          pendingInterviews: 0,
+        },
+        recentActivity: {
+          newUsers: 0,
+          newUpdates: 0,
+          completedInterviews: 0,
+        },
+      };
+
+      res.json({
+        success: true,
+        data: dashboardData,
+      } as ApiResponse<AdminDashboard>);
+    }
 
     console.log(
       "✅ Admin dashboard - Sending successful response with data for user:",
