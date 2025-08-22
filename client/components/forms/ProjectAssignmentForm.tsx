@@ -75,6 +75,15 @@ export default function ProjectAssignmentForm({
     },
   });
 
+  // Reset form when dialog opens or employee changes
+  useEffect(() => {
+    if (isOpen) {
+      form.reset();
+      setIsSubmitting(false);
+      setLastSubmissionTime(0);
+    }
+  }, [isOpen, employee?.id, form]);
+
   const onSubmit = async (data: ProjectAssignmentFormData) => {
     if (!employee) return;
 
