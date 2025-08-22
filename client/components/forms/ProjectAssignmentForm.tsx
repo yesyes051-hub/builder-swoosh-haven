@@ -64,6 +64,7 @@ export default function ProjectAssignmentForm({
 }: ProjectAssignmentFormProps) {
   const { token } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastSubmissionTime, setLastSubmissionTime] = useState(0);
 
   const form = useForm<ProjectAssignmentFormData>({
     resolver: zodResolver(projectAssignmentSchema),
