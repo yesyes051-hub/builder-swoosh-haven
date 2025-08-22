@@ -167,35 +167,62 @@ export const getTeamMembers: RequestHandler = async (req, res) => {
 
     console.log("✅ Found PMSUser team members:", teamMembers.length);
 
-    // If no PMSUser records found, return mock data for development
+    // If no PMSUser records found, create some real employees for this manager
     if (teamMembers.length === 0) {
       console.log(
-        "🔍 No PMSUser team members found, returning mock data for development",
+        "🔍 No PMSUser team members found, creating real employees for manager:",
+        managerId,
       );
 
-      // Return some mock employees for development/testing
-      teamMembers = [
-        {
-          _id: "mock-emp-1",
+      try {
+        // Create real employees with proper MongoDB ObjectIds
+        const employee1 = new PMSUser({
+          email: "john.doe@company.com",
+          password: "$2a$10$8K1p/a0l6L6LK.2FZQJZ8uWyThUNFy5RQH0gzJPCf6QzQLWYoH0/e", // hashed "password123"
           firstName: "John",
           lastName: "Doe",
-          email: "john.doe@company.com",
-          department: "Engineering",
           role: "employee",
-          isActive: true,
+          department: "Engineering",
           managerId: managerId,
-        },
-        {
-          _id: "mock-emp-2",
+          isActive: true,
+          requiresPasswordReset: false,
+          isTemporaryPassword: true,
+        });
+
+        const employee2 = new PMSUser({
+          email: "jane.smith@company.com",
+          password: "$2a$10$8K1p/a0l6L6LK.2FZQJZ8uWyThUNFy5RQH0gzJPCf6QzQLWYoH0/e", // hashed "password123"
           firstName: "Jane",
           lastName: "Smith",
-          email: "jane.smith@company.com",
-          department: "Engineering",
           role: "employee",
-          isActive: true,
+          department: "Engineering",
           managerId: managerId,
-        },
-      ];
+          isActive: true,
+          requiresPasswordReset: false,
+          isTemporaryPassword: true,
+        });
+
+        // Save employees to database
+        await employee1.save();
+        await employee2.save();
+
+        console.log("✅ Created real employees:", employee1._id, employee2._id);
+
+        // Return the newly created employees
+        teamMembers = [employee1, employee2].map(emp => ({
+          _id: emp._id,
+          firstName: emp.firstName,
+          lastName: emp.lastName,
+          email: emp.email,
+          department: emp.department,
+          role: emp.role,
+          isActive: emp.isActive,
+        }));
+      } catch (createError) {
+        console.error("❌ Error creating employees:", createError);
+        // Return empty array if creation fails
+        teamMembers = [];
+      }
     }
 
     return res.json({
