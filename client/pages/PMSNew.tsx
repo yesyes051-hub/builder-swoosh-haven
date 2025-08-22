@@ -399,7 +399,7 @@ export default function PMSNew() {
                     </CardDescription>
                   </div>
                   {(user.role === "admin" || user.role === "manager") && (
-                    <ProjectForm
+                    <SimpleProjectForm
                       onProjectCreated={(project) => {
                         setProjects([project, ...projects]);
                       }}
