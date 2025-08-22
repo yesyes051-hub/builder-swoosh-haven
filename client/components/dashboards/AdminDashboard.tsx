@@ -443,45 +443,6 @@ export default function AdminDashboard({ data }: Props) {
           </Card>
         </div>
 
-        {/* Configuration Panel */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Settings className="h-5 w-5" />
-              <span>System Configuration</span>
-            </CardTitle>
-            <CardDescription>
-              Global system settings and configurations
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="border rounded-lg p-4 text-center hover:bg-gray-50 cursor-pointer">
-                <Shield className="h-8 w-8 mx-auto mb-2 text-red-600" />
-                <h3 className="font-medium mb-1">Security Settings</h3>
-                <p className="text-sm text-gray-600">Authentication & permissions</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 text-center hover:bg-gray-50 cursor-pointer">
-                <Database className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                <h3 className="font-medium mb-1">Data Management</h3>
-                <p className="text-sm text-gray-600">Backup & maintenance</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 text-center hover:bg-gray-50 cursor-pointer">
-                <BarChart3 className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                <h3 className="font-medium mb-1">Analytics Config</h3>
-                <p className="text-sm text-gray-600">Reporting settings</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 text-center hover:bg-gray-50 cursor-pointer">
-                <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-orange-600" />
-                <h3 className="font-medium mb-1">System Logs</h3>
-                <p className="text-sm text-gray-600">Error monitoring</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       <AddUserModal
