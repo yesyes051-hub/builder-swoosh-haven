@@ -230,7 +230,6 @@ export default function AdminDashboard({ data }: Props) {
                 {data.systemStats.pendingInterviews}
               </div>
               <p className="text-xs text-muted-foreground">Scheduled</p>
-        refs/remotes/origin/main
             </CardContent>
           </Card>
         </div>
