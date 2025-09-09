@@ -23,17 +23,59 @@ export const login: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    // Find user in ROLES collection
-    const user = await EmployeeUser.findOne({ email: email.toLowerCase() });
-    if (!user) {
+    // Try to find user in Mongo ROLES collection first
+    let dbUser = await EmployeeUser.findOne({ email: email.toLowerCase() });
+
+    // If not found in Mongo, fallback to in-memory DB
+    if (!dbUser) {
+      const memoryUser = await db.getUserByEmail(email.toLowerCase());
+      if (memoryUser) {
+        // Validate password against hashed password stored in memory DB
+        const isValidPassword = await bcrypt.compare(password, memoryUser.password!);
+        if (!isValidPassword) {
+          return res.status(401).json({
+            success: false,
+            error: 'Invalid credentials'
+          } as ApiResponse<never>);
+        }
+
+        // Build user object for token and response
+        const userForToken = {
+          id: memoryUser.id,
+          email: memoryUser.email,
+          firstName: memoryUser.firstName,
+          lastName: memoryUser.lastName,
+          role: (memoryUser.role as string).toLowerCase(),
+          isActive: memoryUser.isActive ?? true
+        };
+
+        console.log('🔍 Login - Memory DB user object for token:', userForToken);
+
+        const token = generateToken(userForToken);
+        const { password: _, ...userWithoutPassword } = memoryUser as any;
+
+        return res.json({
+          success: true,
+          data: {
+            token,
+            user: {
+              ...userWithoutPassword,
+              id: userWithoutPassword.id,
+              role: (userWithoutPassword.role as string)?.toLowerCase()
+            }
+          }
+        } as ApiResponse<AuthResponse>);
+      }
+
+      // No user found in either DB
       return res.status(401).json({
         success: false,
         error: 'Invalid credentials'
       } as ApiResponse<never>);
     }
 
-    // Compare password with hashed password
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    // If found in Mongo, compare password with hashed password
+    const isValidPassword = await bcrypt.compare(password, dbUser.password);
     if (!isValidPassword) {
       return res.status(401).json({
         success: false,
@@ -43,20 +85,20 @@ export const login: RequestHandler = async (req, res) => {
 
     // Create user object for token (converting role to lowercase for consistency)
     const userForToken = {
-      id: user._id.toString(),
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: user.role.toLowerCase(),
+      id: dbUser._id.toString(),
+      email: dbUser.email,
+      firstName: dbUser.firstName,
+      lastName: dbUser.lastName,
+      role: (dbUser.role as string).toLowerCase(),
       isActive: true
     };
 
-    console.log('🔍 Login - User object for token:', userForToken);
+    console.log('🔍 Login - Mongo user object for token:', userForToken);
 
     const token = generateToken(userForToken);
-    const { password: _, ...userWithoutPassword } = user.toObject();
+    const { password: _, ...userWithoutPassword } = dbUser.toObject();
 
-    console.log('✅ Login successful for user:', user.email, 'ID:', user._id.toString());
+    console.log('✅ Login successful for user:', dbUser.email, 'ID:', dbUser._id.toString());
 
     res.json({
       success: true,
@@ -65,7 +107,7 @@ export const login: RequestHandler = async (req, res) => {
         user: {
           ...userWithoutPassword,
           id: userWithoutPassword._id,
-          role: userWithoutPassword.role.toLowerCase() // Convert to lowercase for frontend compatibility
+          role: (userWithoutPassword.role as string)?.toLowerCase() // Convert to lowercase for frontend compatibility
         }
       }
     } as ApiResponse<AuthResponse>);
