@@ -9,9 +9,12 @@ export interface AuthRequest extends Request {
 }
 
 export interface JwtPayload {
-  userId: string;
-  email: string;
-  role: UserRole;
+  userId?: string;
+  id?: string;
+  email?: string;
+  role?: UserRole;
+  // allow other shapes from older tokens
+  [key: string]: any;
 }
 
 export const authenticateToken = async (
@@ -36,17 +39,31 @@ export const authenticateToken = async (
   try {
     console.log("🔍 Verifying token with secret length:", JWT_SECRET.length);
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-    console.log("✅ Token decoded successfully:", {
-      userId: decoded.userId,
-      email: decoded.email,
-      role: decoded.role,
+
+    // Be tolerant of token payload shapes
+    const decodedAny = decoded as any;
+    const userId = decodedAny.userId ?? decodedAny.id ?? decodedAny.user?.id ?? decodedAny.user?.userId;
+    const email = decodedAny.email ?? decodedAny.user?.email;
+    const role = (decodedAny.role ?? decodedAny.user?.role) as UserRole | undefined;
+
+    console.log("✅ Token decoded successfully (tolerant):", {
+      userId,
+      email,
+      role,
     });
+
+    if (!userId || !email || !role) {
+      console.warn("⚠️ Token decoded but missing expected fields, rejecting");
+      return res
+        .status(403)
+        .json({ success: false, error: "Invalid or expired token" });
+    }
 
     // Set minimal user object with the correct ID
     req.user = {
-      id: decoded.userId,
-      email: decoded.email,
-      role: decoded.role,
+      id: userId,
+      email,
+      role,
       firstName: "",
       lastName: "",
       createdAt: new Date(),
@@ -100,6 +117,7 @@ export const requireRole = (roles: UserRole[]) => {
 export const generateToken = (user: Omit<User, "password">): string => {
   const payload: JwtPayload = {
     userId: user.id,
+    id: user.id,
     email: user.email,
     role: user.role,
   };
