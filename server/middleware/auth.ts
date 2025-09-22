@@ -73,7 +73,7 @@ export const authenticateToken = async (
 
     console.log("✅ User set in request:", req.user);
     next();
-  } catch (error) {
+  } catch (error: any) {
     console.error(
       "❌ Token verification error for URL:",
       req.url,
@@ -81,9 +81,13 @@ export const authenticateToken = async (
       error,
     );
     console.log("🔍 Token that failed:", token?.substring(0, 20) + "...");
-    return res
-      .status(403)
-      .json({ success: false, error: "Invalid or expired token" });
+
+    // Expired tokens and signature errors should be treated as Unauthorized (401)
+    const isExpired = error && error.name === "TokenExpiredError";
+    const status = isExpired ? 401 : 401;
+    const message = isExpired ? "Token expired" : "Invalid or expired token";
+
+    return res.status(status).json({ success: false, error: message });
   }
 };
 
