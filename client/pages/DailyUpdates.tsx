@@ -100,7 +100,18 @@ export default function DailyUpdates() {
     });
   };
 
-  const todaysUpdate = getTodaysUpdate();
+  // Compute today's update only for the logged-in user, regardless of org-wide list
+  const todaysUpdate = (() => {
+    const myUpdates = updates.filter(u => u.userId === user.id);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const found = myUpdates.find(update => {
+      const d = new Date(update.date);
+      d.setHours(0,0,0,0);
+      return d.getTime() === today.getTime();
+    });
+    return found;
+  })();
 
   if (!user) {
     return null;
