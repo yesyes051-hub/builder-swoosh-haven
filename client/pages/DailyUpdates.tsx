@@ -106,13 +106,27 @@ export default function DailyUpdates() {
     return null;
   }
 
+  // Edge case: Missing/undefined role -> deny access with clear message
+  if (!user?.role) {
+    return (
+      <DashboardLayout user={user}>
+        <div className="space-y-6">
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>Access denied: missing role. Please contact an administrator.</AlertDescription>
+          </Alert>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   if (showForm) {
     return (
       <DashboardLayout user={user}>
         <div className="space-y-6">
           <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowForm(false)}
               className="flex items-center space-x-2"
             >
@@ -121,7 +135,7 @@ export default function DailyUpdates() {
             </Button>
             <h1 className="text-2xl font-bold">Submit Daily Update</h1>
           </div>
-          <DailyUpdateForm 
+          <DailyUpdateForm
             onSuccess={handleUpdateSuccess}
             onCancel={() => setShowForm(false)}
           />
@@ -130,6 +144,8 @@ export default function DailyUpdates() {
     );
   }
 
+  const isPrivileged = user.role === 'admin' || user.role === 'manager';
+
   return (
     <DashboardLayout user={user}>
       <div className="space-y-6">
@@ -137,9 +153,11 @@ export default function DailyUpdates() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Daily Updates</h1>
-            <p className="text-gray-600">Track your daily progress and accomplishments</p>
+            <p className="text-gray-600">
+              {isPrivileged ? 'Organization-wide view' : 'Track your daily progress and accomplishments'}
+            </p>
           </div>
-          <Button 
+          <Button
             onClick={() => setShowForm(true)}
             className="bg-blue-600 hover:bg-blue-700"
             disabled={!!todaysUpdate}
