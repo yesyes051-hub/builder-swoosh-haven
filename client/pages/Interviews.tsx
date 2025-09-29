@@ -11,7 +11,7 @@ import {
   Clock,
   Users,
   MessageSquare,
-  ArrowLeft,
+
   Loader2,
   AlertTriangle,
   User,
@@ -104,11 +104,6 @@ export default function Interviews() {
     setShowScheduleModal(false);
   };
 
-  const handleFeedbackSubmitted = () => {
-    // Refresh after submit to reflect latest status/availability
-    fetchInterviews();
-    setFeedbackModal({ open: false, interview: null });
-  };
 
   const updateInterviewStatus = async (interviewId: string, status: string) => {
     try {
