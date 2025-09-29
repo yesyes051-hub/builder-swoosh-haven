@@ -107,7 +107,6 @@ export const getTeamDailyUpdates: RequestHandler = async (req, res) => {
     const updates = await db.getDailyUpdatesByTeam(teamMemberIds, limit);
 
     // Add user info to updates
-    const allUsers = await db.getAllUsers();
     const updatesWithUser = updates.map(update => {
       const updateUser = allUsers.find(u => u.id === update.userId);
       return {
