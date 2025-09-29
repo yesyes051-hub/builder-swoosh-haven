@@ -137,7 +137,7 @@ export function createServer() {
   app.post(
     "/api/daily-updates",
     authenticateToken,
-    requireRole(["employee", "manager", "admin"]),
+    requireRole(["employee", "manager", "admin", "hr"]),
     createDailyUpdate,
   );
   app.get("/api/daily-updates", authenticateToken, getUserDailyUpdates);
