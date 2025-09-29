@@ -121,6 +121,21 @@ export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
     </div>
   );
 
+  // Build recent dates (today + previous 3 days)
+  const buildRecentDates = () => {
+    const arr: Date[] = [];
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    for (let i = 0; i < 4; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      arr.push(d);
+    }
+    return arr;
+  };
+  const recentDates = buildRecentDates();
+  const [selectedDate, setSelectedDate] = useState<string>(recentDates[0].toISOString());
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
