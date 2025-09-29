@@ -11,56 +11,71 @@ export const createDailyUpdate: RequestHandler = async (req, res) => {
   try {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
-    const updateData: CreateDailyUpdateRequest = req.body;
+    const updateData: CreateDailyUpdateRequest & { date?: string | Date; targetUserId?: string } = req.body;
 
     if (!updateData.tasks || !updateData.accomplishments || !updateData.challenges || !updateData.nextDayPlans || updateData.progressScore === undefined) {
-      return res.status(400).json({
-        success: false,
-        error: 'All fields are required'
-      } as ApiResponse<never>);
+      return res.status(400).json({ success: false, error: 'All fields are required' } as ApiResponse<never>);
     }
 
     if (updateData.progressScore < 1 || updateData.progressScore > 10) {
-      return res.status(400).json({
-        success: false,
-        error: 'Progress score must be between 1 and 10'
-      } as ApiResponse<never>);
+      return res.status(400).json({ success: false, error: 'Progress score must be between 1 and 10' } as ApiResponse<never>);
     }
 
-    // Check if user already has an update for today
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const existingUpdates = await db.getDailyUpdatesByUser(user.id, 1);
-    const todayUpdate = existingUpdates.find(update => {
-      const updateDate = new Date(update.date);
-      updateDate.setHours(0, 0, 0, 0);
-      return updateDate.getTime() === today.getTime();
-    });
-
-    if (todayUpdate) {
-      return res.status(409).json({
-        success: false,
-        error: 'You have already submitted an update for today'
-      } as ApiResponse<never>);
+    // Determine target user (Admin can upsert for others; others can only upsert their own)
+    let targetUserId = user.id;
+    if (updateData.targetUserId) {
+      if (user.role !== 'admin') {
+        return res.status(403).json({ success: false, error: 'Only admins can submit updates for other users' } as ApiResponse<never>);
+      }
+      const targetUser = await db.getUserById(updateData.targetUserId);
+      if (!targetUser) {
+        return res.status(404).json({ success: false, error: 'Target user not found' } as ApiResponse<never>);
+      }
+      targetUserId = targetUser.id;
     }
 
-    const dailyUpdate = await db.createDailyUpdate({
-      userId: user.id,
-      date: new Date(),
-      ...updateData
+    // Parse and validate date (allowed: today and previous 3 days, not future)
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(0,0,0,0);
+    const earliest = new Date(today);
+    earliest.setDate(earliest.getDate() - 3);
+
+    const selected = updateData.date ? new Date(updateData.date) : new Date(now);
+    selected.setHours(0,0,0,0);
+
+    if (selected.getTime() < earliest.getTime() || selected.getTime() > today.getTime()) {
+      return res.status(400).json({ success: false, error: 'Date must be within the last 3 days (including today)' } as ApiResponse<never>);
+    }
+
+    // Upsert by date for target user
+    const existing = await db.getDailyUpdateByDate(targetUserId, selected);
+    if (existing) {
+      const updated = await db.updateDailyUpdate(existing.id, {
+        tasks: updateData.tasks,
+        accomplishments: updateData.accomplishments,
+        challenges: updateData.challenges,
+        nextDayPlans: updateData.nextDayPlans,
+        progressScore: updateData.progressScore,
+        date: selected,
+      });
+      return res.status(200).json({ success: true, data: updated! } as ApiResponse<DailyUpdate>);
+    }
+
+    const created = await db.createDailyUpdate({
+      userId: targetUserId,
+      date: selected,
+      tasks: updateData.tasks,
+      accomplishments: updateData.accomplishments,
+      challenges: updateData.challenges,
+      nextDayPlans: updateData.nextDayPlans,
+      progressScore: updateData.progressScore,
     });
 
-    res.status(201).json({
-      success: true,
-      data: dailyUpdate
-    } as ApiResponse<DailyUpdate>);
+    return res.status(201).json({ success: true, data: created } as ApiResponse<DailyUpdate>);
   } catch (error) {
     console.error('Create daily update error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error'
-    } as ApiResponse<never>);
+    res.status(500).json({ success: false, error: 'Internal server error' } as ApiResponse<never>);
   }
 };
 
