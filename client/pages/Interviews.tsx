@@ -104,7 +104,7 @@ export default function Interviews() {
     setShowScheduleModal(false);
   };
 
-  const handleFeedbackSubmitted = ()n=> {
+  const handleFeedbackSubmitted = () => {
     // Refresh after submit to reflect latest status/availability
     fetchInterviews();
     setFeedbackModal({ open: false, interview: null });
