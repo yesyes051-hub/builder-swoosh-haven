@@ -93,23 +93,16 @@ export const getTeamDailyUpdates: RequestHandler = async (req, res) => {
     if (user.role !== 'manager' && user.role !== 'admin') {
       return res.status(403).json({
         success: false,
-        error: 'Only managers and admins can view team updates'
+        error: 'Only managers and admins can view organization-wide updates'
       } as ApiResponse<never>);
     }
 
-    const limit = parseInt(req.query.limit as string) || 20;
+    const limit = parseInt(req.query.limit as string) || 1000; // allow large page for org-wide view
 
-    // Get team members if user is a manager
-    let teamMemberIds: string[] = [];
-    if (user.role === 'manager') {
-      const allUsers = await db.getAllUsers();
-      const teamMembers = allUsers.filter(u => u.managerId === user.id);
-      teamMemberIds = teamMembers.map(m => m.id);
-    } else {
-      // Admin can see all updates
-      const allUsers = await db.getAllUsers();
-      teamMemberIds = allUsers.map(u => u.id);
-    }
+    // Updated: Managers now have organization-wide visibility (per requirements)
+    // Build the list of all user IDs for both admin and manager
+    const allUsers = await db.getAllUsers();
+    const teamMemberIds: string[] = allUsers.map(u => u.id);
 
     const updates = await db.getDailyUpdatesByTeam(teamMemberIds, limit);
 
@@ -146,8 +139,19 @@ export const getDailyUpdateById: RequestHandler = async (req, res) => {
     const user = authReq.user!;
     const { id } = req.params;
 
-    const updates = await db.getDailyUpdatesByUser(user.id);
-    const update = updates.find(u => u.id === id);
+    // For Admin/Manager, search across the whole organization; otherwise only own updates
+    let update: DailyUpdate | undefined;
+
+    if (user.role === 'admin' || user.role === 'manager') {
+      const allUsers = await db.getAllUsers();
+      const allIds = allUsers.map(u => u.id);
+      // Use a high limit to cover all in-memory records; replace with proper pagination in production
+      const orgUpdates = await db.getDailyUpdatesByTeam(allIds, 10000);
+      update = orgUpdates.find(u => u.id === id);
+    } else {
+      const myUpdates = await db.getDailyUpdatesByUser(user.id, 10000);
+      update = myUpdates.find(u => u.id === id);
+    }
 
     if (!update) {
       return res.status(404).json({
@@ -156,8 +160,8 @@ export const getDailyUpdateById: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    // Check if user owns this update or is a manager/admin
-    if (update.userId !== user.id && user.role !== 'manager' && user.role !== 'admin') {
+    // Enforce ownership for HR/Employee; Admin/Manager already allowed
+    if ((user.role === 'hr' || user.role === 'employee') && update.userId !== user.id) {
       return res.status(403).json({
         success: false,
         error: 'Access denied'
