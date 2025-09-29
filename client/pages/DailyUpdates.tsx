@@ -171,10 +171,9 @@ export default function DailyUpdates() {
           <Button
             onClick={() => setShowForm(true)}
             className="bg-blue-600 hover:bg-blue-700"
-            disabled={!!todaysUpdate}
           >
             <Plus className="h-4 w-4 mr-2" />
-            {todaysUpdate ? "Today's Update Submitted" : "Submit Today's Update"}
+            {todaysUpdate ? "Add/Update Daily Update" : "Submit Daily Update"}
           </Button>
         </div>
 
