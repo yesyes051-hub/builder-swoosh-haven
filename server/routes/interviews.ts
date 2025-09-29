@@ -155,7 +155,7 @@ export const getInterviews: RequestHandler = async (req, res) => {
 
     let interviewQuery: any = {};
 
-    if (user.role === "hr" || user.role === "admin") {
+    if (user.role === "hr" || user.role === "admin" || user.role === "manager") {
       // HR and Admin can see all interviews
       interviewQuery = {};
     } else {
@@ -415,6 +415,7 @@ export const getInterviewFeedback: RequestHandler = async (req, res) => {
     if (
       user.role !== "hr" &&
       user.role !== "admin" &&
+      user.role !== "manager" &&
       user.id !== interview.candidateId &&
       user.id !== interview.interviewerId
     ) {
