@@ -61,6 +61,10 @@ export interface CreateDailyUpdateRequest {
   challenges: string[];
   nextDayPlans: string[];
   progressScore: number;
+  // Optional date for upsert (server validates within last 3 days including today)
+  date?: Date;
+  // Admin-only: upsert for another user
+  targetUserId?: string;
 }
 
 // Projects
