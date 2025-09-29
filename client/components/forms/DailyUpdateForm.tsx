@@ -172,6 +172,7 @@ export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
         challenges: filteredChallenges,
         nextDayPlans: filteredNextDayPlans,
         progressScore: progressScore[0],
+        date: new Date(selectedDate),
       };
 
       const response = await fetch("/api/daily-updates", {
