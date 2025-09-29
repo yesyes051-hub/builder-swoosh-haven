@@ -33,8 +33,16 @@ export default function DailyUpdates() {
 
   const fetchUpdates = async () => {
     try {
+      setError('');
       setLoading(true);
-      const response = await fetch('/api/daily-updates', {
+
+      // RBAC-aware endpoint selection:
+      // - Admin/Manager: organization-wide view via team endpoint (server enforces roles)
+      // - HR/Employee: own updates only via user endpoint
+      const isPrivileged = user?.role === 'admin' || user?.role === 'manager';
+      const url = isPrivileged ? '/api/daily-updates/team' : '/api/daily-updates';
+
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -43,12 +51,17 @@ export default function DailyUpdates() {
       const data: ApiResponse<DailyUpdate[]> = await response.json();
 
       if (!response.ok || !data.success) {
+        // Provide clearer UX for 403 cases
+        if (response.status === 403) {
+          throw new Error('You are not authorized to view this data');
+        }
         throw new Error(data.error || 'Failed to fetch updates');
       }
 
       setUpdates(data.data || []);
     } catch (err) {
       console.error('Fetch updates error:', err);
+      setUpdates([]);
       setError(err instanceof Error ? err.message : 'Failed to load updates');
     } finally {
       setLoading(false);
