@@ -68,8 +68,9 @@ export default function DailyUpdates() {
     }
   };
 
-  const handleUpdateSuccess = (newUpdate: DailyUpdate) => {
-    setUpdates([newUpdate, ...updates]);
+  const handleUpdateSuccess = (_newUpdate: DailyUpdate) => {
+    // Reload from server to avoid duplicate keys and ensure upserted record replaces prior one
+    fetchUpdates();
     setShowForm(false);
   };
 
