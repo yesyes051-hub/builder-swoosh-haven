@@ -258,6 +258,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
               <Popover modal={false}>
                 <PopoverTrigger asChild>
                   <Button
+                    type="button"
                     variant="outline"
                     className={`w-full justify-start text-left font-normal ${
                       !formData.startDate && "text-muted-foreground"
@@ -290,6 +291,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
               <Popover modal={false}>
                 <PopoverTrigger asChild>
                   <Button
+                    type="button"
                     variant="outline"
                     className={`w-full justify-start text-left font-normal ${
                       !formData.endDate && "text-muted-foreground"
