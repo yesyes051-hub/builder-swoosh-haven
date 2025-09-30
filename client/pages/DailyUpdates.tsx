@@ -240,6 +240,13 @@ export default function DailyUpdates() {
                         <CardDescription>
                           Submitted at {formatTime(update.createdAt)}
                         </CardDescription>
+                        {/* Show employee identity for privileged roles when viewing org-wide */}
+                        {isPrivileged && (update as any).user && (
+                          <div className="text-sm text-gray-700 mt-1">
+                            Employee: {((update as any).user.firstName || '')} {((update as any).user.lastName || '')}
+                            {((update as any).user.email ? ` · ${ (update as any).user.email }` : '')}
+                          </div>
+                        )}
                       </div>
                       <Badge 
                         variant={update.progressScore >= 8 ? 'default' : 
