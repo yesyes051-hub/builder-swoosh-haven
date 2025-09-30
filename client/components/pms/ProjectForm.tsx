@@ -34,7 +34,7 @@ import {
   Loader2,
   FolderOpen,
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, startOfDay, isBefore } from "date-fns";
 import { ApiResponse } from "@shared/api";
 
 interface ProjectDetail {
@@ -278,7 +278,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                       setFormData({ ...formData, startDate: date })
                     }
                     disabled={(date) =>
-                      date < new Date(new Date().setHours(0, 0, 0, 0))
+                      isBefore(startOfDay(date), startOfDay(new Date()))
                     }
                     initialFocus
                   />
@@ -312,8 +312,8 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                     }
                     disabled={(date) =>
                       formData.startDate
-                        ? date < formData.startDate
-                        : date < new Date(new Date().setHours(0, 0, 0, 0))
+                        ? isBefore(startOfDay(date), startOfDay(formData.startDate))
+                        : isBefore(startOfDay(date), startOfDay(new Date()))
                     }
                     initialFocus
                   />
