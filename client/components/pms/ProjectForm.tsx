@@ -255,7 +255,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>Start Date *</Label>
-              <Popover>
+              <Popover modal={false}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -287,7 +287,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
 
             <div>
               <Label>End Date</Label>
-              <Popover>
+              <Popover modal={false}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
