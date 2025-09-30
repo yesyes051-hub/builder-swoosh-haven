@@ -1,10 +1,11 @@
 import { RequestHandler } from 'express';
-import { db } from '../db/memory';
 import { AuthRequest } from '../middleware/auth';
-import { 
+import { EmployeeUser } from '../models/employeeManagement';
+import { DailyUpdateModel } from '../models/dailyUpdate';
+import {
   CreateDailyUpdateRequest,
   DailyUpdate,
-  ApiResponse 
+  ApiResponse
 } from '@shared/api';
 
 export const createDailyUpdate: RequestHandler = async (req, res) => {
@@ -27,11 +28,9 @@ export const createDailyUpdate: RequestHandler = async (req, res) => {
       if (user.role !== 'admin') {
         return res.status(403).json({ success: false, error: 'Only admins can submit updates for other users' } as ApiResponse<never>);
       }
-      const targetUser = await db.getUserById(updateData.targetUserId);
-      if (!targetUser) {
-        return res.status(404).json({ success: false, error: 'Target user not found' } as ApiResponse<never>);
-      }
-      targetUserId = targetUser.id;
+      // Optional: verify target user exists in Mongo; if not found, still allow storing the provided ID
+      const targetUser = await EmployeeUser.findById(updateData.targetUserId).select('_id');
+      targetUserId = targetUser ? targetUser._id.toString() : updateData.targetUserId;
     }
 
     // Parse and validate date (allowed: today and previous 3 days, not future)
@@ -48,21 +47,32 @@ export const createDailyUpdate: RequestHandler = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Date must be within the last 3 days (including today)' } as ApiResponse<never>);
     }
 
-    // Upsert by date for target user
-    const existing = await db.getDailyUpdateByDate(targetUserId, selected);
+    // Upsert by date for target user using Mongo (unique index enforces single entry per day)
+    const existing = await DailyUpdateModel.findOne({ userId: targetUserId, date: selected });
     if (existing) {
-      const updated = await db.updateDailyUpdate(existing.id, {
-        tasks: updateData.tasks,
-        accomplishments: updateData.accomplishments,
-        challenges: updateData.challenges,
-        nextDayPlans: updateData.nextDayPlans,
-        progressScore: updateData.progressScore,
-        date: selected,
-      });
-      return res.status(200).json({ success: true, data: updated! } as ApiResponse<DailyUpdate>);
+      existing.tasks = updateData.tasks;
+      existing.accomplishments = updateData.accomplishments;
+      existing.challenges = updateData.challenges;
+      existing.nextDayPlans = updateData.nextDayPlans;
+      existing.progressScore = updateData.progressScore;
+      existing.date = selected;
+      await existing.save();
+      const updatedDto: DailyUpdate = {
+        id: existing._id.toString(),
+        userId: existing.userId,
+        date: existing.date,
+        tasks: existing.tasks,
+        accomplishments: existing.accomplishments,
+        challenges: existing.challenges,
+        nextDayPlans: existing.nextDayPlans,
+        progressScore: existing.progressScore,
+        createdAt: existing.createdAt!,
+        updatedAt: existing.updatedAt!,
+      };
+      return res.status(200).json({ success: true, data: updatedDto } as ApiResponse<DailyUpdate>);
     }
 
-    const created = await db.createDailyUpdate({
+    const createdDoc = await DailyUpdateModel.create({
       userId: targetUserId,
       date: selected,
       tasks: updateData.tasks,
@@ -72,7 +82,20 @@ export const createDailyUpdate: RequestHandler = async (req, res) => {
       progressScore: updateData.progressScore,
     });
 
-    return res.status(201).json({ success: true, data: created } as ApiResponse<DailyUpdate>);
+    const createdDto: DailyUpdate = {
+      id: createdDoc._id.toString(),
+      userId: createdDoc.userId,
+      date: createdDoc.date,
+      tasks: createdDoc.tasks,
+      accomplishments: createdDoc.accomplishments,
+      challenges: createdDoc.challenges,
+      nextDayPlans: createdDoc.nextDayPlans,
+      progressScore: createdDoc.progressScore,
+      createdAt: createdDoc.createdAt!,
+      updatedAt: createdDoc.updatedAt!,
+    };
+
+    return res.status(201).json({ success: true, data: createdDto } as ApiResponse<DailyUpdate>);
   } catch (error) {
     console.error('Create daily update error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' } as ApiResponse<never>);
@@ -85,12 +108,24 @@ export const getUserDailyUpdates: RequestHandler = async (req, res) => {
     const user = authReq.user!;
     const limit = parseInt(req.query.limit as string) || 10;
 
-    const updates = await db.getDailyUpdatesByUser(user.id, limit);
+    const docs = await DailyUpdateModel.find({ userId: user.id })
+      .sort({ date: -1 })
+      .limit(limit);
 
-    res.json({
-      success: true,
-      data: updates
-    } as ApiResponse<DailyUpdate[]>);
+    const updates: DailyUpdate[] = docs.map((d) => ({
+      id: d._id.toString(),
+      userId: d.userId,
+      date: d.date,
+      tasks: d.tasks,
+      accomplishments: d.accomplishments,
+      challenges: d.challenges,
+      nextDayPlans: d.nextDayPlans,
+      progressScore: d.progressScore,
+      createdAt: d.createdAt!,
+      updatedAt: d.updatedAt!,
+    }));
+
+    res.json({ success: true, data: updates } as ApiResponse<DailyUpdate[]>);
   } catch (error) {
     console.error('Get daily updates error:', error);
     res.status(500).json({
@@ -116,28 +151,31 @@ export const getTeamDailyUpdates: RequestHandler = async (req, res) => {
 
     // Updated: Managers now have organization-wide visibility (per requirements)
     // Build the list of all user IDs for both admin and manager
-    const allUsers = await db.getAllUsers();
-    const teamMemberIds: string[] = allUsers.map(u => u.id);
+    const mongoUsers = await EmployeeUser.find({}).select('firstName lastName email');
+    const teamMemberIds: string[] = mongoUsers.map(u => u._id.toString());
 
-    const updates = await db.getDailyUpdatesByTeam(teamMemberIds, limit);
+    const docs = await DailyUpdateModel.find({ userId: { $in: teamMemberIds } })
+      .sort({ date: -1 })
+      .limit(limit);
 
-    // Add user info to updates
-    const updatesWithUser = updates.map(update => {
-      const updateUser = allUsers.find(u => u.id === update.userId);
-      return {
-        ...update,
-        user: {
-          firstName: updateUser?.firstName || '',
-          lastName: updateUser?.lastName || '',
-          email: updateUser?.email || ''
-        }
-      };
-    });
+    const updates = docs.map((d) => ({
+      id: d._id.toString(),
+      userId: d.userId,
+      date: d.date,
+      tasks: d.tasks,
+      accomplishments: d.accomplishments,
+      challenges: d.challenges,
+      nextDayPlans: d.nextDayPlans,
+      progressScore: d.progressScore,
+      createdAt: d.createdAt!,
+      updatedAt: d.updatedAt!,
+      user: (() => {
+        const u = mongoUsers.find(mu => mu._id.toString() === d.userId);
+        return u ? { firstName: u.firstName, lastName: u.lastName, email: u.email } : { firstName: '', lastName: '', email: '' };
+      })(),
+    }));
 
-    res.json({
-      success: true,
-      data: updatesWithUser
-    } as ApiResponse<typeof updatesWithUser>);
+    res.json({ success: true, data: updates } as ApiResponse<typeof updates>);
   } catch (error) {
     console.error('Get team daily updates error:', error);
     res.status(500).json({
@@ -153,21 +191,9 @@ export const getDailyUpdateById: RequestHandler = async (req, res) => {
     const user = authReq.user!;
     const { id } = req.params;
 
-    // For Admin/Manager, search across the whole organization; otherwise only own updates
-    let update: DailyUpdate | undefined;
-
-    if (user.role === 'admin' || user.role === 'manager') {
-      const allUsers = await db.getAllUsers();
-      const allIds = allUsers.map(u => u.id);
-      // Use a high limit to cover all in-memory records; replace with proper pagination in production
-      const orgUpdates = await db.getDailyUpdatesByTeam(allIds, 10000);
-      update = orgUpdates.find(u => u.id === id);
-    } else {
-      const myUpdates = await db.getDailyUpdatesByUser(user.id, 10000);
-      update = myUpdates.find(u => u.id === id);
-    }
-
-    if (!update) {
+    // Fetch from Mongo by ID
+    const doc = await DailyUpdateModel.findById(id);
+    if (!doc) {
       return res.status(404).json({
         success: false,
         error: 'Daily update not found'
@@ -175,17 +201,24 @@ export const getDailyUpdateById: RequestHandler = async (req, res) => {
     }
 
     // Enforce ownership for HR/Employee; Admin/Manager already allowed
-    if ((user.role === 'hr' || user.role === 'employee') && update.userId !== user.id) {
-      return res.status(403).json({
-        success: false,
-        error: 'Access denied'
-      } as ApiResponse<never>);
+    if ((user.role === 'hr' || user.role === 'employee') && doc.userId !== user.id) {
+      return res.status(403).json({ success: false, error: 'Access denied' } as ApiResponse<never>);
     }
 
-    res.json({
-      success: true,
-      data: update
-    } as ApiResponse<DailyUpdate>);
+    const dto: DailyUpdate = {
+      id: doc._id.toString(),
+      userId: doc.userId,
+      date: doc.date,
+      tasks: doc.tasks,
+      accomplishments: doc.accomplishments,
+      challenges: doc.challenges,
+      nextDayPlans: doc.nextDayPlans,
+      progressScore: doc.progressScore,
+      createdAt: doc.createdAt!,
+      updatedAt: doc.updatedAt!,
+    };
+
+    res.json({ success: true, data: dto } as ApiResponse<DailyUpdate>);
   } catch (error) {
     console.error('Get daily update by ID error:', error);
     res.status(500).json({
