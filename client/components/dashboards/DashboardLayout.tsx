@@ -105,7 +105,8 @@ export default function DashboardLayout({ user, children }: Props) {
                     </Link>
                     {(user.role === "employee" ||
                       user.role === "manager" ||
-                      user.role === "admin") && (
+                      user.role === "admin" ||
+                      user.role === "hr") && (
                       <Link
                         to="/daily-updates"
                         onClick={() => setMobileMenuOpen(false)}
@@ -196,7 +197,8 @@ export default function DashboardLayout({ user, children }: Props) {
               </Link>
               {(user.role === "employee" ||
                 user.role === "manager" ||
-                user.role === "admin") && (
+                user.role === "admin" ||
+                user.role === "hr") && (
                 <Link
                   to="/daily-updates"
                   className={`text-sm font-medium transition-colors hover:text-blue-600 ${
