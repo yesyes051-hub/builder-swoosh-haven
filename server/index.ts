@@ -53,6 +53,7 @@ import {
   updateTimesheetEntry,
   submitTimesheet,
   approveTimesheet,
+  updateProjectDetail,
 } from "./routes/pmsNew";
 import { createUser, getAllUsers } from "./routes/users";
 import { getUserStats, getAllUsersForManagement } from "./routes/userStats";
@@ -207,6 +208,12 @@ export function createServer() {
     authenticateToken,
     requireRole(["admin", "manager"]),
     createProjectDetail,
+  );
+  app.put(
+    "/api/pms/projects/:id",
+    authenticateToken,
+    requireRole(["admin", "manager"]),
+    updateProjectDetail,
   );
 
   // Ticket Tracking
