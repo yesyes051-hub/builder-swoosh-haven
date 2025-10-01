@@ -360,6 +360,16 @@ export function createServer() {
     requireRole(["admin", "manager"]),
     approveTimesheet,
   );
+  app.post(
+    "/api/pms-new/timesheets/submit-week",
+    authenticateToken,
+    submitWeeklyTimesheets,
+  );
+  app.delete(
+    "/api/pms-new/timesheets/:id",
+    authenticateToken,
+    deleteTimesheetEntry,
+  );
 
   // Project Assignment routes (Manager Only)
   app.post(
