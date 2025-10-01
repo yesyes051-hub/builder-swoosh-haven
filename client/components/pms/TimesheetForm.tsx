@@ -329,8 +329,10 @@ export default function TimesheetForm({ onRefresh }: Props) {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ weekStart: weeklyForm.weekStart }),
       });
-      const data: ApiResponse<{ modified: number }> = await res.json();
-      if (!res.ok || !data.success || !data.data) throw new Error(data.error || 'Failed to submit week');
+      const text = await res.text();
+      let data: ApiResponse<{ modified: number }> | null = null;
+      try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+      if (!res.ok || !data || !data.success || !data.data) throw new Error((data && data.error) || text || 'Failed to submit week');
       setSubmitWeekMsg(`Submitted ${data.data.modified} entries for approval`);
       await loadTimesheets();
       onRefresh();
