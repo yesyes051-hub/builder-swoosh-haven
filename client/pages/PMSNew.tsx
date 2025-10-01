@@ -456,9 +456,11 @@ export default function PMSNew() {
                                 <Button size="sm" variant="outline" onClick={() => { setViewProject(project); setIsViewOpen(true); }}>
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                <Button size="sm" variant="outline" onClick={() => { setEditProject(project); setIsEditOpen(true); }}>
-                                  <Edit className="h-4 w-4" />
-                                </Button>
+                                {user?.role === "admin" || user?.role === "manager" ? (
+                                  <Button size="sm" variant="outline" onClick={() => { setEditProject(project); setIsEditOpen(true); }}>
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                ) : null}
                               </div>
                             </TableCell>
                           </TableRow>
