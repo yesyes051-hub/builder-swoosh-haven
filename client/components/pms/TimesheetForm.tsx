@@ -47,6 +47,7 @@ import {
   Timer,
   CheckCircle,
   AlertTriangle,
+  Trash2,
 } from "lucide-react";
 import { format, startOfWeek, addDays } from "date-fns";
 import { ApiResponse } from "@shared/api";
@@ -341,6 +342,32 @@ export default function TimesheetForm({ onRefresh }: Props) {
       setSubmitWeekError(err instanceof Error ? err.message : 'Failed to submit week');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      setError("");
+      setSuccess("");
+      setLoading(true);
+      const res = await fetch(`/api/pms-new/timesheets/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const text = await res.text();
+      let data: ApiResponse<null> | null = null;
+      try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+      if (!res.ok || !data || !data.success) {
+        throw new Error((data && (data as any).error) || text || "Failed to delete entry");
+      }
+      setSuccess("Timesheet entry deleted");
+      await loadTimesheets();
+      onRefresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete entry");
+    } finally {
+      setLoading(false);
+      setTimeout(() => setSuccess(""), 1500);
     }
   };
 
@@ -736,7 +763,9 @@ export default function TimesheetForm({ onRefresh }: Props) {
                 <TableHead>Time</TableHead>
                 <TableHead>Hours</TableHead>
                 <TableHead>Category</TableHead>
+                <TableHead>Description</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -764,13 +793,30 @@ export default function TimesheetForm({ onRefresh }: Props) {
                   <TableCell>
                     <Badge variant="outline">{entry.category}</Badge>
                   </TableCell>
+                  <TableCell className="max-w-[280px]">
+                    <div className="truncate" title={entry.taskDescription}>{entry.taskDescription}</div>
+                  </TableCell>
                   <TableCell>{getStatusBadge(entry.status)}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={user?.role === 'employee' && entry.status !== 'Draft'}
+                      onClick={() => {
+                        if (entry._id && (entry.status === 'Draft' || user?.role === 'admin' || user?.role === 'manager')) {
+                          if (window.confirm('Delete this entry?')) handleDelete(entry._id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-600" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
               {timesheets.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={8}
                     className="text-center py-8 text-gray-500"
                   >
                     No timesheet entries found. Add your first entry above.
