@@ -95,6 +95,8 @@ export default function TimesheetForm({ onRefresh }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [weeklySuccess, setWeeklySuccess] = useState("");
+  const [weeklyError, setWeeklyError] = useState("");
 
   // Form state
   const [formData, setFormData] = useState({
