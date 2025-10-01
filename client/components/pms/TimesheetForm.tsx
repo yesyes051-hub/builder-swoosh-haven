@@ -311,6 +311,52 @@ export default function TimesheetForm({ onRefresh }: Props) {
     }
   };
 
+  const draftCountForWeek = (weekStart: string) => {
+    const monday = startOfWeek(new Date(weekStart), { weekStartsOn: 1 });
+    const nextMonday = new Date(monday);
+    nextMonday.setDate(monday.getDate() + 7);
+    return timesheets.filter((t) => t.status === 'Draft' && new Date(t.date) >= monday && new Date(t.date) < nextMonday).length;
+  };
+
+  const handleSubmitWeek = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitWeekError("");
+    setSubmitWeekMsg("");
+    try {
+      setLoading(true);
+      const res = await fetch('/api/pms-new/timesheets/submit-week', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ weekStart: weeklyForm.weekStart }),
+      });
+      const data: ApiResponse<{ modified: number }> = await res.json();
+      if (!res.ok || !data.success || !data.data) throw new Error(data.error || 'Failed to submit week');
+      setSubmitWeekMsg(`Submitted ${data.data.modified} entries for approval`);
+      await loadTimesheets();
+      onRefresh();
+      setTimeout(() => { setIsSubmitWeekOpen(false); setSubmitWeekMsg(""); }, 800);
+    } catch (err) {
+      setSubmitWeekError(err instanceof Error ? err.message : 'Failed to submit week');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const groupPendingByUserWeek = () => {
+    const map = new Map<string, { userId: string; userName: string; userEmail: string; weekStart: string; count: number }>();
+    timesheets.filter((t) => t.status === 'Submitted').forEach((t) => {
+      const monday = startOfWeek(new Date(t.date), { weekStartsOn: 1 });
+      const key = `${t.userId}-${monday.toISOString().slice(0,10)}`;
+      const found = map.get(key);
+      if (found) {
+        found.count += 1;
+      } else {
+        map.set(key, { userId: t.userId, userName: t.userName, userEmail: t.userEmail, weekStart: monday.toISOString().slice(0,10), count: 1 });
+      }
+    });
+    return Array.from(map.values()).sort((a,b)=>a.weekStart.localeCompare(b.weekStart));
+  };
+
   return (
     <div className="space-y-6">
       {/* Success/Error Messages */}
