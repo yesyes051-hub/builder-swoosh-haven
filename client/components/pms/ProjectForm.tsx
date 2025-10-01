@@ -189,7 +189,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="projectName">Project Name *</nLabel>
+              <Label htmlFor="projectName">Project Name *</Label>
               <Input
                 id="projectName"
                 value={formData.projectName}
