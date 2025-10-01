@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle, AlertTriangle, FolderOpen } from "lucide-react";
 import { ApiResponse } from "@shared/api";
 
@@ -44,6 +45,8 @@ export default function ProjectEditModal({ open, onOpenChange, project, onUpdate
     startDate: "",
     endDate: "",
     budget: "" as string | "",
+    teamMembers: [] as string[],
+    newMember: "",
   });
 
   useEffect(() => {
@@ -57,6 +60,8 @@ export default function ProjectEditModal({ open, onOpenChange, project, onUpdate
         startDate: project.startDate ? project.startDate.slice(0, 10) : "",
         endDate: project.endDate ? project.endDate.slice(0, 10) : "",
         budget: project.budget !== undefined ? String(project.budget) : "",
+        teamMembers: Array.isArray(project.teamMembers) ? project.teamMembers : [],
+        newMember: "",
       });
     }
   }, [project]);
@@ -81,6 +86,8 @@ export default function ProjectEditModal({ open, onOpenChange, project, onUpdate
 
     try {
       setLoading(true);
+      const cleanedMembers = (formData.teamMembers || []).map((m) => m.trim()).filter((m) => m);
+      const uniqueMembers = Array.from(new Set(cleanedMembers));
       const body = {
         projectName: formData.projectName,
         projectManager: formData.projectManager,
@@ -90,6 +97,7 @@ export default function ProjectEditModal({ open, onOpenChange, project, onUpdate
         startDate: formData.startDate ? new Date(formData.startDate).toISOString() : undefined,
         endDate: formData.endDate ? new Date(formData.endDate).toISOString() : undefined,
         budget: formData.budget ? parseFloat(formData.budget) : undefined,
+        teamMembers: uniqueMembers,
       };
 
       const res = await fetch(`/api/pms/projects/${project._id}`, {
@@ -195,6 +203,45 @@ export default function ProjectEditModal({ open, onOpenChange, project, onUpdate
               <Label>End Date</Label>
               <Input type="date" min={formData.startDate || undefined} value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} />
             </div>
+          </div>
+
+          <div>
+            <Label>Add Team Member</Label>
+            <div className="flex gap-2 mt-2">
+              <Input
+                placeholder="Enter member ID or name"
+                value={formData.newMember}
+                onChange={(e) => setFormData({ ...formData, newMember: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const val = formData.newMember.trim();
+                    if (!val) return;
+                    if ((formData.teamMembers || []).includes(val)) return;
+                    setFormData({ ...formData, teamMembers: [...(formData.teamMembers || []), val], newMember: "" });
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  const val = formData.newMember.trim();
+                  if (!val) return;
+                  if ((formData.teamMembers || []).includes(val)) return;
+                  setFormData({ ...formData, teamMembers: [...(formData.teamMembers || []), val], newMember: "" });
+                }}
+              >
+                Add
+              </Button>
+            </div>
+            {formData.teamMembers && formData.teamMembers.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {formData.teamMembers.map((m, idx) => (
+                  <Badge key={idx} variant="outline">{m}</Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2 pt-2">
