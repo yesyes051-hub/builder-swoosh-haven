@@ -101,6 +101,7 @@ export default function TimesheetForm({ onRefresh }: Props) {
   const [weeklyError, setWeeklyError] = useState("");
   const [submitWeekMsg, setSubmitWeekMsg] = useState("");
   const [submitWeekError, setSubmitWeekError] = useState("");
+  const [selectedSubmitIds, setSelectedSubmitIds] = useState<Set<string>>(new Set());
 
   // Form state
   const [formData, setFormData] = useState({
@@ -256,6 +257,7 @@ export default function TimesheetForm({ onRefresh }: Props) {
       ...prev,
       days: prev.days.map((d, i) => ({ ...d, date: format(addDays(monday, i), "yyyy-MM-dd") })),
     }));
+    setSelectedSubmitIds(new Set());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weeklyForm.weekStart]);
 
@@ -323,23 +325,32 @@ export default function TimesheetForm({ onRefresh }: Props) {
     e.preventDefault();
     setSubmitWeekError("");
     setSubmitWeekMsg("");
+
+    const ids = Array.from(selectedSubmitIds);
+    if (ids.length === 0) {
+      setSubmitWeekError("Please select at least one entry to submit");
+      return;
+    }
+
     try {
       setLoading(true);
-      const res = await fetch('/api/pms-new/timesheets/submit-week', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ weekStart: weeklyForm.weekStart }),
-      });
-      const text = await res.text();
-      let data: ApiResponse<{ modified: number }> | null = null;
-      try { data = text ? JSON.parse(text) : null; } catch { data = null; }
-      if (!res.ok || !data || !data.success || !data.data) throw new Error((data && data.error) || text || 'Failed to submit week');
-      setSubmitWeekMsg(`Submitted ${data.data.modified} entries for approval`);
+      let successCount = 0;
+      for (const id of ids) {
+        const res = await fetch(`/api/pms-new/timesheets/${id}/submit`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const text = await res.text();
+        let data: ApiResponse<any> | null = null;
+        try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+        if (res.ok && data && data.success) successCount += 1;
+      }
+      setSubmitWeekMsg(`Submitted ${successCount}/${ids.length} entries for approval`);
       await loadTimesheets();
       onRefresh();
       setTimeout(() => { setIsSubmitWeekOpen(false); setSubmitWeekMsg(""); }, 800);
     } catch (err) {
-      setSubmitWeekError(err instanceof Error ? err.message : 'Failed to submit week');
+      setSubmitWeekError(err instanceof Error ? err.message : 'Failed to submit selected entries');
     } finally {
       setLoading(false);
     }
@@ -572,40 +583,118 @@ export default function TimesheetForm({ onRefresh }: Props) {
                   <span>Submit Week for Approval</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Submit Weekly Timesheet</DialogTitle>
-                  <DialogDescription>Send your Mon–Sun entries for manager approval.</DialogDescription>
-                </DialogHeader>
+              <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Submit Weekly Timesheet</DialogTitle>
+                <DialogDescription>Select the entries to send for manager approval.</DialogDescription>
+              </DialogHeader>
 
-                {submitWeekError && (
-                  <Alert className="border-red-200 bg-red-50">
-                    <AlertTriangle className="h-4 w-4 text-red-600" />
-                    <AlertDescription className="text-red-800">{submitWeekError}</AlertDescription>
-                  </Alert>
-                )}
-                {submitWeekMsg && (
-                  <Alert className="border-green-200 bg-green-50">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="text-green-800">{submitWeekMsg}</AlertDescription>
-                  </Alert>
-                )}
+              {submitWeekError && (
+                <Alert className="border-red-200 bg-red-50">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-800">{submitWeekError}</AlertDescription>
+                </Alert>
+              )}
+              {submitWeekMsg && (
+                <Alert className="border-green-200 bg-green-50">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800">{submitWeekMsg}</AlertDescription>
+                </Alert>
+              )}
 
-                <form onSubmit={handleSubmitWeek} className="space-y-4">
-                  <div className="space-y-2">
+              <form onSubmit={handleSubmitWeek} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2 md:col-span-1">
                     <Label>Week starting (Monday)</Label>
                     <Input type="date" value={weeklyForm.weekStart} onChange={(e) => setWeeklyForm((p) => ({ ...p, weekStart: e.target.value }))} />
-                    <div className="text-xs text-muted-foreground">Draft entries to submit: {draftCountForWeek(weeklyForm.weekStart)}</div>
+                    <div className="text-xs text-muted-foreground">Draft entries this week: {draftCountForWeek(weeklyForm.weekStart)}</div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button type="submit" disabled={loading || draftCountForWeek(weeklyForm.weekStart) === 0} className="flex-1">
-                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Send for Approval
-                    </Button>
-                    <Button type="button" variant="outline" onClick={() => setIsSubmitWeekOpen(false)}>Cancel</Button>
-                  </div>
-                </form>
-              </DialogContent>
+                </div>
+
+                <div className="overflow-auto border rounded-md">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-10">
+                          <input
+                            type="checkbox"
+                            aria-label="Select all"
+                            checked={(() => {
+                              const monday = startOfWeek(new Date(weeklyForm.weekStart), { weekStartsOn: 1 });
+                              const nextMonday = new Date(monday); nextMonday.setDate(monday.getDate() + 7);
+                              const drafts = timesheets.filter((t) => t.status === 'Draft' && new Date(t.date) >= monday && new Date(t.date) < nextMonday);
+                              return drafts.length > 0 && drafts.every((d) => d._id && selectedSubmitIds.has(d._id));
+                            })()}
+                            onChange={(e) => {
+                              const monday = startOfWeek(new Date(weeklyForm.weekStart), { weekStartsOn: 1 });
+                              const nextMonday = new Date(monday); nextMonday.setDate(monday.getDate() + 7);
+                              const drafts = timesheets.filter((t) => t.status === 'Draft' && new Date(t.date) >= monday && new Date(t.date) < nextMonday);
+                              const next = new Set<string>(selectedSubmitIds);
+                              if (e.target.checked) {
+                                drafts.forEach((d) => { if (d._id) next.add(d._id); });
+                              } else {
+                                drafts.forEach((d) => { if (d._id) next.delete(d._id); });
+                              }
+                              setSelectedSubmitIds(next);
+                            }}
+                          />
+                        </TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Project</TableHead>
+                        <TableHead>Time</TableHead>
+                        <TableHead>Hours</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Description</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(() => {
+                        const monday = startOfWeek(new Date(weeklyForm.weekStart), { weekStartsOn: 1 });
+                        const nextMonday = new Date(monday); nextMonday.setDate(monday.getDate() + 7);
+                        const drafts = timesheets.filter((t) => t.status === 'Draft' && new Date(t.date) >= monday && new Date(t.date) < nextMonday);
+                        if (drafts.length === 0) {
+                          return (
+                            <TableRow>
+                              <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">No draft entries for this week.</TableCell>
+                            </TableRow>
+                          );
+                        }
+                        return drafts.map((entry) => (
+                          <TableRow key={entry._id}>
+                            <TableCell>
+                              <input
+                                type="checkbox"
+                                checked={!!(entry._id && selectedSubmitIds.has(entry._id))}
+                                onChange={(e) => {
+                                  if (!entry._id) return;
+                                  const next = new Set<string>(selectedSubmitIds);
+                                  if (e.target.checked) next.add(entry._id); else next.delete(entry._id);
+                                  setSelectedSubmitIds(next);
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>{format(new Date(entry.date), "MMM dd, yyyy")}</TableCell>
+                            <TableCell className="font-medium">{entry.projectName}</TableCell>
+                            <TableCell>{entry.startTime} - {entry.endTime}</TableCell>
+                            <TableCell>{entry.hoursWorked.toFixed(1)}h</TableCell>
+                            <TableCell><Badge variant="outline">{entry.category}</Badge></TableCell>
+                            <TableCell className="max-w-[320px]"><div className="truncate" title={entry.taskDescription}>{entry.taskDescription}</div></TableCell>
+                          </TableRow>
+                        ));
+                      })()}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={loading || selectedSubmitIds.size === 0} className="flex-1">
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Send for Approval
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setIsSubmitWeekOpen(false)}>Cancel</Button>
+                </div>
+              </form>
+            </DialogContent>
             </Dialog>
           )}
 
@@ -723,31 +812,105 @@ export default function TimesheetForm({ onRefresh }: Props) {
         <Card>
           <CardHeader>
             <CardTitle>Pending Approvals</CardTitle>
-            <CardDescription>Timesheets submitted by employees this week</CardDescription>
+            <CardDescription>Review submitted entries employee-wise and approve.</CardDescription>
           </CardHeader>
           <CardContent>
-            {groupPendingByUserWeek().length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Week</TableHead>
-                    <TableHead>Entries</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {groupPendingByUserWeek().map((g) => (
-                    <TableRow key={`${g.userId}-${g.weekStart}`}>
-                      <TableCell className="font-medium">{g.userName}<div className="text-xs text-muted-foreground">{g.userEmail}</div></TableCell>
-                      <TableCell>{format(new Date(g.weekStart), 'MMM dd, yyyy')}</TableCell>
-                      <TableCell>{g.count}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="text-sm text-muted-foreground">No pending submissions.</div>
-            )}
+            {(() => {
+              const groups = timesheets
+                .filter((t) => t.status === 'Submitted')
+                .reduce((acc: Record<string, { userId: string; userName: string; userEmail: string; items: typeof timesheets }>, t) => {
+                  const key = t.userId;
+                  if (!acc[key]) acc[key] = { userId: t.userId, userName: t.userName, userEmail: t.userEmail, items: [] as any } as any;
+                  acc[key].items.push(t);
+                  return acc;
+                }, {});
+              const keys = Object.keys(groups);
+              if (keys.length === 0) return <div className="text-sm text-muted-foreground">No pending submissions.</div>;
+
+              const handleApprove = async (id: string) => {
+                try {
+                  setLoading(true);
+                  const res = await fetch(`/api/pms-new/timesheets/${id}/approve`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+                  const text = await res.text();
+                  let data: ApiResponse<any> | null = null;
+                  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+                  if (!res.ok || !data || !data.success) throw new Error((data && (data as any).error) || text || 'Failed to approve');
+                  await loadTimesheets();
+                  onRefresh();
+                } catch (e) {
+                  console.error(e);
+                } finally {
+                  setLoading(false);
+                }
+              };
+
+              const handleApproveMany = async (ids: string[]) => {
+                try {
+                  setLoading(true);
+                  for (const id of ids) {
+                    const res = await fetch(`/api/pms-new/timesheets/${id}/approve`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+                    // ignore body parsing for speed
+                  }
+                  await loadTimesheets();
+                  onRefresh();
+                } catch (e) {
+                  console.error(e);
+                } finally {
+                  setLoading(false);
+                }
+              };
+
+              return (
+                <div className="space-y-6">
+                  {keys.map((k) => {
+                    const g = groups[k];
+                    return (
+                      <div key={k} className="border rounded-md">
+                        <div className="flex items-center justify-between p-3 bg-muted/30">
+                          <div>
+                            <div className="font-medium">{g.userName}</div>
+                            <div className="text-xs text-muted-foreground">{g.userEmail}</div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="secondary" onClick={() => handleApproveMany(g.items.map((it) => it._id!).filter(Boolean))} disabled={g.items.length === 0}>Approve All</Button>
+                          </div>
+                        </div>
+                        <div className="overflow-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Project</TableHead>
+                                <TableHead>Time</TableHead>
+                                <TableHead>Hours</TableHead>
+                                <TableHead>Category</TableHead>
+                                <TableHead>Description</TableHead>
+                                <TableHead>Action</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {g.items.map((entry) => (
+                                <TableRow key={entry._id}>
+                                  <TableCell>{format(new Date(entry.date), 'MMM dd, yyyy')}</TableCell>
+                                  <TableCell className="font-medium">{entry.projectName}</TableCell>
+                                  <TableCell>{entry.startTime} - {entry.endTime}</TableCell>
+                                  <TableCell>{entry.hoursWorked.toFixed(1)}h</TableCell>
+                                  <TableCell><Badge variant="outline">{entry.category}</Badge></TableCell>
+                                  <TableCell className="max-w-[320px]"><div className="truncate" title={entry.taskDescription}>{entry.taskDescription}</div></TableCell>
+                                  <TableCell>
+                                    <Button size="sm" onClick={() => entry._id && handleApprove(entry._id)} disabled={loading}>Approve</Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </CardContent>
         </Card>
       )}
