@@ -824,7 +824,7 @@ export default function TimesheetForm({ onRefresh }: Props) {
                   acc[key].items.push(t);
                   return acc;
                 }, {});
-              const keys = Object.keys(groups);
+              const keys = Object.keys(groups).sort((a, b) => groups[a].userName.localeCompare(groups[b].userName));
               if (keys.length === 0) return <div className="text-sm text-muted-foreground">No pending submissions.</div>;
 
               const handleApprove = async (id: string) => {
@@ -889,7 +889,7 @@ export default function TimesheetForm({ onRefresh }: Props) {
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {g.items.map((entry) => (
+                              {[...g.items].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((entry) => (
                                 <TableRow key={entry._id}>
                                   <TableCell>{format(new Date(entry.date), 'MMM dd, yyyy')}</TableCell>
                                   <TableCell className="font-medium">{entry.projectName}</TableCell>
