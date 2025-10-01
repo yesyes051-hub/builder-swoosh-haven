@@ -109,6 +109,28 @@ export default function TimesheetForm({ onRefresh }: Props) {
     billable: true,
   });
 
+  type DayEntry = {
+    date: string;
+    startTime: string;
+    endTime: string;
+    taskDescription: string;
+    category: "Development" | "Testing" | "Meeting" | "Documentation" | "Support" | "Other";
+    billable: boolean;
+  };
+
+  const [weeklyForm, setWeeklyForm] = useState({
+    projectId: "",
+    weekStart: format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd"),
+    days: Array.from({ length: 5 }).map((_, i) => ({
+      date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), i), "yyyy-MM-dd"),
+      startTime: "09:00",
+      endTime: "17:00",
+      taskDescription: "",
+      category: "Development" as const,
+      billable: true,
+    })) as DayEntry[],
+  });
+
   useEffect(() => {
     loadTimesheets();
     loadProjects();
