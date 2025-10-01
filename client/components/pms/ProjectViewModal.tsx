@@ -2,6 +2,7 @@ import React from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface ProjectDetail {
   _id: string;
@@ -33,7 +34,7 @@ export default function ProjectViewModal({ open, onOpenChange, project }: Props)
           <DialogTitle>{project.projectName}</DialogTitle>
           <DialogDescription>Project overview and timeline</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex gap-2 items-center">
             <Badge variant="outline">Status: {project.status}</Badge>
             <Badge variant="outline">Priority: {project.priority}</Badge>
@@ -49,6 +50,31 @@ export default function ProjectViewModal({ open, onOpenChange, project }: Props)
               <div><span className="font-medium text-foreground">Budget:</span> ${project.budget.toLocaleString()}</div>
             )}
           </div>
+
+          <div>
+            <div className="font-medium mb-2">Team Members</div>
+            {project.teamMembers && project.teamMembers.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>#</TableHead>
+                    <TableHead>Member</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {project.teamMembers.map((m, i) => (
+                    <TableRow key={`${m}-${i}`}>
+                      <TableCell className="w-10">{i + 1}</TableCell>
+                      <TableCell>{m}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-sm text-muted-foreground">No members added yet.</div>
+            )}
+          </div>
+
           <div>
             <div className="font-medium mb-1">Description</div>
             <p className="text-sm leading-relaxed">{project.description}</p>
