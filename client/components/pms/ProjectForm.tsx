@@ -57,6 +57,8 @@ interface Props {
 export default function ProjectForm({ onProjectCreated }: Props) {
   const { token, user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [startOpen, setStartOpen] = useState(false);
+  const [endOpen, setEndOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -255,7 +257,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>Start Date *</Label>
-              <Popover modal={false}>
+              <Popover modal={false} open={startOpen} onOpenChange={setStartOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     type="button"
@@ -274,9 +276,12 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                   <Calendar
                     mode="single"
                     selected={formData.startDate}
-                    onSelect={(date) =>
-                      setFormData({ ...formData, startDate: date })
-                    }
+                    onSelect={(date) => {
+                      if (date) {
+                        setFormData({ ...formData, startDate: startOfDay(date) });
+                        setStartOpen(false);
+                      }
+                    }}
                     disabled={(date) =>
                       isBefore(startOfDay(date), startOfDay(new Date()))
                     }
@@ -288,7 +293,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
 
             <div>
               <Label>End Date</Label>
-              <Popover modal={false}>
+              <Popover modal={false} open={endOpen} onOpenChange={setEndOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     type="button"
@@ -307,9 +312,12 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                   <Calendar
                     mode="single"
                     selected={formData.endDate}
-                    onSelect={(date) =>
-                      setFormData({ ...formData, endDate: date })
-                    }
+                    onSelect={(date) => {
+                      if (date) {
+                        setFormData({ ...formData, endDate: startOfDay(date) });
+                        setEndOpen(false);
+                      }
+                    }}
                     disabled={(date) =>
                       formData.startDate
                         ? isBefore(startOfDay(date), startOfDay(formData.startDate))
