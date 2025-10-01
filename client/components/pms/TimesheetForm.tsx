@@ -245,6 +245,69 @@ export default function TimesheetForm({ onRefresh }: Props) {
     );
   };
 
+  // Recalculate Mon–Fri dates when week start changes
+  useEffect(() => {
+    const monday = startOfWeek(new Date(weeklyForm.weekStart), { weekStartsOn: 1 });
+    setWeeklyForm((prev) => ({
+      ...prev,
+      days: prev.days.map((d, i) => ({ ...d, date: format(addDays(monday, i), "yyyy-MM-dd") })),
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weeklyForm.weekStart]);
+
+  const handleWeeklySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setWeeklyError("");
+    setWeeklySuccess("");
+
+    if (!weeklyForm.projectId) {
+      setWeeklyError("Please select a project for this week");
+      return;
+    }
+
+    const entries = weeklyForm.days
+      .filter((d) => d.taskDescription.trim())
+      .map((d) => ({
+        projectId: weeklyForm.projectId,
+        date: d.date,
+        startTime: d.startTime,
+        endTime: d.endTime,
+        taskDescription: d.taskDescription,
+        category: d.category,
+        billable: d.billable,
+      }));
+
+    if (entries.length === 0) {
+      setWeeklyError("Please fill at least one day's details");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      let successCount = 0;
+      for (const body of entries) {
+        const res = await fetch("/api/pms-new/timesheets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify(body),
+        });
+        const data: ApiResponse<any> = await res.json();
+        if (res.ok && data.success) successCount += 1;
+      }
+      setWeeklySuccess(`Saved ${successCount}/${entries.length} entries`);
+      await loadTimesheets();
+      onRefresh();
+      setTimeout(() => {
+        setIsWeeklyOpen(false);
+        setWeeklySuccess("");
+      }, 800);
+    } catch (err) {
+      setWeeklyError("Failed to save weekly timesheet");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Success/Error Messages */}
