@@ -98,6 +98,8 @@ export default function TimesheetForm({ onRefresh }: Props) {
   const [success, setSuccess] = useState("");
   const [weeklySuccess, setWeeklySuccess] = useState("");
   const [weeklyError, setWeeklyError] = useState("");
+  const [submitWeekMsg, setSubmitWeekMsg] = useState("");
+  const [submitWeekError, setSubmitWeekError] = useState("");
 
   // Form state
   const [formData, setFormData] = useState({
