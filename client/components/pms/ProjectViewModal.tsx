@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ProjectDetail {
   _id: string;
@@ -17,6 +18,8 @@ interface ProjectDetail {
   budget?: number;
 }
 
+interface EmployeeOption { id: string; firstName: string; lastName: string; email: string; role: string }
+
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -26,6 +29,21 @@ interface Props {
 const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—");
 
 export default function ProjectViewModal({ open, onOpenChange, project }: Props) {
+  const { token } = useAuth();
+  const [employees, setEmployees] = useState<EmployeeOption[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!open) return;
+      try {
+        const res = await fetch("/api/employees", { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        if (res.ok && data.success && data.data) setEmployees(data.data);
+      } catch {}
+    };
+    load();
+  }, [open, token]);
+
   if (!project) return null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -62,12 +80,16 @@ export default function ProjectViewModal({ open, onOpenChange, project }: Props)
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {project.teamMembers.map((m, i) => (
-                    <TableRow key={`${m}-${i}`}>
-                      <TableCell className="w-10">{i + 1}</TableCell>
-                      <TableCell>{m}</TableCell>
-                    </TableRow>
-                  ))}
+                  {project.teamMembers.map((m, i) => {
+                    const emp = employees.find((e) => e.id === m);
+                    const label = emp ? `${emp.firstName} ${emp.lastName} (${emp.email})` : m;
+                    return (
+                      <TableRow key={`${m}-${i}`}>
+                        <TableCell className="w-10">{i + 1}</TableCell>
+                        <TableCell>{label}</TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             ) : (
