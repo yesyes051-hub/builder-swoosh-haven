@@ -92,6 +92,7 @@ export default function TimesheetForm({ onRefresh }: Props) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isWeeklyOpen, setIsWeeklyOpen] = useState(false);
+  const [isSubmitWeekOpen, setIsSubmitWeekOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
