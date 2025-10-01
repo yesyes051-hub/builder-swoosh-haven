@@ -20,28 +20,20 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { SafeCalendar as Calendar } from "@/components/ui/safe-calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Plus,
-  Calendar as CalendarIcon,
   CheckCircle,
   AlertTriangle,
   Loader2,
   FolderOpen,
 } from "lucide-react";
-import { format, startOfDay, isBefore } from "date-fns";
 import { ApiResponse } from "@shared/api";
 
 interface ProjectDetail {
   _id: string;
   projectName: string;
   projectManager: string;
-  startDate: string;
+  startDate?: string;
   endDate?: string;
   status: "Planning" | "In Progress" | "In Review" | "Completed" | "On Hold";
   priority: "Low" | "Medium" | "High" | "Critical";
@@ -57,18 +49,14 @@ interface Props {
 export default function ProjectForm({ onProjectCreated }: Props) {
   const { token, user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [startOpen, setStartOpen] = useState(false);
-  const [endOpen, setEndOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Form state
+  // Form state (dates removed)
   const [formData, setFormData] = useState({
     projectName: "",
     projectManager: user?.id || "",
-    startDate: undefined as Date | undefined,
-    endDate: undefined as Date | undefined,
     status: "Planning" as const,
     priority: "Medium" as const,
     description: "",
@@ -81,16 +69,8 @@ export default function ProjectForm({ onProjectCreated }: Props) {
     setError("");
     setSuccess("");
 
-    if (!formData.projectName || !formData.description || !formData.startDate) {
-      setError(
-        "Please fill in all required fields including project name, description, and start date",
-      );
-      return;
-    }
-
-    // Validate dates
-    if (formData.endDate && formData.endDate <= formData.startDate) {
-      setError("End date must be after start date");
+    if (!formData.projectName || !formData.description) {
+      setError("Please fill in all required fields including project name and description");
       return;
     }
 
@@ -104,16 +84,12 @@ export default function ProjectForm({ onProjectCreated }: Props) {
       const projectData = {
         projectName: formData.projectName,
         projectManager: formData.projectManager,
-        startDate: formData.startDate.toISOString(),
-        endDate: formData.endDate?.toISOString(),
         status: formData.status,
         priority: formData.priority,
         description: formData.description,
         teamMembers: filteredTeamMembers,
         budget: formData.budget ? parseFloat(formData.budget) : undefined,
       };
-
-      console.log("🔍 Creating project with data:", projectData);
 
       const response = await fetch("/api/pms/projects", {
         method: "POST",
@@ -134,8 +110,6 @@ export default function ProjectForm({ onProjectCreated }: Props) {
       setFormData({
         projectName: "",
         projectManager: user?.id || "",
-        startDate: undefined,
-        endDate: undefined,
         status: "Planning",
         priority: "Medium",
         description: "",
@@ -152,7 +126,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
         setSuccess("");
       }, 2000);
     } catch (err) {
-      console.error("Create project error:", err);
+      console.error("Create project error", err);
       setError(err instanceof Error ? err.message : "Failed to create project");
     } finally {
       setLoading(false);
@@ -215,7 +189,7 @@ export default function ProjectForm({ onProjectCreated }: Props) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="projectName">Project Name *</Label>
+              <Label htmlFor="projectName">Project Name *</nLabel>
               <Input
                 id="projectName"
                 value={formData.projectName}
@@ -252,82 +226,6 @@ export default function ProjectForm({ onProjectCreated }: Props) {
               rows={3}
               required
             />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Start Date *</Label>
-              <Popover modal={false} open={startOpen} onOpenChange={setStartOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className={`w-full justify-start text-left font-normal ${
-                      !formData.startDate && "text-muted-foreground"
-                    }`}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.startDate
-                      ? format(formData.startDate, "PPP")
-                      : "Pick start date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.startDate}
-                    onSelect={(date) => {
-                      if (date) {
-                        setFormData({ ...formData, startDate: startOfDay(date) });
-                        setStartOpen(false);
-                      }
-                    }}
-                    disabled={(date) =>
-                      isBefore(startOfDay(date), startOfDay(new Date()))
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div>
-              <Label>End Date</Label>
-              <Popover modal={false} open={endOpen} onOpenChange={setEndOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className={`w-full justify-start text-left font-normal ${
-                      !formData.endDate && "text-muted-foreground"
-                    }`}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.endDate
-                      ? format(formData.endDate, "PPP")
-                      : "Pick end date (optional)"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.endDate}
-                    onSelect={(date) => {
-                      if (date) {
-                        setFormData({ ...formData, endDate: startOfDay(date) });
-                        setEndOpen(false);
-                      }
-                    }}
-                    disabled={(date) =>
-                      formData.startDate
-                        ? isBefore(startOfDay(date), startOfDay(formData.startDate))
-                        : isBefore(startOfDay(date), startOfDay(new Date()))
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
