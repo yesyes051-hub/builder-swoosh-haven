@@ -13,6 +13,7 @@ import {
 import bcrypt from 'bcryptjs';
 import { AuthRequest } from '../middleware/auth';
 import { ApiResponse } from '@shared/api';
+import type { RequestHandler } from 'express';
 
 // Project Details Routes
 export const getProjectDetails: RequestHandler = async (req, res) => {
@@ -79,6 +80,39 @@ export const createProjectDetail: RequestHandler = async (req, res) => {
       success: false,
       error: 'Internal server error'
     } as ApiResponse<never>);
+  }
+};
+
+export const updateProjectDetail: RequestHandler = async (req, res) => {
+  try {
+    await connectToDatabase();
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+
+    if (user.role !== 'admin' && user.role !== 'manager') {
+      return res.status(403).json({ success: false, error: 'Access denied' } as ApiResponse<never>);
+    }
+
+    const { id } = req.params as { id: string };
+    const update = req.body || {};
+
+    if (update.startDate && update.endDate) {
+      const s = new Date(update.startDate);
+      const e = new Date(update.endDate);
+      if (!isNaN(s.getTime()) && !isNaN(e.getTime()) && e < s) {
+        return res.status(400).json({ success: false, error: 'End date cannot be before start date' } as ApiResponse<never>);
+      }
+    }
+
+    const project = await ProjectDetail.findByIdAndUpdate(id, update, { new: true });
+    if (!project) {
+      return res.status(404).json({ success: false, error: 'Project not found' } as ApiResponse<never>);
+    }
+
+    res.json({ success: true, data: project } as ApiResponse<typeof project>);
+  } catch (error) {
+    console.error('Update project detail error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' } as ApiResponse<never>);
   }
 };
 
