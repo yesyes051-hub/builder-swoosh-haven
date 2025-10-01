@@ -824,7 +824,11 @@ export default function TimesheetForm({ onRefresh }: Props) {
                   acc[key].items.push(t);
                   return acc;
                 }, {});
-              const keys = Object.keys(groups).sort((a, b) => groups[a].userName.localeCompare(groups[b].userName));
+              const keys = Object.keys(groups).sort((a, b) => {
+                const nameA = (groups[a].userName || groups[a].userEmail || a || "").toString();
+                const nameB = (groups[b].userName || groups[b].userEmail || b || "").toString();
+                return nameA.localeCompare(nameB);
+              });
               if (keys.length === 0) return <div className="text-sm text-muted-foreground">No pending submissions.</div>;
 
               const handleApprove = async (id: string) => {
@@ -868,8 +872,8 @@ export default function TimesheetForm({ onRefresh }: Props) {
                       <div key={k} className="border rounded-md">
                         <div className="flex items-center justify-between p-3 bg-muted/30">
                           <div>
-                            <div className="font-medium">{g.userName}</div>
-                            <div className="text-xs text-muted-foreground">{g.userEmail}</div>
+                            <div className="font-medium">{g.userName || g.userEmail || g.userId}</div>
+                            <div className="text-xs text-muted-foreground">{g.userEmail || g.userId}</div>
                           </div>
                           <div className="flex gap-2">
                             <Button variant="secondary" onClick={() => handleApproveMany(g.items.map((it) => it._id!).filter(Boolean))} disabled={g.items.length === 0}>Approve All</Button>
