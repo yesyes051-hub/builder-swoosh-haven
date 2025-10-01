@@ -48,7 +48,7 @@ import {
   CheckCircle,
   AlertTriangle,
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, startOfWeek, addDays } from "date-fns";
 import { ApiResponse } from "@shared/api";
 
 interface Project {
