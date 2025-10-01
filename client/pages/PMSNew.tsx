@@ -747,6 +747,7 @@ export default function PMSNew() {
           project={editProject}
           onUpdated={(p) => {
             setProjects((prev) => prev.map((x) => (x._id === p._id ? { ...x, ...p } : x)));
+            setViewProject((prev) => (prev && prev._id === p._id ? { ...prev, ...p } : prev));
           }}
         />
       </div>
