@@ -63,6 +63,8 @@ import TimesheetForm from "@/components/pms/TimesheetForm";
 import TicketForm from "@/components/pms/TicketForm";
 import UserManagement from "@/components/pms/UserManagement";
 import { ApiResponse } from "@shared/api";
+import ProjectViewModal from "@/components/pms/ProjectViewModal";
+import ProjectEditModal from "@/components/pms/ProjectEditModal";
 
 interface ProjectDetail {
   _id: string;
@@ -142,6 +144,12 @@ export default function PMSNew() {
   }>({ all: [], upcoming: [] });
   const [timesheets, setTimesheets] = useState<TimesheetData[]>([]);
   const [accessories, setAccessories] = useState<AccessoryData[]>([]);
+
+  // View/Edit state
+  const [viewProject, setViewProject] = useState<ProjectDetail | null>(null);
+  const [editProject, setEditProject] = useState<ProjectDetail | null>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   // Form states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -445,10 +453,10 @@ export default function PMSNew() {
                             <TableCell>{project.teamMembers.length}</TableCell>
                             <TableCell>
                               <div className="flex space-x-2">
-                                <Button size="sm" variant="outline">
+                                <Button size="sm" variant="outline" onClick={() => { setViewProject(project); setIsViewOpen(true); }}>
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                <Button size="sm" variant="outline">
+                                <Button size="sm" variant="outline" onClick={() => { setEditProject(project); setIsEditOpen(true); }}>
                                   <Edit className="h-4 w-4" />
                                 </Button>
                               </div>
@@ -728,6 +736,19 @@ export default function PMSNew() {
             </TabsContent>
           </Tabs>
         )}
+        <ProjectViewModal
+          open={isViewOpen}
+          onOpenChange={(v) => { setIsViewOpen(v); if (!v) setViewProject(null); }}
+          project={viewProject}
+        />
+        <ProjectEditModal
+          open={isEditOpen}
+          onOpenChange={(v) => { setIsEditOpen(v); if (!v) setEditProject(null); }}
+          project={editProject}
+          onUpdated={(p) => {
+            setProjects((prev) => prev.map((x) => (x._id === p._id ? { ...x, ...p } : x)));
+          }}
+        />
       </div>
     </DashboardLayout>
   );
