@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle, AlertTriangle, FolderOpen } from "lucide-react";
+import { Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import { ApiResponse } from "@shared/api";
 
 interface ProjectDetail {
@@ -24,6 +24,14 @@ interface ProjectDetail {
   budget?: number;
 }
 
+interface EmployeeOption {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -36,6 +44,9 @@ export default function ProjectEditModal({ open, onOpenChange, project, onUpdate
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [employees, setEmployees] = useState<EmployeeOption[]>([]);
+  const [employeesLoading, setEmployeesLoading] = useState(false);
+  const [employeesError, setEmployeesError] = useState("");
   const [formData, setFormData] = useState({
     projectName: "",
     projectManager: "",
@@ -47,6 +58,7 @@ export default function ProjectEditModal({ open, onOpenChange, project, onUpdate
     budget: "" as string | "",
     teamMembers: [] as string[],
     newMember: "",
+    selectedEmployeeId: "",
   });
 
   useEffect(() => {
@@ -62,9 +74,32 @@ export default function ProjectEditModal({ open, onOpenChange, project, onUpdate
         budget: project.budget !== undefined ? String(project.budget) : "",
         teamMembers: Array.isArray(project.teamMembers) ? project.teamMembers : [],
         newMember: "",
+        selectedEmployeeId: "",
       });
     }
   }, [project]);
+
+  // Load employees for selection
+  useEffect(() => {
+    const loadEmployees = async () => {
+      if (!open) return;
+      try {
+        setEmployeesLoading(true);
+        setEmployeesError("");
+        const res = await fetch("/api/employees", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = (await res.json()) as ApiResponse<EmployeeOption[]>;
+        if (!res.ok || !data.success || !data.data) throw new Error(data.error || "Failed to load employees");
+        setEmployees(data.data);
+      } catch (e) {
+        setEmployeesError(e instanceof Error ? e.message : "Failed to load employees");
+      } finally {
+        setEmployeesLoading(false);
+      }
+    };
+    loadEmployees();
+  }, [open, token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,39 +242,48 @@ export default function ProjectEditModal({ open, onOpenChange, project, onUpdate
 
           <div>
             <Label>Add Team Member</Label>
-            <div className="flex gap-2 mt-2">
-              <Input
-                placeholder="Enter member ID or name"
-                value={formData.newMember}
-                onChange={(e) => setFormData({ ...formData, newMember: e.target.value })}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const val = formData.newMember.trim();
-                    if (!val) return;
-                    if ((formData.teamMembers || []).includes(val)) return;
-                    setFormData({ ...formData, teamMembers: [...(formData.teamMembers || []), val], newMember: "" });
-                  }
-                }}
-              />
+            <div className="flex gap-2 mt-2 items-center">
+              <Select
+                value={formData.selectedEmployeeId}
+                onValueChange={(val: string) => setFormData({ ...formData, selectedEmployeeId: val })}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={employeesLoading ? "Loading employees..." : "Select an employee"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {employees.map((emp) => (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      {emp.firstName} {emp.lastName} ({emp.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button
                 type="button"
                 variant="outline"
+                disabled={!formData.selectedEmployeeId}
                 onClick={() => {
-                  const val = formData.newMember.trim();
-                  if (!val) return;
-                  if ((formData.teamMembers || []).includes(val)) return;
-                  setFormData({ ...formData, teamMembers: [...(formData.teamMembers || []), val], newMember: "" });
+                  const id = formData.selectedEmployeeId;
+                  if (!id) return;
+                  if ((formData.teamMembers || []).includes(id)) return;
+                  setFormData({ ...formData, teamMembers: [...(formData.teamMembers || []), id], selectedEmployeeId: "" });
                 }}
               >
                 Add
               </Button>
             </div>
+            {employeesError && (
+              <div className="text-xs text-red-600 mt-1">{employeesError}</div>
+            )}
             {formData.teamMembers && formData.teamMembers.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
-                {formData.teamMembers.map((m, idx) => (
-                  <Badge key={idx} variant="outline">{m}</Badge>
-                ))}
+                {formData.teamMembers.map((m, idx) => {
+                  const emp = employees.find((e) => e.id === m);
+                  const label = emp ? `${emp.firstName} ${emp.lastName} (${emp.email})` : m;
+                  return (
+                    <Badge key={`${m}-${idx}`} variant="outline">{label}</Badge>
+                  );
+                })}
               </div>
             )}
           </div>
