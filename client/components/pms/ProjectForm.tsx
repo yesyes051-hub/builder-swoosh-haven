@@ -28,6 +28,7 @@ import {
   FolderOpen,
 } from "lucide-react";
 import { ApiResponse } from "@shared/api";
+import { Badge } from "@/components/ui/badge";
 
 interface ProjectDetail {
   _id: string;
@@ -62,7 +63,8 @@ export default function ProjectForm({ onProjectCreated }: Props) {
     description: "",
     startDate: "",
     endDate: "",
-    teamMembers: [""],
+    teamMembers: [] as string[],
+    selectedEmployeeId: "",
     budget: "",
   });
 
@@ -85,9 +87,9 @@ export default function ProjectForm({ onProjectCreated }: Props) {
       }
     }
 
-    const filteredTeamMembers = formData.teamMembers.filter(
-      (member) => member.trim() !== "",
-    );
+    const filteredTeamMembers = Array.from(new Set(
+      (formData.teamMembers || []).map((m) => m.trim()).filter((m) => m),
+    ));
 
     try {
       setLoading(true);
@@ -128,7 +130,8 @@ export default function ProjectForm({ onProjectCreated }: Props) {
         description: "",
         startDate: "",
         endDate: "",
-        teamMembers: [""],
+        teamMembers: [],
+        selectedEmployeeId: "",
         budget: "",
       });
 
@@ -148,24 +151,40 @@ export default function ProjectForm({ onProjectCreated }: Props) {
     }
   };
 
-  const addTeamMember = () => {
-    setFormData({
-      ...formData,
-      teamMembers: [...formData.teamMembers, ""],
-    });
-  };
+  interface EmployeeOption { id: string; firstName: string; lastName: string; email: string; role: string }
+  const [employees, setEmployees] = useState<EmployeeOption[]>([]);
+  const [employeesLoading, setEmployeesLoading] = useState(false);
+  const [employeesError, setEmployeesError] = useState("");
+
+  useEffect(() => {
+    const load = async () => {
+      if (!isModalOpen) return;
+      try {
+        setEmployeesLoading(true);
+        setEmployeesError("");
+        const res = await fetch("/api/employees", { headers: { Authorization: `Bearer ${token}` } });
+        const data: ApiResponse<EmployeeOption[]> = await res.json();
+        if (!res.ok || !data.success || !data.data) throw new Error(data.error || "Failed to load employees");
+        setEmployees(data.data);
+      } catch (e) {
+        setEmployeesError(e instanceof Error ? e.message : "Failed to load employees");
+      } finally {
+        setEmployeesLoading(false);
+      }
+    };
+    load();
+  }, [isModalOpen, token]);
 
   const removeTeamMember = (index: number) => {
-    if (formData.teamMembers.length > 1) {
-      const newTeamMembers = formData.teamMembers.filter((_, i) => i !== index);
-      setFormData({ ...formData, teamMembers: newTeamMembers });
-    }
+    const newTeamMembers = formData.teamMembers.filter((_, i) => i !== index);
+    setFormData({ ...formData, teamMembers: newTeamMembers });
   };
 
-  const updateTeamMember = (index: number, value: string) => {
-    const newTeamMembers = [...formData.teamMembers];
-    newTeamMembers[index] = value;
-    setFormData({ ...formData, teamMembers: newTeamMembers });
+  const addSelectedEmployee = () => {
+    const id = formData.selectedEmployeeId;
+    if (!id) return;
+    if (formData.teamMembers.includes(id)) return;
+    setFormData({ ...formData, teamMembers: [...formData.teamMembers, id], selectedEmployeeId: "" });
   };
 
   return (
@@ -325,35 +344,43 @@ export default function ProjectForm({ onProjectCreated }: Props) {
           <div>
             <Label>Team Members</Label>
             <div className="space-y-2">
-              {formData.teamMembers.map((member, index) => (
-                <div key={index} className="flex space-x-2">
-                  <Input
-                    value={member}
-                    onChange={(e) => updateTeamMember(index, e.target.value)}
-                    placeholder="Enter team member ID or name"
-                    className="flex-1"
-                  />
-                  {formData.teamMembers.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => removeTeamMember(index)}
-                    >
-                      ×
-                    </Button>
-                  )}
+              <div className="flex gap-2 items-center">
+                <Select
+                  value={formData.selectedEmployeeId}
+                  onValueChange={(v) => setFormData({ ...formData, selectedEmployeeId: v })}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={employeesLoading ? "Loading employees..." : "Select an employee"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {employees.map((emp) => (
+                      <SelectItem key={emp.id} value={emp.id}>
+                        {emp.firstName} {emp.lastName} ({emp.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button type="button" variant="outline" onClick={addSelectedEmployee} disabled={!formData.selectedEmployeeId}>
+                  Add
+                </Button>
+              </div>
+              {employeesError && (
+                <div className="text-xs text-red-600">{employeesError}</div>
+              )}
+              {formData.teamMembers.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {formData.teamMembers.map((id, index) => {
+                    const emp = employees.find((e) => e.id === id);
+                    const label = emp ? `${emp.firstName} ${emp.lastName} (${emp.email})` : id;
+                    return (
+                      <div key={`${id}-${index}`} className="inline-flex items-center gap-1">
+                        <Badge variant="outline">{label}</Badge>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removeTeamMember(index)}>×</Button>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addTeamMember}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Team Member
-              </Button>
+              )}
             </div>
           </div>
 
