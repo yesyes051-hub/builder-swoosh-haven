@@ -416,6 +416,66 @@ export const getTimesheetReminders: RequestHandler = async (req, res) => {
   }
 };
 
+// ========== Legacy Timesheet Status (compat) ==========
+export const getTimesheets: RequestHandler = async (req, res) => {
+  try {
+    await connectToDatabase();
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+    const query: any = {};
+    if (user.role === 'employee') query.userId = user.id;
+    const items = await Timesheet.find(query).sort({ date: -1, createdAt: -1 }).lean();
+    const mapped = items.map((t: any) => ({
+      _id: t._id.toString(),
+      userId: t.userId,
+      projectId: t.projectId,
+      date: t.date,
+      hoursWorked: t.hoursWorked,
+      taskDescription: t.taskDescription,
+      status: t.status,
+      billable: t.billable,
+    }));
+    res.json({ success: true, data: mapped } as ApiResponse<any[]>);
+  } catch (error) {
+    console.error('getTimesheets error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' } as ApiResponse<never>);
+  }
+};
+
+export const createTimesheet: RequestHandler = async (req, res) => {
+  try {
+    await connectToDatabase();
+    const authReq = req as AuthRequest;
+    const user = authReq.user!;
+    const { projectId, date, hoursWorked, taskDescription, billable } = req.body as any;
+    if (!projectId || !date || typeof hoursWorked !== 'number' || !taskDescription) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' } as ApiResponse<never>);
+    }
+    const project = await ProjectDetail.findById(projectId);
+    if (!project) return res.status(404).json({ success: false, error: 'Project not found' } as ApiResponse<never>);
+    const entry = await Timesheet.create({
+      userId: user.id,
+      userName: (user as any).firstName ? `${(user as any).firstName} ${(user as any).lastName ?? ''}`.trim() : (user as any).name,
+      userEmail: (user as any).email,
+      projectId,
+      projectName: project.projectName,
+      date: new Date(date),
+      startTime: '09:00',
+      endTime: '17:00',
+      hoursWorked,
+      taskDescription,
+      category: 'Development',
+      status: 'Draft',
+      billable: typeof billable === 'boolean' ? billable : true,
+      overtime: hoursWorked > 8,
+    });
+    res.status(201).json({ success: true, data: entry } as ApiResponse<any>);
+  } catch (error) {
+    console.error('createTimesheet error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' } as ApiResponse<never>);
+  }
+};
+
 // ========== Employee Management (basic) ==========
 export const createEmployee: RequestHandler = async (req, res) => {
   try {
