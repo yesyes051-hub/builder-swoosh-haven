@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,13 +54,15 @@ export default function ProjectForm({ onProjectCreated }: Props) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Form state (dates removed)
+  // Form state with dates
   const [formData, setFormData] = useState({
     projectName: "",
     projectManager: user?.id || "",
     status: "Planning" as const,
     priority: "Medium" as const,
     description: "",
+    startDate: "",
+    endDate: "",
     teamMembers: [""],
     budget: "",
   });
@@ -69,9 +72,18 @@ export default function ProjectForm({ onProjectCreated }: Props) {
     setError("");
     setSuccess("");
 
-    if (!formData.projectName || !formData.description) {
-      setError("Please fill in all required fields including project name and description");
+    if (!formData.projectName || !formData.description || !formData.startDate) {
+      setError("Please fill in all required fields including project name, description, and start date");
       return;
+    }
+
+    if (formData.endDate) {
+      const start = new Date(formData.startDate);
+      const end = new Date(formData.endDate);
+      if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end < start) {
+        setError("End date cannot be before start date");
+        return;
+      }
     }
 
     const filteredTeamMembers = formData.teamMembers.filter(
@@ -87,6 +99,8 @@ export default function ProjectForm({ onProjectCreated }: Props) {
         status: formData.status,
         priority: formData.priority,
         description: formData.description,
+        startDate: formData.startDate ? new Date(formData.startDate).toISOString() : undefined,
+        endDate: formData.endDate ? new Date(formData.endDate).toISOString() : undefined,
         teamMembers: filteredTeamMembers,
         budget: formData.budget ? parseFloat(formData.budget) : undefined,
       };
@@ -113,6 +127,8 @@ export default function ProjectForm({ onProjectCreated }: Props) {
         status: "Planning",
         priority: "Medium",
         description: "",
+        startDate: "",
+        endDate: "",
         teamMembers: [""],
         budget: "",
       });
@@ -281,6 +297,28 @@ export default function ProjectForm({ onProjectCreated }: Props) {
                 }
                 placeholder="Enter budget"
                 min="0"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="startDate">Start Date *</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="endDate">End Date</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={formData.endDate}
+                min={formData.startDate || undefined}
+                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
               />
             </div>
           </div>
