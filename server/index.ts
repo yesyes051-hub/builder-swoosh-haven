@@ -54,6 +54,8 @@ import {
   submitTimesheet,
   approveTimesheet,
   updateProjectDetail,
+  submitWeeklyTimesheets,
+  deleteTimesheetEntry,
 } from "./routes/pmsNew";
 import { createUser, getAllUsers } from "./routes/users";
 import { getUserStats, getAllUsersForManagement } from "./routes/userStats";
