@@ -535,6 +535,51 @@ export default function TimesheetForm({ onRefresh }: Props) {
             </DialogContent>
           </Dialog>
 
+          {user?.role === 'employee' && (
+            <Dialog open={isSubmitWeekOpen} onOpenChange={setIsSubmitWeekOpen}>
+              <DialogTrigger asChild>
+                <Button variant="secondary" className="space-x-2">
+                  <Send className="h-4 w-4" />
+                  <span>Submit Week for Approval</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Submit Weekly Timesheet</DialogTitle>
+                  <DialogDescription>Send your Mon–Sun entries for manager approval.</DialogDescription>
+                </DialogHeader>
+
+                {submitWeekError && (
+                  <Alert className="border-red-200 bg-red-50">
+                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-800">{submitWeekError}</AlertDescription>
+                  </Alert>
+                )}
+                {submitWeekMsg && (
+                  <Alert className="border-green-200 bg-green-50">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-800">{submitWeekMsg}</AlertDescription>
+                  </Alert>
+                )}
+
+                <form onSubmit={handleSubmitWeek} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Week starting (Monday)</Label>
+                    <Input type="date" value={weeklyForm.weekStart} onChange={(e) => setWeeklyForm((p) => ({ ...p, weekStart: e.target.value }))} />
+                    <div className="text-xs text-muted-foreground">Draft entries to submit: {draftCountForWeek(weeklyForm.weekStart)}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="submit" disabled={loading || draftCountForWeek(weeklyForm.weekStart) === 0} className="flex-1">
+                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Send for Approval
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => setIsSubmitWeekOpen(false)}>Cancel</Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          )}
+
           <Dialog open={isWeeklyOpen} onOpenChange={setIsWeeklyOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" onClick={() => { setWeeklyError(""); setWeeklySuccess(""); }} className="space-x-2">
