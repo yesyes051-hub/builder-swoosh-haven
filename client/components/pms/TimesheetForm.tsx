@@ -689,6 +689,40 @@ export default function TimesheetForm({ onRefresh }: Props) {
         </div>
       </div>
 
+      {/* Manager/Admin: Pending approvals */}
+      {(user?.role === 'manager' || user?.role === 'admin') && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Pending Approvals</CardTitle>
+            <CardDescription>Timesheets submitted by employees this week</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {groupPendingByUserWeek().length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Employee</TableHead>
+                    <TableHead>Week</TableHead>
+                    <TableHead>Entries</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {groupPendingByUserWeek().map((g) => (
+                    <TableRow key={`${g.userId}-${g.weekStart}`}>
+                      <TableCell className="font-medium">{g.userName}<div className="text-xs text-muted-foreground">{g.userEmail}</div></TableCell>
+                      <TableCell>{format(new Date(g.weekStart), 'MMM dd, yyyy')}</TableCell>
+                      <TableCell>{g.count}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-sm text-muted-foreground">No pending submissions.</div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Timesheet Entries Table */}
       <Card>
         <CardContent>
