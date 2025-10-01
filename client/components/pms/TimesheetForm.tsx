@@ -330,160 +330,269 @@ export default function TimesheetForm({ onRefresh }: Props) {
       {/* Add New Entry Button */}
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Timesheet Entries</h3>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={resetForm} className="space-x-2">
-              <Plus className="h-4 w-4" />
-              <span>Add Entry</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add Timesheet Entry</DialogTitle>
-              <DialogDescription>
-                Record your time spent on project tasks.
-              </DialogDescription>
-            </DialogHeader>
+        <div className="flex gap-2">
+          <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={resetForm} className="space-x-2">
+                <Plus className="h-4 w-4" />
+                <span>Add Entry</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add Timesheet Entry</DialogTitle>
+                <DialogDescription>
+                  Record your time spent on project tasks.
+                </DialogDescription>
+              </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="project">Project *</Label>
-                <Select
-                  value={formData.projectId}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, projectId: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.map((project) => (
-                      <SelectItem key={project._id} value={project._id}>
-                        {project.projectName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {projects.length === 0 && (
-                  <p className="text-sm text-red-600">
-                    ⚠️ No projects available. Please create a project first
-                    before adding timesheet entries.
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
-                <Input
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, date: e.target.value }))
-                  }
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="startTime">Start Time</Label>
+                  <Label htmlFor="project">Project *</Label>
+                  <Select
+                    value={formData.projectId}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, projectId: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projects.map((project) => (
+                        <SelectItem key={project._id} value={project._id}>
+                          {project.projectName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {projects.length === 0 && (
+                    <p className="text-sm text-red-600">
+                      ⚠️ No projects available. Please create a project first
+                      before adding timesheet entries.
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="date">Date</Label>
                   <Input
-                    type="time"
-                    value={formData.startTime}
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, date: e.target.value }))
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="startTime">Start Time</Label>
+                    <Input
+                      type="time"
+                      value={formData.startTime}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          startTime: e.target.value,
+                        }))
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="endTime">End Time</Label>
+                    <Input
+                      type="time"
+                      value={formData.endTime}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          endTime: e.target.value,
+                        }))
+                      }
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value: any) =>
+                      setFormData((prev) => ({ ...prev, category: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Development">Development</SelectItem>
+                      <SelectItem value="Testing">Testing</SelectItem>
+                      <SelectItem value="Meeting">Meeting</SelectItem>
+                      <SelectItem value="Documentation">Documentation</SelectItem>
+                      <SelectItem value="Support">Support</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="taskDescription">Task Description</Label>
+                  <Textarea
+                    placeholder="Describe what you worked on..."
+                    value={formData.taskDescription}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        startTime: e.target.value,
+                        taskDescription: e.target.value,
                       }))
                     }
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="endTime">End Time</Label>
-                  <Input
-                    type="time"
-                    value={formData.endTime}
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="billable"
+                    checked={formData.billable}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        endTime: e.target.value,
+                        billable: e.target.checked,
                       }))
                     }
-                    required
                   />
+                  <Label htmlFor="billable">Billable</Label>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value: any) =>
-                    setFormData((prev) => ({ ...prev, category: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Development">Development</SelectItem>
-                    <SelectItem value="Testing">Testing</SelectItem>
-                    <SelectItem value="Meeting">Meeting</SelectItem>
-                    <SelectItem value="Documentation">Documentation</SelectItem>
-                    <SelectItem value="Support">Support</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="flex space-x-2">
+                  <Button type="submit" disabled={loading} className="flex-1">
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Add Entry
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsFormOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
 
-              <div className="space-y-2">
-                <Label htmlFor="taskDescription">Task Description</Label>
-                <Textarea
-                  placeholder="Describe what you worked on..."
-                  value={formData.taskDescription}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      taskDescription: e.target.value,
-                    }))
-                  }
-                  required
-                />
-              </div>
+          <Dialog open={isWeeklyOpen} onOpenChange={setIsWeeklyOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" onClick={() => { setWeeklyError(""); setWeeklySuccess(""); }} className="space-x-2">
+                <Timer className="h-4 w-4" />
+                <span>Log Week (Mon–Fri)</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Log Weekly Timesheet</DialogTitle>
+                <DialogDescription>Fill time for each weekday; leave blank to skip a day.</DialogDescription>
+              </DialogHeader>
 
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="billable"
-                  checked={formData.billable}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      billable: e.target.checked,
-                    }))
-                  }
-                />
-                <Label htmlFor="billable">Billable</Label>
-              </div>
+              {weeklyError && (
+                <Alert className="border-red-200 bg-red-50">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-800">{weeklyError}</AlertDescription>
+                </Alert>
+              )}
+              {weeklySuccess && (
+                <Alert className="border-green-200 bg-green-50">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800">{weeklySuccess}</AlertDescription>
+                </Alert>
+              )}
 
-              <div className="flex space-x-2">
-                <Button type="submit" disabled={loading} className="flex-1">
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Add Entry
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsFormOpen(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+              <form onSubmit={handleWeeklySubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Project *</Label>
+                    <Select value={weeklyForm.projectId} onValueChange={(v) => setWeeklyForm((p) => ({ ...p, projectId: v }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a project" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projects.map((p) => (
+                          <SelectItem key={p._id} value={p._id}>{p.projectName}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Week starting (Monday)</Label>
+                    <Input type="date" value={weeklyForm.weekStart} onChange={(e) => setWeeklyForm((p) => ({ ...p, weekStart: e.target.value }))} />
+                  </div>
+                </div>
+
+                <div className="overflow-auto border rounded-md">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[120px]">Day</TableHead>
+                        <TableHead>Start</TableHead>
+                        <TableHead>End</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Billable</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {weeklyForm.days.map((d, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="text-sm">
+                            {format(new Date(d.date), "EEE, MMM dd")}<div className="text-xs text-muted-foreground">{d.date}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Input type="time" value={d.startTime} onChange={(e) => setWeeklyForm((p) => ({ ...p, days: p.days.map((x, idx) => idx === i ? { ...x, startTime: e.target.value } : x) }))} />
+                          </TableCell>
+                          <TableCell>
+                            <Input type="time" value={d.endTime} onChange={(e) => setWeeklyForm((p) => ({ ...p, days: p.days.map((x, idx) => idx === i ? { ...x, endTime: e.target.value } : x) }))} />
+                          </TableCell>
+                          <TableCell>
+                            <Input placeholder="What did you work on?" value={d.taskDescription} onChange={(e) => setWeeklyForm((p) => ({ ...p, days: p.days.map((x, idx) => idx === i ? { ...x, taskDescription: e.target.value } : x) }))} />
+                          </TableCell>
+                          <TableCell>
+                            <Select value={d.category} onValueChange={(v: any) => setWeeklyForm((p) => ({ ...p, days: p.days.map((x, idx) => idx === i ? { ...x, category: v } : x) }))}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Development">Development</SelectItem>
+                                <SelectItem value="Testing">Testing</SelectItem>
+                                <SelectItem value="Meeting">Meeting</SelectItem>
+                                <SelectItem value="Documentation">Documentation</SelectItem>
+                                <SelectItem value="Support">Support</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <input type="checkbox" checked={d.billable} onChange={(e) => setWeeklyForm((p) => ({ ...p, days: p.days.map((x, idx) => idx === i ? { ...x, billable: e.target.checked } : x) }))} />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={loading} className="flex-1">
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save Week
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setIsWeeklyOpen(false)}>Cancel</Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Timesheet Entries Table */}
