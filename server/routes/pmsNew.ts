@@ -273,11 +273,38 @@ export const getTickets: RequestHandler = async (_req, res) => {
 export const createTicket: RequestHandler = async (req, res) => {
   try {
     await connectToDatabase();
+    const authReq = req as any;
+    const user = authReq.user || {};
     const body = req.body as Partial<any>;
-    if (!body.ticketId || !body.projectId || !body.title || !body.description || !body.assignedTo || !body.reportedBy || !body.type) {
-      return res.status(400).json({ success: false, error: 'Missing required fields' } as ApiResponse<never>);
+
+    // Validate core required fields
+    if (!body.projectId || !body.title || !body.description || !body.type) {
+      return res.status(400).json({ success: false, error: 'Missing required fields: projectId, title, description, type' } as ApiResponse<never>);
     }
-    const created = await Ticket.create(body);
+
+    // Build safe payload with defaults
+    const ticketId = body.ticketId || `TKT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+    const reportedBy = body.reportedBy || user.id || user.userId || 'system';
+    const assignedTo = body.assignedTo || reportedBy; // default to reporter if unassigned
+    const status = body.status || 'Pending';
+    const priority = body.priority || 'Medium';
+
+    const payload = {
+      ticketId,
+      projectId: body.projectId,
+      title: body.title,
+      description: body.description,
+      assignedTo,
+      reportedBy,
+      status,
+      priority,
+      type: body.type,
+      estimatedHours: body.estimatedHours,
+      actualHours: body.actualHours,
+      dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
+    };
+
+    const created = await Ticket.create(payload);
     res.json({ success: true, data: created } as ApiResponse<any>);
   } catch (error) {
     console.error('createTicket error:', error);
