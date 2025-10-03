@@ -162,7 +162,7 @@ export const register: RequestHandler = async (req, res) => {
 
 export const getProfile: RequestHandler = async (req, res) => {
   try {
-    const authReq = req as any;
+    const authReq = req as AuthRequest;
     const user = authReq.user;
 
     console.log('🔍 Profile request - User from token:', user);
@@ -175,55 +175,63 @@ export const getProfile: RequestHandler = async (req, res) => {
       } as ApiResponse<never>);
     }
 
-    console.log(`🔍 Looking for user with ID: ${user.id}`);
+    // 1) Try in-memory DB first (fast and avoids external DB dependency)
+    try {
+      const memoryById = await db.getUserById(user.id);
+      if (memoryById) {
+        const { password: _pw, ...safe } = memoryById as any;
+        const responseUser = { ...safe, role: (safe.role as string).toLowerCase() };
+        return res.json({ success: true, data: responseUser } as ApiResponse<typeof responseUser>);
+      }
 
-    // Get full user details from ROLES collection
-    const fullUser = await EmployeeUser.findById(user.id).select('-password');
-    console.log('🔍 Database lookup result:', fullUser ? 'User found' : 'User not found');
+      const memoryByEmail = await db.getUserByEmail(user.email.toLowerCase());
+      if (memoryByEmail) {
+        const { password: _pw2, ...safe } = memoryByEmail as any;
+        const responseUser = { ...safe, role: (safe.role as string).toLowerCase() };
+        return res.json({ success: true, data: responseUser } as ApiResponse<typeof responseUser>);
+      }
+    } catch (e) {
+      console.warn('⚠️ In-memory lookup failed, continuing to Mongo lookup:', e);
+    }
 
-    if (!fullUser) {
-      console.log(`❌ User with ID ${user.id} not found in database`);
+    // 2) Fallback to Mongo ROLES collection (best-effort, tolerate connection issues)
+    try {
+      console.log(`🔍 Looking for user with ID in Mongo: ${user.id}`);
+      const fullUser = await EmployeeUser.findById(user.id).select('-password');
+      console.log('🔍 Mongo lookup by ID:', fullUser ? 'User found' : 'Not found');
 
-      // Try to find by email as fallback
-      console.log(`🔍 Trying to find user by email: ${user.email}`);
-      const userByEmail = await EmployeeUser.findOne({ email: user.email }).select('-password');
+      if (fullUser) {
+        const userWithoutPassword = {
+          ...fullUser.toObject(),
+          id: fullUser._id,
+          role: (fullUser.role as string).toLowerCase()
+        };
+        return res.json({ success: true, data: userWithoutPassword } as ApiResponse<typeof userWithoutPassword>);
+      }
 
+      console.log(`🔍 Trying Mongo lookup by email: ${user.email}`);
+      const userByEmail = await EmployeeUser.findOne({ email: user.email.toLowerCase() }).select('-password');
       if (userByEmail) {
-        console.log('✅ Found user by email, using this instead');
         const userWithoutPassword = {
           ...userByEmail.toObject(),
           id: userByEmail._id,
-          role: userByEmail.role.toLowerCase()
+          role: (userByEmail.role as string).toLowerCase()
         };
-
-        return res.json({
-          success: true,
-          data: userWithoutPassword
-        } as ApiResponse<typeof userWithoutPassword>);
-      } else {
-        console.log('❌ User not found by email either');
+        return res.json({ success: true, data: userWithoutPassword } as ApiResponse<typeof userWithoutPassword>);
       }
-
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      } as ApiResponse<never>);
+    } catch (mongoErr) {
+      console.error('❌ Mongo lookup error (tolerated):', mongoErr);
+      // Continue to final 404 if no other source found
     }
 
-    console.log('✅ User found successfully');
-    const userWithoutPassword = {
-      ...fullUser.toObject(),
-      id: fullUser._id,
-      role: fullUser.role.toLowerCase() // Convert to lowercase for frontend compatibility
-    };
-
-    res.json({
-      success: true,
-      data: userWithoutPassword
-    } as ApiResponse<typeof userWithoutPassword>);
+    // If not found in any source
+    return res.status(404).json({
+      success: false,
+      error: 'User not found'
+    } as ApiResponse<never>);
   } catch (error) {
     console.error('Get profile error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     } as ApiResponse<never>);
