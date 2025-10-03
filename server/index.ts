@@ -81,6 +81,9 @@ import { connectToDatabase } from "./db/mongodb";
 export function createServer() {
   const app = express();
 
+  // Initialize default MongoDB connection for models using the default connection (e.g., Interview)
+  connectToDatabase().catch((e) => console.error("Mongo connection error:", e));
+
   // Middleware
   app.use(
     cors({
