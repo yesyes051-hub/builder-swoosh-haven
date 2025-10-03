@@ -209,11 +209,33 @@ export default function PMSNew() {
       const response = await fetch("/api/pms/birthdays", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data: ApiResponse<{ all: Birthday[]; upcoming: Birthday[] }> =
-        await response.json();
-      if (data.success) setBirthdays(data.data || { all: [], upcoming: [] });
+      const raw = await response.json();
+      if (raw && raw.success) {
+        const payload = raw.data;
+        if (Array.isArray(payload)) {
+          // Server returned a flat list; transform into { all, upcoming }
+          const all: Birthday[] = payload;
+          const today = new Date();
+          const inNext30 = (dateStr: string) => {
+            const d = new Date(dateStr);
+            const currentYear = today.getFullYear();
+            d.setFullYear(currentYear);
+            if (d < today) d.setFullYear(currentYear + 1);
+            const diff = d.getTime() - today.getTime();
+            const days = diff / (1000 * 60 * 60 * 24);
+            return days <= 30;
+          };
+          const upcoming = all.filter((b) => inNext30(b.birthday));
+          setBirthdays({ all, upcoming });
+        } else if (payload && typeof payload === 'object' && 'all' in payload && 'upcoming' in payload) {
+          setBirthdays(payload as { all: Birthday[]; upcoming: Birthday[] });
+        } else {
+          setBirthdays({ all: [], upcoming: [] });
+        }
+      }
     } catch (err) {
       console.error("Error fetching birthdays:", err);
+      setBirthdays({ all: [], upcoming: [] });
     }
   };
 
