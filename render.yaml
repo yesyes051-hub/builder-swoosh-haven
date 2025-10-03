@@ -4,8 +4,9 @@ services:
     name: trackzen-api
     runtime: node
     plan: starter
-    buildCommand: npm run build:server
-    startCommand: npm start
+    installCommand: npm --prefix server install
+    buildCommand: npm --prefix server run build
+    startCommand: npm --prefix server run start
     healthCheckPath: /api/ping
     envVars:
       - key: NODE_ENV
