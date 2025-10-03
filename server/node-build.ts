@@ -1,4 +1,5 @@
 import path from "path";
+import fs from "fs";
 import { createServer } from "./index";
 import * as express from "express";
 
@@ -7,7 +8,13 @@ const port = process.env.PORT || 3000;
 
 // In production, serve the built SPA files
 const __dirname = import.meta.dirname;
-const distPath = path.join(__dirname, "../spa");
+let distPath = path.join(__dirname, "../spa");
+
+// Fallback to client/dist if spa not found (monorepo-style builds)
+if (!fs.existsSync(distPath)) {
+  const candidate = path.resolve(__dirname, "../../client/dist");
+  if (fs.existsSync(candidate)) distPath = candidate;
+}
 
 // Serve static files
 app.use(express.static(distPath));
