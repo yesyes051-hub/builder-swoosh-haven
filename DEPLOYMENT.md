@@ -71,8 +71,8 @@ The project includes a `vercel.json` file with:
 
    - Name: `trackzen-api` (or your preferred name)
    - Runtime: `Node`
-   - Build Command: `npm run build:server`
-   - Start Command: `npm start`
+   - Build Command: `npm --prefix server run build`
+   - Start Command: `npm --prefix server run start`
    - Plan: `Starter` (free tier)
 
 3. **Environment Variables**
