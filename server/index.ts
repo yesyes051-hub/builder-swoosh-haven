@@ -76,6 +76,7 @@ import {
 import { authenticateToken, requireRole } from "./middleware/auth";
 import { seedPMSData } from "./db/seedPMS";
 import { seedEmployeeManagementData } from "./db/seedEmployeeManagement";
+import { connectToDatabase } from "./db/mongodb";
 
 export function createServer() {
   const app = express();
