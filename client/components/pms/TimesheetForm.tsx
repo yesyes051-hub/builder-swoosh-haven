@@ -102,6 +102,7 @@ export default function TimesheetForm({ onRefresh }: Props) {
   const [submitWeekMsg, setSubmitWeekMsg] = useState("");
   const [submitWeekError, setSubmitWeekError] = useState("");
   const [selectedSubmitIds, setSelectedSubmitIds] = useState<Set<string>>(new Set());
+  const [managerStatusFilter, setManagerStatusFilter] = useState<'Submitted' | 'Approved' | 'All'>('Submitted');
 
   // Form state
   const [formData, setFormData] = useState({
