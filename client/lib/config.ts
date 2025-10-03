@@ -3,9 +3,7 @@ export const config = {
   // API base URL - defaults to relative URLs for development, can be overridden by environment variable
   apiBaseUrl:
     import.meta.env.VITE_API_BASE_URL ||
-    (import.meta.env.MODE === "production"
-      ? "https://your-render-app.onrender.com"
-      : ""),
+    (import.meta.env.MODE === "production" ? "" : ""),
 
   // Other configuration options
   environment: import.meta.env.MODE,
