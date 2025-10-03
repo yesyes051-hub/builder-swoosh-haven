@@ -227,7 +227,12 @@ export default function PMSNew() {
           };
           const upcoming = all.filter((b) => inNext30(b.birthday));
           setBirthdays({ all, upcoming });
-        } else if (payload && typeof payload === 'object' && 'all' in payload && 'upcoming' in payload) {
+        } else if (
+          payload &&
+          typeof payload === "object" &&
+          "all" in payload &&
+          "upcoming" in payload
+        ) {
           setBirthdays(payload as { all: Birthday[]; upcoming: Birthday[] });
         } else {
           setBirthdays({ all: [], upcoming: [] });
@@ -475,11 +480,26 @@ export default function PMSNew() {
                             <TableCell>{project.teamMembers.length}</TableCell>
                             <TableCell>
                               <div className="flex space-x-2">
-                                <Button size="sm" variant="outline" onClick={() => { setViewProject(project); setIsViewOpen(true); }}>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setViewProject(project);
+                                    setIsViewOpen(true);
+                                  }}
+                                >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                {user?.role === "admin" || user?.role === "manager" ? (
-                                  <Button size="sm" variant="outline" onClick={() => { setEditProject(project); setIsEditOpen(true); }}>
+                                {user?.role === "admin" ||
+                                user?.role === "manager" ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setEditProject(project);
+                                      setIsEditOpen(true);
+                                    }}
+                                  >
                                     <Edit className="h-4 w-4" />
                                   </Button>
                                 ) : null}
@@ -762,16 +782,26 @@ export default function PMSNew() {
         )}
         <ProjectViewModal
           open={isViewOpen}
-          onOpenChange={(v) => { setIsViewOpen(v); if (!v) setViewProject(null); }}
+          onOpenChange={(v) => {
+            setIsViewOpen(v);
+            if (!v) setViewProject(null);
+          }}
           project={viewProject}
         />
         <ProjectEditModal
           open={isEditOpen}
-          onOpenChange={(v) => { setIsEditOpen(v); if (!v) setEditProject(null); }}
+          onOpenChange={(v) => {
+            setIsEditOpen(v);
+            if (!v) setEditProject(null);
+          }}
           project={editProject}
           onUpdated={(p) => {
-            setProjects((prev) => prev.map((x) => (x._id === p._id ? { ...x, ...p } : x)));
-            setViewProject((prev) => (prev && prev._id === p._id ? { ...prev, ...p } : prev));
+            setProjects((prev) =>
+              prev.map((x) => (x._id === p._id ? { ...x, ...p } : x)),
+            );
+            setViewProject((prev) =>
+              prev && prev._id === p._id ? { ...prev, ...p } : prev,
+            );
           }}
         />
       </div>

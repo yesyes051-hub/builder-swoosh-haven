@@ -91,7 +91,9 @@ export default function EmployeeDashboard({ data }: Props) {
       if (response.ok && result.success && result.data) {
         // Filter interviews where the current user is the candidate or interviewer
         const userInterviews = result.data.filter(
-          (interview) => interview.candidateId === data.user.id || interview.interviewerId === data.user.id,
+          (interview) =>
+            interview.candidateId === data.user.id ||
+            interview.interviewerId === data.user.id,
         );
         setMyInterviews(userInterviews);
       }

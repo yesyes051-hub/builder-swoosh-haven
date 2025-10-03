@@ -20,7 +20,11 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
     console.log("📅 Scheduling interview - Parsed data:", interviewData);
 
     // Only HR, Admin, and Manager can schedule interviews
-    if (user.role !== "hr" && user.role !== "admin" && user.role !== "manager") {
+    if (
+      user.role !== "hr" &&
+      user.role !== "admin" &&
+      user.role !== "manager"
+    ) {
       return res.status(403).json({
         success: false,
         error: "Only HR, Admin, or Manager can schedule interviews",
@@ -155,7 +159,11 @@ export const getInterviews: RequestHandler = async (req, res) => {
 
     let interviewQuery: any = {};
 
-    if (user.role === "hr" || user.role === "admin" || user.role === "manager") {
+    if (
+      user.role === "hr" ||
+      user.role === "admin" ||
+      user.role === "manager"
+    ) {
       // HR and Admin can see all interviews
       interviewQuery = {};
     } else {
@@ -467,7 +475,11 @@ export const getAvailableInterviewers: RequestHandler = async (req, res) => {
     const user = authReq.user!;
 
     // Only HR, Admin, and Manager can get this list
-    if (user.role !== "hr" && user.role !== "admin" && user.role !== "manager") {
+    if (
+      user.role !== "hr" &&
+      user.role !== "admin" &&
+      user.role !== "manager"
+    ) {
       return res.status(403).json({
         success: false,
         error: "Access denied",

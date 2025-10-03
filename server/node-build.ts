@@ -10,7 +10,9 @@ const port = process.env.PORT || 3000;
 const __dirname = import.meta.dirname;
 
 // Allow overriding static directory via env variable for manual deployments
-const staticDirEnv = process.env.STATIC_DIR ? path.resolve(process.env.STATIC_DIR) : null;
+const staticDirEnv = process.env.STATIC_DIR
+  ? path.resolve(process.env.STATIC_DIR)
+  : null;
 
 let distPath = path.join(__dirname, "../spa");
 
@@ -46,7 +48,9 @@ app.listen(port, () => {
   if (fs.existsSync(distPath)) {
     console.log(`📱 Frontend: http://localhost:${port}`);
   } else {
-    console.log("ℹ️ No static frontend served (set STATIC_DIR or place SPA in server/spa or client/dist)");
+    console.log(
+      "ℹ️ No static frontend served (set STATIC_DIR or place SPA in server/spa or client/dist)",
+    );
   }
 });
 

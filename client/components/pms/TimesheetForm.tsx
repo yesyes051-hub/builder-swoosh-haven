@@ -101,8 +101,12 @@ export default function TimesheetForm({ onRefresh }: Props) {
   const [weeklyError, setWeeklyError] = useState("");
   const [submitWeekMsg, setSubmitWeekMsg] = useState("");
   const [submitWeekError, setSubmitWeekError] = useState("");
-  const [selectedSubmitIds, setSelectedSubmitIds] = useState<Set<string>>(new Set());
-  const [managerStatusFilter, setManagerStatusFilter] = useState<'Submitted' | 'Approved' | 'All'>('Submitted');
+  const [selectedSubmitIds, setSelectedSubmitIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [managerStatusFilter, setManagerStatusFilter] = useState<
+    "Submitted" | "Approved" | "All"
+  >("Submitted");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -120,15 +124,27 @@ export default function TimesheetForm({ onRefresh }: Props) {
     startTime: string;
     endTime: string;
     taskDescription: string;
-    category: "Development" | "Testing" | "Meeting" | "Documentation" | "Support" | "Other";
+    category:
+      | "Development"
+      | "Testing"
+      | "Meeting"
+      | "Documentation"
+      | "Support"
+      | "Other";
     billable: boolean;
   };
 
   const [weeklyForm, setWeeklyForm] = useState({
     projectId: "",
-    weekStart: format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd"),
+    weekStart: format(
+      startOfWeek(new Date(), { weekStartsOn: 1 }),
+      "yyyy-MM-dd",
+    ),
     days: Array.from({ length: 5 }).map((_, i) => ({
-      date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), i), "yyyy-MM-dd"),
+      date: format(
+        addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), i),
+        "yyyy-MM-dd",
+      ),
       startTime: "09:00",
       endTime: "17:00",
       taskDescription: "",
@@ -253,10 +269,15 @@ export default function TimesheetForm({ onRefresh }: Props) {
 
   // Recalculate Mon–Fri dates when week start changes
   useEffect(() => {
-    const monday = startOfWeek(new Date(weeklyForm.weekStart), { weekStartsOn: 1 });
+    const monday = startOfWeek(new Date(weeklyForm.weekStart), {
+      weekStartsOn: 1,
+    });
     setWeeklyForm((prev) => ({
       ...prev,
-      days: prev.days.map((d, i) => ({ ...d, date: format(addDays(monday, i), "yyyy-MM-dd") })),
+      days: prev.days.map((d, i) => ({
+        ...d,
+        date: format(addDays(monday, i), "yyyy-MM-dd"),
+      })),
     }));
     setSelectedSubmitIds(new Set());
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -295,7 +316,10 @@ export default function TimesheetForm({ onRefresh }: Props) {
       for (const body of entries) {
         const res = await fetch("/api/pms-new/timesheets", {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify(body),
         });
         const data: ApiResponse<any> = await res.json();
@@ -319,7 +343,12 @@ export default function TimesheetForm({ onRefresh }: Props) {
     const monday = startOfWeek(new Date(weekStart), { weekStartsOn: 1 });
     const nextMonday = new Date(monday);
     nextMonday.setDate(monday.getDate() + 7);
-    return timesheets.filter((t) => t.status === 'Draft' && new Date(t.date) >= monday && new Date(t.date) < nextMonday).length;
+    return timesheets.filter(
+      (t) =>
+        t.status === "Draft" &&
+        new Date(t.date) >= monday &&
+        new Date(t.date) < nextMonday,
+    ).length;
   };
 
   const handleSubmitWeek = async (e: React.FormEvent) => {
@@ -338,20 +367,33 @@ export default function TimesheetForm({ onRefresh }: Props) {
       let successCount = 0;
       for (const id of ids) {
         const res = await fetch(`/api/pms-new/timesheets/${id}/submit`, {
-          method: 'POST',
+          method: "POST",
           headers: { Authorization: `Bearer ${token}` },
         });
         const text = await res.text();
         let data: ApiResponse<any> | null = null;
-        try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+        try {
+          data = text ? JSON.parse(text) : null;
+        } catch {
+          data = null;
+        }
         if (res.ok && data && data.success) successCount += 1;
       }
-      setSubmitWeekMsg(`Submitted ${successCount}/${ids.length} entries for approval`);
+      setSubmitWeekMsg(
+        `Submitted ${successCount}/${ids.length} entries for approval`,
+      );
       await loadTimesheets();
       onRefresh();
-      setTimeout(() => { setIsSubmitWeekOpen(false); setSubmitWeekMsg(""); }, 800);
+      setTimeout(() => {
+        setIsSubmitWeekOpen(false);
+        setSubmitWeekMsg("");
+      }, 800);
     } catch (err) {
-      setSubmitWeekError(err instanceof Error ? err.message : 'Failed to submit selected entries');
+      setSubmitWeekError(
+        err instanceof Error
+          ? err.message
+          : "Failed to submit selected entries",
+      );
     } finally {
       setLoading(false);
     }
@@ -368,9 +410,15 @@ export default function TimesheetForm({ onRefresh }: Props) {
       });
       const text = await res.text();
       let data: ApiResponse<null> | null = null;
-      try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = null;
+      }
       if (!res.ok || !data || !data.success) {
-        throw new Error((data && (data as any).error) || text || "Failed to delete entry");
+        throw new Error(
+          (data && (data as any).error) || text || "Failed to delete entry",
+        );
       }
       setSuccess("Timesheet entry deleted");
       await loadTimesheets();
@@ -388,18 +436,27 @@ export default function TimesheetForm({ onRefresh }: Props) {
       setError("");
       setSuccess("");
       setLoading(true);
-      const res = await fetch(`/api/pms-new/timesheets/${id}/approve`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`/api/pms-new/timesheets/${id}/approve`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const text = await res.text();
       let data: ApiResponse<any> | null = null;
-      try { data = text ? JSON.parse(text) : null; } catch { data = null; }
-      if (!res.ok || !data || !data.success) {
-        throw new Error((data && (data as any).error) || text || 'Failed to approve');
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = null;
       }
-      setSuccess('Entry approved');
+      if (!res.ok || !data || !data.success) {
+        throw new Error(
+          (data && (data as any).error) || text || "Failed to approve",
+        );
+      }
+      setSuccess("Entry approved");
       await loadTimesheets();
       onRefresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to approve entry');
+      setError(e instanceof Error ? e.message : "Failed to approve entry");
     } finally {
       setLoading(false);
       setTimeout(() => setSuccess(""), 1500);
@@ -407,18 +464,37 @@ export default function TimesheetForm({ onRefresh }: Props) {
   };
 
   const groupPendingByUserWeek = () => {
-    const map = new Map<string, { userId: string; userName: string; userEmail: string; weekStart: string; count: number }>();
-    timesheets.filter((t) => t.status === 'Submitted').forEach((t) => {
-      const monday = startOfWeek(new Date(t.date), { weekStartsOn: 1 });
-      const key = `${t.userId}-${monday.toISOString().slice(0,10)}`;
-      const found = map.get(key);
-      if (found) {
-        found.count += 1;
-      } else {
-        map.set(key, { userId: t.userId, userName: t.userName, userEmail: t.userEmail, weekStart: monday.toISOString().slice(0,10), count: 1 });
+    const map = new Map<
+      string,
+      {
+        userId: string;
+        userName: string;
+        userEmail: string;
+        weekStart: string;
+        count: number;
       }
-    });
-    return Array.from(map.values()).sort((a,b)=>a.weekStart.localeCompare(b.weekStart));
+    >();
+    timesheets
+      .filter((t) => t.status === "Submitted")
+      .forEach((t) => {
+        const monday = startOfWeek(new Date(t.date), { weekStartsOn: 1 });
+        const key = `${t.userId}-${monday.toISOString().slice(0, 10)}`;
+        const found = map.get(key);
+        if (found) {
+          found.count += 1;
+        } else {
+          map.set(key, {
+            userId: t.userId,
+            userName: t.userName,
+            userEmail: t.userEmail,
+            weekStart: monday.toISOString().slice(0, 10),
+            count: 1,
+          });
+        }
+      });
+    return Array.from(map.values()).sort((a, b) =>
+      a.weekStart.localeCompare(b.weekStart),
+    );
   };
 
   return (
@@ -545,7 +621,9 @@ export default function TimesheetForm({ onRefresh }: Props) {
                       <SelectItem value="Development">Development</SelectItem>
                       <SelectItem value="Testing">Testing</SelectItem>
                       <SelectItem value="Meeting">Meeting</SelectItem>
-                      <SelectItem value="Documentation">Documentation</SelectItem>
+                      <SelectItem value="Documentation">
+                        Documentation
+                      </SelectItem>
                       <SelectItem value="Support">Support</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
@@ -584,7 +662,9 @@ export default function TimesheetForm({ onRefresh }: Props) {
 
                 <div className="flex space-x-2">
                   <Button type="submit" disabled={loading} className="flex-1">
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {loading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Add Entry
                   </Button>
                   <Button
@@ -599,7 +679,7 @@ export default function TimesheetForm({ onRefresh }: Props) {
             </DialogContent>
           </Dialog>
 
-          {user?.role === 'employee' && (
+          {user?.role === "employee" && (
             <Dialog open={isSubmitWeekOpen} onOpenChange={setIsSubmitWeekOpen}>
               <DialogTrigger asChild>
                 <Button variant="secondary" className="space-x-2">
@@ -608,123 +688,229 @@ export default function TimesheetForm({ onRefresh }: Props) {
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-3xl">
-              <DialogHeader>
-                <DialogTitle>Submit Weekly Timesheet</DialogTitle>
-                <DialogDescription>Select the entries to send for manager approval.</DialogDescription>
-              </DialogHeader>
+                <DialogHeader>
+                  <DialogTitle>Submit Weekly Timesheet</DialogTitle>
+                  <DialogDescription>
+                    Select the entries to send for manager approval.
+                  </DialogDescription>
+                </DialogHeader>
 
-              {submitWeekError && (
-                <Alert className="border-red-200 bg-red-50">
-                  <AlertTriangle className="h-4 w-4 text-red-600" />
-                  <AlertDescription className="text-red-800">{submitWeekError}</AlertDescription>
-                </Alert>
-              )}
-              {submitWeekMsg && (
-                <Alert className="border-green-200 bg-green-50">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <AlertDescription className="text-green-800">{submitWeekMsg}</AlertDescription>
-                </Alert>
-              )}
+                {submitWeekError && (
+                  <Alert className="border-red-200 bg-red-50">
+                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-800">
+                      {submitWeekError}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                {submitWeekMsg && (
+                  <Alert className="border-green-200 bg-green-50">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-800">
+                      {submitWeekMsg}
+                    </AlertDescription>
+                  </Alert>
+                )}
 
-              <form onSubmit={handleSubmitWeek} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2 md:col-span-1">
-                    <Label>Week starting (Monday)</Label>
-                    <Input type="date" value={weeklyForm.weekStart} onChange={(e) => setWeeklyForm((p) => ({ ...p, weekStart: e.target.value }))} />
-                    <div className="text-xs text-muted-foreground">Draft entries this week: {draftCountForWeek(weeklyForm.weekStart)}</div>
-                  </div>
-                </div>
-
-                <div className="overflow-auto border rounded-md">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-10">
-                          <input
-                            type="checkbox"
-                            aria-label="Select all"
-                            checked={(() => {
-                              const monday = startOfWeek(new Date(weeklyForm.weekStart), { weekStartsOn: 1 });
-                              const nextMonday = new Date(monday); nextMonday.setDate(monday.getDate() + 7);
-                              const drafts = timesheets.filter((t) => t.status === 'Draft' && new Date(t.date) >= monday && new Date(t.date) < nextMonday);
-                              return drafts.length > 0 && drafts.every((d) => d._id && selectedSubmitIds.has(d._id));
-                            })()}
-                            onChange={(e) => {
-                              const monday = startOfWeek(new Date(weeklyForm.weekStart), { weekStartsOn: 1 });
-                              const nextMonday = new Date(monday); nextMonday.setDate(monday.getDate() + 7);
-                              const drafts = timesheets.filter((t) => t.status === 'Draft' && new Date(t.date) >= monday && new Date(t.date) < nextMonday);
-                              const next = new Set<string>(selectedSubmitIds);
-                              if (e.target.checked) {
-                                drafts.forEach((d) => { if (d._id) next.add(d._id); });
-                              } else {
-                                drafts.forEach((d) => { if (d._id) next.delete(d._id); });
-                              }
-                              setSelectedSubmitIds(next);
-                            }}
-                          />
-                        </TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Project</TableHead>
-                        <TableHead>Time</TableHead>
-                        <TableHead>Hours</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Description</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {(() => {
-                        const monday = startOfWeek(new Date(weeklyForm.weekStart), { weekStartsOn: 1 });
-                        const nextMonday = new Date(monday); nextMonday.setDate(monday.getDate() + 7);
-                        const drafts = timesheets.filter((t) => t.status === 'Draft' && new Date(t.date) >= monday && new Date(t.date) < nextMonday);
-                        if (drafts.length === 0) {
-                          return (
-                            <TableRow>
-                              <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">No draft entries for this week.</TableCell>
-                            </TableRow>
-                          );
+                <form onSubmit={handleSubmitWeek} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2 md:col-span-1">
+                      <Label>Week starting (Monday)</Label>
+                      <Input
+                        type="date"
+                        value={weeklyForm.weekStart}
+                        onChange={(e) =>
+                          setWeeklyForm((p) => ({
+                            ...p,
+                            weekStart: e.target.value,
+                          }))
                         }
-                        return drafts.map((entry) => (
-                          <TableRow key={entry._id}>
-                            <TableCell>
-                              <input
-                                type="checkbox"
-                                checked={!!(entry._id && selectedSubmitIds.has(entry._id))}
-                                onChange={(e) => {
-                                  if (!entry._id) return;
-                                  const next = new Set<string>(selectedSubmitIds);
-                                  if (e.target.checked) next.add(entry._id); else next.delete(entry._id);
-                                  setSelectedSubmitIds(next);
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell>{format(new Date(entry.date), "MMM dd, yyyy")}</TableCell>
-                            <TableCell className="font-medium">{entry.projectName}</TableCell>
-                            <TableCell>{entry.startTime} - {entry.endTime}</TableCell>
-                            <TableCell>{entry.hoursWorked.toFixed(1)}h</TableCell>
-                            <TableCell><Badge variant="outline">{entry.category}</Badge></TableCell>
-                            <TableCell className="max-w-[320px]"><div className="truncate" title={entry.taskDescription}>{entry.taskDescription}</div></TableCell>
-                          </TableRow>
-                        ));
-                      })()}
-                    </TableBody>
-                  </Table>
-                </div>
+                      />
+                      <div className="text-xs text-muted-foreground">
+                        Draft entries this week:{" "}
+                        {draftCountForWeek(weeklyForm.weekStart)}
+                      </div>
+                    </div>
+                  </div>
 
-                <div className="flex gap-2">
-                  <Button type="submit" disabled={loading || selectedSubmitIds.size === 0} className="flex-1">
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Send for Approval
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => setIsSubmitWeekOpen(false)}>Cancel</Button>
-                </div>
-              </form>
-            </DialogContent>
+                  <div className="overflow-auto border rounded-md">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-10">
+                            <input
+                              type="checkbox"
+                              aria-label="Select all"
+                              checked={(() => {
+                                const monday = startOfWeek(
+                                  new Date(weeklyForm.weekStart),
+                                  { weekStartsOn: 1 },
+                                );
+                                const nextMonday = new Date(monday);
+                                nextMonday.setDate(monday.getDate() + 7);
+                                const drafts = timesheets.filter(
+                                  (t) =>
+                                    t.status === "Draft" &&
+                                    new Date(t.date) >= monday &&
+                                    new Date(t.date) < nextMonday,
+                                );
+                                return (
+                                  drafts.length > 0 &&
+                                  drafts.every(
+                                    (d) =>
+                                      d._id && selectedSubmitIds.has(d._id),
+                                  )
+                                );
+                              })()}
+                              onChange={(e) => {
+                                const monday = startOfWeek(
+                                  new Date(weeklyForm.weekStart),
+                                  { weekStartsOn: 1 },
+                                );
+                                const nextMonday = new Date(monday);
+                                nextMonday.setDate(monday.getDate() + 7);
+                                const drafts = timesheets.filter(
+                                  (t) =>
+                                    t.status === "Draft" &&
+                                    new Date(t.date) >= monday &&
+                                    new Date(t.date) < nextMonday,
+                                );
+                                const next = new Set<string>(selectedSubmitIds);
+                                if (e.target.checked) {
+                                  drafts.forEach((d) => {
+                                    if (d._id) next.add(d._id);
+                                  });
+                                } else {
+                                  drafts.forEach((d) => {
+                                    if (d._id) next.delete(d._id);
+                                  });
+                                }
+                                setSelectedSubmitIds(next);
+                              }}
+                            />
+                          </TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Project</TableHead>
+                          <TableHead>Time</TableHead>
+                          <TableHead>Hours</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Description</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(() => {
+                          const monday = startOfWeek(
+                            new Date(weeklyForm.weekStart),
+                            { weekStartsOn: 1 },
+                          );
+                          const nextMonday = new Date(monday);
+                          nextMonday.setDate(monday.getDate() + 7);
+                          const drafts = timesheets.filter(
+                            (t) =>
+                              t.status === "Draft" &&
+                              new Date(t.date) >= monday &&
+                              new Date(t.date) < nextMonday,
+                          );
+                          if (drafts.length === 0) {
+                            return (
+                              <TableRow>
+                                <TableCell
+                                  colSpan={7}
+                                  className="text-center py-6 text-muted-foreground"
+                                >
+                                  No draft entries for this week.
+                                </TableCell>
+                              </TableRow>
+                            );
+                          }
+                          return drafts.map((entry) => (
+                            <TableRow key={entry._id}>
+                              <TableCell>
+                                <input
+                                  type="checkbox"
+                                  checked={
+                                    !!(
+                                      entry._id &&
+                                      selectedSubmitIds.has(entry._id)
+                                    )
+                                  }
+                                  onChange={(e) => {
+                                    if (!entry._id) return;
+                                    const next = new Set<string>(
+                                      selectedSubmitIds,
+                                    );
+                                    if (e.target.checked) next.add(entry._id);
+                                    else next.delete(entry._id);
+                                    setSelectedSubmitIds(next);
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                {format(new Date(entry.date), "MMM dd, yyyy")}
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                {entry.projectName}
+                              </TableCell>
+                              <TableCell>
+                                {entry.startTime} - {entry.endTime}
+                              </TableCell>
+                              <TableCell>
+                                {entry.hoursWorked.toFixed(1)}h
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">
+                                  {entry.category}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="max-w-[320px]">
+                                <div
+                                  className="truncate"
+                                  title={entry.taskDescription}
+                                >
+                                  {entry.taskDescription}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ));
+                        })()}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      type="submit"
+                      disabled={loading || selectedSubmitIds.size === 0}
+                      className="flex-1"
+                    >
+                      {loading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Send for Approval
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsSubmitWeekOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
             </Dialog>
           )}
 
           <Dialog open={isWeeklyOpen} onOpenChange={setIsWeeklyOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" onClick={() => { setWeeklyError(""); setWeeklySuccess(""); }} className="space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setWeeklyError("");
+                  setWeeklySuccess("");
+                }}
+                className="space-x-2"
+              >
                 <Timer className="h-4 w-4" />
                 <span>Log Week (Mon–Fri)</span>
               </Button>
@@ -732,19 +918,25 @@ export default function TimesheetForm({ onRefresh }: Props) {
             <DialogContent className="max-w-3xl">
               <DialogHeader>
                 <DialogTitle>Log Weekly Timesheet</DialogTitle>
-                <DialogDescription>Fill time for each weekday; leave blank to skip a day.</DialogDescription>
+                <DialogDescription>
+                  Fill time for each weekday; leave blank to skip a day.
+                </DialogDescription>
               </DialogHeader>
 
               {weeklyError && (
                 <Alert className="border-red-200 bg-red-50">
                   <AlertTriangle className="h-4 w-4 text-red-600" />
-                  <AlertDescription className="text-red-800">{weeklyError}</AlertDescription>
+                  <AlertDescription className="text-red-800">
+                    {weeklyError}
+                  </AlertDescription>
                 </Alert>
               )}
               {weeklySuccess && (
                 <Alert className="border-green-200 bg-green-50">
                   <CheckCircle className="h-4 w-4 text-green-600" />
-                  <AlertDescription className="text-green-800">{weeklySuccess}</AlertDescription>
+                  <AlertDescription className="text-green-800">
+                    {weeklySuccess}
+                  </AlertDescription>
                 </Alert>
               )}
 
@@ -752,20 +944,36 @@ export default function TimesheetForm({ onRefresh }: Props) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2 md:col-span-2">
                     <Label>Project *</Label>
-                    <Select value={weeklyForm.projectId} onValueChange={(v) => setWeeklyForm((p) => ({ ...p, projectId: v }))}>
+                    <Select
+                      value={weeklyForm.projectId}
+                      onValueChange={(v) =>
+                        setWeeklyForm((p) => ({ ...p, projectId: v }))
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a project" />
                       </SelectTrigger>
                       <SelectContent>
                         {projects.map((p) => (
-                          <SelectItem key={p._id} value={p._id}>{p.projectName}</SelectItem>
+                          <SelectItem key={p._id} value={p._id}>
+                            {p.projectName}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
                     <Label>Week starting (Monday)</Label>
-                    <Input type="date" value={weeklyForm.weekStart} onChange={(e) => setWeeklyForm((p) => ({ ...p, weekStart: e.target.value }))} />
+                    <Input
+                      type="date"
+                      value={weeklyForm.weekStart}
+                      onChange={(e) =>
+                        setWeeklyForm((p) => ({
+                          ...p,
+                          weekStart: e.target.value,
+                        }))
+                      }
+                    />
                   </div>
                 </div>
 
@@ -785,32 +993,106 @@ export default function TimesheetForm({ onRefresh }: Props) {
                       {weeklyForm.days.map((d, i) => (
                         <TableRow key={i}>
                           <TableCell className="text-sm">
-                            {format(new Date(d.date), "EEE, MMM dd")}<div className="text-xs text-muted-foreground">{d.date}</div>
+                            {format(new Date(d.date), "EEE, MMM dd")}
+                            <div className="text-xs text-muted-foreground">
+                              {d.date}
+                            </div>
                           </TableCell>
                           <TableCell>
-                            <Input type="time" value={d.startTime} onChange={(e) => setWeeklyForm((p) => ({ ...p, days: p.days.map((x, idx) => idx === i ? { ...x, startTime: e.target.value } : x) }))} />
+                            <Input
+                              type="time"
+                              value={d.startTime}
+                              onChange={(e) =>
+                                setWeeklyForm((p) => ({
+                                  ...p,
+                                  days: p.days.map((x, idx) =>
+                                    idx === i
+                                      ? { ...x, startTime: e.target.value }
+                                      : x,
+                                  ),
+                                }))
+                              }
+                            />
                           </TableCell>
                           <TableCell>
-                            <Input type="time" value={d.endTime} onChange={(e) => setWeeklyForm((p) => ({ ...p, days: p.days.map((x, idx) => idx === i ? { ...x, endTime: e.target.value } : x) }))} />
+                            <Input
+                              type="time"
+                              value={d.endTime}
+                              onChange={(e) =>
+                                setWeeklyForm((p) => ({
+                                  ...p,
+                                  days: p.days.map((x, idx) =>
+                                    idx === i
+                                      ? { ...x, endTime: e.target.value }
+                                      : x,
+                                  ),
+                                }))
+                              }
+                            />
                           </TableCell>
                           <TableCell>
-                            <Input placeholder="What did you work on?" value={d.taskDescription} onChange={(e) => setWeeklyForm((p) => ({ ...p, days: p.days.map((x, idx) => idx === i ? { ...x, taskDescription: e.target.value } : x) }))} />
+                            <Input
+                              placeholder="What did you work on?"
+                              value={d.taskDescription}
+                              onChange={(e) =>
+                                setWeeklyForm((p) => ({
+                                  ...p,
+                                  days: p.days.map((x, idx) =>
+                                    idx === i
+                                      ? {
+                                          ...x,
+                                          taskDescription: e.target.value,
+                                        }
+                                      : x,
+                                  ),
+                                }))
+                              }
+                            />
                           </TableCell>
                           <TableCell>
-                            <Select value={d.category} onValueChange={(v: any) => setWeeklyForm((p) => ({ ...p, days: p.days.map((x, idx) => idx === i ? { ...x, category: v } : x) }))}>
-                              <SelectTrigger><SelectValue /></SelectTrigger>
+                            <Select
+                              value={d.category}
+                              onValueChange={(v: any) =>
+                                setWeeklyForm((p) => ({
+                                  ...p,
+                                  days: p.days.map((x, idx) =>
+                                    idx === i ? { ...x, category: v } : x,
+                                  ),
+                                }))
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="Development">Development</SelectItem>
+                                <SelectItem value="Development">
+                                  Development
+                                </SelectItem>
                                 <SelectItem value="Testing">Testing</SelectItem>
                                 <SelectItem value="Meeting">Meeting</SelectItem>
-                                <SelectItem value="Documentation">Documentation</SelectItem>
+                                <SelectItem value="Documentation">
+                                  Documentation
+                                </SelectItem>
                                 <SelectItem value="Support">Support</SelectItem>
                                 <SelectItem value="Other">Other</SelectItem>
                               </SelectContent>
                             </Select>
                           </TableCell>
                           <TableCell>
-                            <input type="checkbox" checked={d.billable} onChange={(e) => setWeeklyForm((p) => ({ ...p, days: p.days.map((x, idx) => idx === i ? { ...x, billable: e.target.checked } : x) }))} />
+                            <input
+                              type="checkbox"
+                              checked={d.billable}
+                              onChange={(e) =>
+                                setWeeklyForm((p) => ({
+                                  ...p,
+                                  days: p.days.map((x, idx) =>
+                                    idx === i
+                                      ? { ...x, billable: e.target.checked }
+                                      : x,
+                                  ),
+                                }))
+                              }
+                            />
                           </TableCell>
                         </TableRow>
                       ))}
@@ -820,10 +1102,18 @@ export default function TimesheetForm({ onRefresh }: Props) {
 
                 <div className="flex gap-2">
                   <Button type="submit" disabled={loading} className="flex-1">
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {loading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Save Week
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => setIsWeeklyOpen(false)}>Cancel</Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsWeeklyOpen(false)}
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </form>
             </DialogContent>
@@ -832,22 +1122,29 @@ export default function TimesheetForm({ onRefresh }: Props) {
       </div>
 
       {/* Manager/Admin: Pending approvals */}
-      {(user?.role === 'manager' || user?.role === 'admin') && (
+      {(user?.role === "manager" || user?.role === "admin") && (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <div>
                 <CardTitle>Timesheets (Manager View)</CardTitle>
-                <CardDescription>Review entries employee-wise, approve, or filter by status.</CardDescription>
+                <CardDescription>
+                  Review entries employee-wise, approve, or filter by status.
+                </CardDescription>
               </div>
               <div className="w-44">
                 <Label className="mb-1 block">Status Filter</Label>
-                <Select value={managerStatusFilter} onValueChange={(v) => setManagerStatusFilter(v as any)}>
+                <Select
+                  value={managerStatusFilter}
+                  onValueChange={(v) => setManagerStatusFilter(v as any)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Submitted" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Submitted">Submitted (Pending)</SelectItem>
+                    <SelectItem value="Submitted">
+                      Submitted (Pending)
+                    </SelectItem>
                     <SelectItem value="Approved">Approved</SelectItem>
                     <SelectItem value="All">All</SelectItem>
                   </SelectContent>
@@ -858,28 +1155,82 @@ export default function TimesheetForm({ onRefresh }: Props) {
           <CardContent>
             {(() => {
               const groups = timesheets
-                .filter((t) => managerStatusFilter === 'All' ? (t.status === 'Submitted' || t.status === 'Approved') : t.status === managerStatusFilter)
-                .reduce((acc: Record<string, { userId: string; userName: string; userEmail: string; items: typeof timesheets }>, t) => {
-                  const key = t.userId;
-                  if (!acc[key]) acc[key] = { userId: t.userId, userName: t.userName, userEmail: t.userEmail, items: [] as any } as any;
-                  acc[key].items.push(t);
-                  return acc;
-                }, {});
+                .filter((t) =>
+                  managerStatusFilter === "All"
+                    ? t.status === "Submitted" || t.status === "Approved"
+                    : t.status === managerStatusFilter,
+                )
+                .reduce(
+                  (
+                    acc: Record<
+                      string,
+                      {
+                        userId: string;
+                        userName: string;
+                        userEmail: string;
+                        items: typeof timesheets;
+                      }
+                    >,
+                    t,
+                  ) => {
+                    const key = t.userId;
+                    if (!acc[key])
+                      acc[key] = {
+                        userId: t.userId,
+                        userName: t.userName,
+                        userEmail: t.userEmail,
+                        items: [] as any,
+                      } as any;
+                    acc[key].items.push(t);
+                    return acc;
+                  },
+                  {},
+                );
               const keys = Object.keys(groups).sort((a, b) => {
-                const nameA = (groups[a].userName || groups[a].userEmail || a || "").toString();
-                const nameB = (groups[b].userName || groups[b].userEmail || b || "").toString();
+                const nameA = (
+                  groups[a].userName ||
+                  groups[a].userEmail ||
+                  a ||
+                  ""
+                ).toString();
+                const nameB = (
+                  groups[b].userName ||
+                  groups[b].userEmail ||
+                  b ||
+                  ""
+                ).toString();
                 return nameA.localeCompare(nameB);
               });
-              if (keys.length === 0) return <div className="text-sm text-muted-foreground">No pending submissions.</div>;
+              if (keys.length === 0)
+                return (
+                  <div className="text-sm text-muted-foreground">
+                    No pending submissions.
+                  </div>
+                );
 
               const handleApprove = async (id: string) => {
                 try {
                   setLoading(true);
-                  const res = await fetch(`/api/pms-new/timesheets/${id}/approve`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+                  const res = await fetch(
+                    `/api/pms-new/timesheets/${id}/approve`,
+                    {
+                      method: "POST",
+                      headers: { Authorization: `Bearer ${token}` },
+                    },
+                  );
                   const text = await res.text();
                   let data: ApiResponse<any> | null = null;
-                  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
-                  if (!res.ok || !data || !data.success) throw new Error((data && (data as any).error) || text || 'Failed to approve');
+                  try {
+                    data = text ? JSON.parse(text) : null;
+                  } catch {
+                    data = null;
+                  }
+                  if (!res.ok || !data || !data.success)
+                    throw new Error(
+                      (data && (data as any).error) ||
+                        text ||
+                        "Failed to approve",
+                    );
                   await loadTimesheets();
                   onRefresh();
                 } catch (e) {
@@ -893,7 +1244,13 @@ export default function TimesheetForm({ onRefresh }: Props) {
                 try {
                   setLoading(true);
                   for (const id of ids) {
-                    const res = await fetch(`/api/pms-new/timesheets/${id}/approve`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+                    const res = await fetch(
+                      `/api/pms-new/timesheets/${id}/approve`,
+                      {
+                        method: "POST",
+                        headers: { Authorization: `Bearer ${token}` },
+                      },
+                    );
                     // ignore body parsing for speed
                   }
                   await loadTimesheets();
@@ -913,11 +1270,25 @@ export default function TimesheetForm({ onRefresh }: Props) {
                       <div key={k} className="border rounded-md">
                         <div className="flex items-center justify-between p-3 bg-muted/30">
                           <div>
-                            <div className="font-medium">{g.userName || g.userEmail || g.userId}</div>
-                            <div className="text-xs text-muted-foreground">{g.userEmail || g.userId}</div>
+                            <div className="font-medium">
+                              {g.userName || g.userEmail || g.userId}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {g.userEmail || g.userId}
+                            </div>
                           </div>
                           <div className="flex gap-2">
-                            <Button variant="secondary" onClick={() => handleApproveMany(g.items.map((it) => it._id!).filter(Boolean))} disabled={g.items.length === 0}>Approve All</Button>
+                            <Button
+                              variant="secondary"
+                              onClick={() =>
+                                handleApproveMany(
+                                  g.items.map((it) => it._id!).filter(Boolean),
+                                )
+                              }
+                              disabled={g.items.length === 0}
+                            >
+                              Approve All
+                            </Button>
                           </div>
                         </div>
                         <div className="overflow-auto">
@@ -934,19 +1305,55 @@ export default function TimesheetForm({ onRefresh }: Props) {
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {[...g.items].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((entry) => (
-                                <TableRow key={entry._id}>
-                                  <TableCell>{format(new Date(entry.date), 'MMM dd, yyyy')}</TableCell>
-                                  <TableCell className="font-medium">{entry.projectName}</TableCell>
-                                  <TableCell>{entry.startTime} - {entry.endTime}</TableCell>
-                                  <TableCell>{entry.hoursWorked.toFixed(1)}h</TableCell>
-                                  <TableCell><Badge variant="outline">{entry.category}</Badge></TableCell>
-                                  <TableCell className="max-w-[320px]"><div className="truncate" title={entry.taskDescription}>{entry.taskDescription}</div></TableCell>
-                                  <TableCell>
-                                    <Button size="sm" onClick={() => entry._id && handleApprove(entry._id)} disabled={loading}>Approve</Button>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
+                              {[...g.items]
+                                .sort(
+                                  (a, b) =>
+                                    new Date(a.date).getTime() -
+                                    new Date(b.date).getTime(),
+                                )
+                                .map((entry) => (
+                                  <TableRow key={entry._id}>
+                                    <TableCell>
+                                      {format(
+                                        new Date(entry.date),
+                                        "MMM dd, yyyy",
+                                      )}
+                                    </TableCell>
+                                    <TableCell className="font-medium">
+                                      {entry.projectName}
+                                    </TableCell>
+                                    <TableCell>
+                                      {entry.startTime} - {entry.endTime}
+                                    </TableCell>
+                                    <TableCell>
+                                      {entry.hoursWorked.toFixed(1)}h
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline">
+                                        {entry.category}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="max-w-[320px]">
+                                      <div
+                                        className="truncate"
+                                        title={entry.taskDescription}
+                                      >
+                                        {entry.taskDescription}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Button
+                                        size="sm"
+                                        onClick={() =>
+                                          entry._id && handleApprove(entry._id)
+                                        }
+                                        disabled={loading}
+                                      >
+                                        Approve
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
                             </TableBody>
                           </Table>
                         </div>
@@ -1002,22 +1409,40 @@ export default function TimesheetForm({ onRefresh }: Props) {
                     <Badge variant="outline">{entry.category}</Badge>
                   </TableCell>
                   <TableCell className="max-w-[280px]">
-                    <div className="truncate" title={entry.taskDescription}>{entry.taskDescription}</div>
+                    <div className="truncate" title={entry.taskDescription}>
+                      {entry.taskDescription}
+                    </div>
                   </TableCell>
                   <TableCell>{getStatusBadge(entry.status)}</TableCell>
                   <TableCell className="flex gap-1">
-                    {(user?.role === 'manager' || user?.role === 'admin') && entry.status !== 'Approved' && (
-                      <Button variant="secondary" size="sm" onClick={() => entry._id && handleApproveEntry(entry._id)} disabled={loading}>
-                        Approve
-                      </Button>
-                    )}
+                    {(user?.role === "manager" || user?.role === "admin") &&
+                      entry.status !== "Approved" && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() =>
+                            entry._id && handleApproveEntry(entry._id)
+                          }
+                          disabled={loading}
+                        >
+                          Approve
+                        </Button>
+                      )}
                     <Button
                       variant="ghost"
                       size="icon"
-                      disabled={user?.role === 'employee' && entry.status !== 'Draft'}
+                      disabled={
+                        user?.role === "employee" && entry.status !== "Draft"
+                      }
                       onClick={() => {
-                        if (entry._id && (entry.status === 'Draft' || user?.role === 'admin' || user?.role === 'manager')) {
-                          if (window.confirm('Delete this entry?')) handleDelete(entry._id);
+                        if (
+                          entry._id &&
+                          (entry.status === "Draft" ||
+                            user?.role === "admin" ||
+                            user?.role === "manager")
+                        ) {
+                          if (window.confirm("Delete this entry?"))
+                            handleDelete(entry._id);
                         }
                       }}
                     >

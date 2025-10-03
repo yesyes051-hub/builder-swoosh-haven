@@ -1,16 +1,16 @@
-import { RequestHandler } from 'express';
-import bcrypt from 'bcryptjs';
-import { db } from '../db/memory';
-import { generateToken, AuthRequest } from '../middleware/auth';
+import { RequestHandler } from "express";
+import bcrypt from "bcryptjs";
+import { db } from "../db/memory";
+import { generateToken, AuthRequest } from "../middleware/auth";
 import {
   LoginRequest,
   RegisterRequest,
   AuthResponse,
-  ApiResponse
-} from '@shared/api';
-import { EmployeeUser } from '../models/employeeManagement';
-import { connectToDatabase } from '../db/mongodb';
-import { PMSUser } from '../models/pms';
+  ApiResponse,
+} from "@shared/api";
+import { EmployeeUser } from "../models/employeeManagement";
+import { connectToDatabase } from "../db/mongodb";
+import { PMSUser } from "../models/pms";
 
 export const login: RequestHandler = async (req, res) => {
   try {
@@ -19,7 +19,7 @@ export const login: RequestHandler = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        error: 'Email and password are required'
+        error: "Email and password are required",
       } as ApiResponse<never>);
     }
 
@@ -31,11 +31,14 @@ export const login: RequestHandler = async (req, res) => {
       const memoryUser = await db.getUserByEmail(email.toLowerCase());
       if (memoryUser) {
         // Validate password against hashed password stored in memory DB
-        const isValidPassword = await bcrypt.compare(password, memoryUser.password!);
+        const isValidPassword = await bcrypt.compare(
+          password,
+          memoryUser.password!,
+        );
         if (!isValidPassword) {
           return res.status(401).json({
             success: false,
-            error: 'Invalid credentials'
+            error: "Invalid credentials",
           } as ApiResponse<never>);
         }
 
@@ -46,10 +49,13 @@ export const login: RequestHandler = async (req, res) => {
           firstName: memoryUser.firstName,
           lastName: memoryUser.lastName,
           role: (memoryUser.role as string).toLowerCase(),
-          isActive: memoryUser.isActive ?? true
+          isActive: memoryUser.isActive ?? true,
         };
 
-        console.log('🔍 Login - Memory DB user object for token:', userForToken);
+        console.log(
+          "🔍 Login - Memory DB user object for token:",
+          userForToken,
+        );
 
         const token = generateToken(userForToken);
         const { password: _, ...userWithoutPassword } = memoryUser as any;
@@ -61,16 +67,16 @@ export const login: RequestHandler = async (req, res) => {
             user: {
               ...userWithoutPassword,
               id: userWithoutPassword.id,
-              role: (userWithoutPassword.role as string)?.toLowerCase()
-            }
-          }
+              role: (userWithoutPassword.role as string)?.toLowerCase(),
+            },
+          },
         } as ApiResponse<AuthResponse>);
       }
 
       // No user found in either DB
       return res.status(401).json({
         success: false,
-        error: 'Invalid credentials'
+        error: "Invalid credentials",
       } as ApiResponse<never>);
     }
 
@@ -79,7 +85,7 @@ export const login: RequestHandler = async (req, res) => {
     if (!isValidPassword) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid credentials'
+        error: "Invalid credentials",
       } as ApiResponse<never>);
     }
 
@@ -90,15 +96,20 @@ export const login: RequestHandler = async (req, res) => {
       firstName: dbUser.firstName,
       lastName: dbUser.lastName,
       role: (dbUser.role as string).toLowerCase(),
-      isActive: true
+      isActive: true,
     };
 
-    console.log('🔍 Login - Mongo user object for token:', userForToken);
+    console.log("🔍 Login - Mongo user object for token:", userForToken);
 
     const token = generateToken(userForToken);
     const { password: _, ...userWithoutPassword } = dbUser.toObject();
 
-    console.log('✅ Login successful for user:', dbUser.email, 'ID:', dbUser._id.toString());
+    console.log(
+      "✅ Login successful for user:",
+      dbUser.email,
+      "ID:",
+      dbUser._id.toString(),
+    );
 
     res.json({
       success: true,
@@ -107,15 +118,15 @@ export const login: RequestHandler = async (req, res) => {
         user: {
           ...userWithoutPassword,
           id: userWithoutPassword._id,
-          role: (userWithoutPassword.role as string)?.toLowerCase() // Convert to lowercase for frontend compatibility
-        }
-      }
+          role: (userWithoutPassword.role as string)?.toLowerCase(), // Convert to lowercase for frontend compatibility
+        },
+      },
     } as ApiResponse<AuthResponse>);
   } catch (error) {
-    console.error('Login error:', error);
+    console.error("Login error:", error);
     res.status(500).json({
       success: false,
-      error: 'Internal server error'
+      error: "Internal server error",
     } as ApiResponse<never>);
   }
 };
@@ -124,10 +135,15 @@ export const register: RequestHandler = async (req, res) => {
   try {
     const userData: RegisterRequest = req.body;
 
-    if (!userData.email || !userData.password || !userData.firstName || !userData.lastName) {
+    if (
+      !userData.email ||
+      !userData.password ||
+      !userData.firstName ||
+      !userData.lastName
+    ) {
       return res.status(400).json({
         success: false,
-        error: 'All required fields must be provided'
+        error: "All required fields must be provided",
       } as ApiResponse<never>);
     }
 
@@ -136,7 +152,7 @@ export const register: RequestHandler = async (req, res) => {
     if (existingUser) {
       return res.status(409).json({
         success: false,
-        error: 'User already exists with this email'
+        error: "User already exists with this email",
       } as ApiResponse<never>);
     }
 
@@ -148,14 +164,14 @@ export const register: RequestHandler = async (req, res) => {
       success: true,
       data: {
         token,
-        user: userWithoutPassword
-      }
+        user: userWithoutPassword,
+      },
     } as ApiResponse<AuthResponse>);
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error("Registration error:", error);
     res.status(500).json({
       success: false,
-      error: 'Internal server error'
+      error: "Internal server error",
     } as ApiResponse<never>);
   }
 };
@@ -165,13 +181,13 @@ export const getProfile: RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
     const user = authReq.user;
 
-    console.log('🔍 Profile request - User from token:', user);
+    console.log("🔍 Profile request - User from token:", user);
 
     if (!user) {
-      console.log('❌ No user in request (auth middleware failed)');
+      console.log("❌ No user in request (auth middleware failed)");
       return res.status(401).json({
         success: false,
-        error: 'Not authenticated'
+        error: "Not authenticated",
       } as ApiResponse<never>);
     }
 
@@ -180,60 +196,84 @@ export const getProfile: RequestHandler = async (req, res) => {
       const memoryById = await db.getUserById(user.id);
       if (memoryById) {
         const { password: _pw, ...safe } = memoryById as any;
-        const responseUser = { ...safe, role: (safe.role as string).toLowerCase() };
-        return res.json({ success: true, data: responseUser } as ApiResponse<typeof responseUser>);
+        const responseUser = {
+          ...safe,
+          role: (safe.role as string).toLowerCase(),
+        };
+        return res.json({ success: true, data: responseUser } as ApiResponse<
+          typeof responseUser
+        >);
       }
 
       const memoryByEmail = await db.getUserByEmail(user.email.toLowerCase());
       if (memoryByEmail) {
         const { password: _pw2, ...safe } = memoryByEmail as any;
-        const responseUser = { ...safe, role: (safe.role as string).toLowerCase() };
-        return res.json({ success: true, data: responseUser } as ApiResponse<typeof responseUser>);
+        const responseUser = {
+          ...safe,
+          role: (safe.role as string).toLowerCase(),
+        };
+        return res.json({ success: true, data: responseUser } as ApiResponse<
+          typeof responseUser
+        >);
       }
     } catch (e) {
-      console.warn('⚠️ In-memory lookup failed, continuing to Mongo lookup:', e);
+      console.warn(
+        "⚠️ In-memory lookup failed, continuing to Mongo lookup:",
+        e,
+      );
     }
 
     // 2) Fallback to Mongo ROLES collection (best-effort, tolerate connection issues)
     try {
       console.log(`🔍 Looking for user with ID in Mongo: ${user.id}`);
-      const fullUser = await EmployeeUser.findById(user.id).select('-password');
-      console.log('🔍 Mongo lookup by ID:', fullUser ? 'User found' : 'Not found');
+      const fullUser = await EmployeeUser.findById(user.id).select("-password");
+      console.log(
+        "🔍 Mongo lookup by ID:",
+        fullUser ? "User found" : "Not found",
+      );
 
       if (fullUser) {
         const userWithoutPassword = {
           ...fullUser.toObject(),
           id: fullUser._id,
-          role: (fullUser.role as string).toLowerCase()
+          role: (fullUser.role as string).toLowerCase(),
         };
-        return res.json({ success: true, data: userWithoutPassword } as ApiResponse<typeof userWithoutPassword>);
+        return res.json({
+          success: true,
+          data: userWithoutPassword,
+        } as ApiResponse<typeof userWithoutPassword>);
       }
 
       console.log(`🔍 Trying Mongo lookup by email: ${user.email}`);
-      const userByEmail = await EmployeeUser.findOne({ email: user.email.toLowerCase() }).select('-password');
+      const userByEmail = await EmployeeUser.findOne({
+        email: user.email.toLowerCase(),
+      }).select("-password");
       if (userByEmail) {
         const userWithoutPassword = {
           ...userByEmail.toObject(),
           id: userByEmail._id,
-          role: (userByEmail.role as string).toLowerCase()
+          role: (userByEmail.role as string).toLowerCase(),
         };
-        return res.json({ success: true, data: userWithoutPassword } as ApiResponse<typeof userWithoutPassword>);
+        return res.json({
+          success: true,
+          data: userWithoutPassword,
+        } as ApiResponse<typeof userWithoutPassword>);
       }
     } catch (mongoErr) {
-      console.error('❌ Mongo lookup error (tolerated):', mongoErr);
+      console.error("❌ Mongo lookup error (tolerated):", mongoErr);
       // Continue to final 404 if no other source found
     }
 
     // If not found in any source
     return res.status(404).json({
       success: false,
-      error: 'User not found'
+      error: "User not found",
     } as ApiResponse<never>);
   } catch (error) {
-    console.error('Get profile error:', error);
+    console.error("Get profile error:", error);
     return res.status(500).json({
       success: false,
-      error: 'Internal server error'
+      error: "Internal server error",
     } as ApiResponse<never>);
   }
 };
@@ -248,7 +288,7 @@ export const resetPassword: RequestHandler = async (req, res) => {
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
         success: false,
-        error: 'Current password and new password are required'
+        error: "Current password and new password are required",
       } as ApiResponse<never>);
     }
 
@@ -257,16 +297,19 @@ export const resetPassword: RequestHandler = async (req, res) => {
     if (!pmsUser) {
       return res.status(404).json({
         success: false,
-        error: 'User not found'
+        error: "User not found",
       } as ApiResponse<never>);
     }
 
     // Verify current password
-    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, pmsUser.password);
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      pmsUser.password,
+    );
     if (!isCurrentPasswordValid) {
       return res.status(400).json({
         success: false,
-        error: 'Current password is incorrect'
+        error: "Current password is incorrect",
       } as ApiResponse<never>);
     }
 
@@ -277,10 +320,17 @@ export const resetPassword: RequestHandler = async (req, res) => {
     const hasNumbers = /\d/.test(newPassword);
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
 
-    if (newPassword.length < minLength || !hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
+    if (
+      newPassword.length < minLength ||
+      !hasUpperCase ||
+      !hasLowerCase ||
+      !hasNumbers ||
+      !hasSpecialChar
+    ) {
       return res.status(400).json({
         success: false,
-        error: 'Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character'
+        error:
+          "Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character",
       } as ApiResponse<never>);
     }
 
@@ -299,19 +349,19 @@ export const resetPassword: RequestHandler = async (req, res) => {
     const memoryUser = await db.getUserByEmail(user.email);
     if (memoryUser) {
       await db.updateUser(memoryUser.id, {
-        password: hashedNewPassword
+        password: hashedNewPassword,
       });
     }
 
     res.json({
       success: true,
-      message: 'Password updated successfully'
+      message: "Password updated successfully",
     } as ApiResponse<{ message: string }>);
   } catch (error) {
-    console.error('Reset password error:', error);
+    console.error("Reset password error:", error);
     res.status(500).json({
       success: false,
-      error: 'Internal server error'
+      error: "Internal server error",
     } as ApiResponse<never>);
   }
 };

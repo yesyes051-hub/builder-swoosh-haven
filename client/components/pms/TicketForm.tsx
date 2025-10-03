@@ -171,13 +171,13 @@ export default function TicketForm({ onTicketCreated }: Props) {
       setLoading(true);
 
       const ticketData = {
-        ticketId: `TKT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2,6).toUpperCase()}`,
+        ticketId: `TKT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
         projectId: formData.projectId,
         title: formData.title,
         description: formData.description,
         assignedTo:
           formData.assignedTo === "unassigned"
-            ? (user?.id || user?._id || undefined)
+            ? user?.id || user?._id || undefined
             : formData.assignedTo,
         reportedBy: user?.id || (user as any)?._id || user?.email || "system",
         type: formData.type,
@@ -315,8 +315,8 @@ export default function TicketForm({ onTicketCreated }: Props) {
               </Select>
               {employees.length === 0 && (
                 <p className="text-sm text-gray-500 mt-1">
-                  💡 Tip: Admin, HR, or Manager role required to see employee list for
-                  assignment
+                  💡 Tip: Admin, HR, or Manager role required to see employee
+                  list for assignment
                 </p>
               )}
             </div>
