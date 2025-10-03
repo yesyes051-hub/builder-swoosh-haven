@@ -4,10 +4,10 @@
   "type": "module",
   "pkg": {
     "assets": [
-      "dist/spa/*"
+      "client/dist/*"
     ],
     "scripts": [
-      "dist/server/**/*.js"
+      "server/dist/**/*.mjs"
     ]
   },
   "scripts": {
