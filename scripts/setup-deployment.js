@@ -16,7 +16,8 @@ const requiredFiles = [
   "vercel.json",
   "render.yaml",
   "package.json",
-  ".env.example",
+  "client/.env.example",
+  "server/.env.example",
 ];
 
 console.log("📋 Checking required files...");
@@ -73,8 +74,8 @@ try {
   execSync("npm run build:vercel", { stdio: "pipe" });
   console.log("✅ Client build successful");
 
-  // Check if dist/spa exists
-  if (existsSync("dist/spa")) {
+  // Check if client/dist exists
+  if (existsSync("client/dist")) {
     console.log("✅ Client build output directory exists");
   } else {
     console.log("❌ Client build output directory missing");
@@ -84,8 +85,8 @@ try {
   execSync("npm run build:render", { stdio: "pipe" });
   console.log("✅ Server build successful");
 
-  // Check if dist/server exists
-  if (existsSync("dist/server")) {
+  // Check if server/dist exists
+  if (existsSync("server/dist")) {
     console.log("✅ Server build output directory exists");
   } else {
     console.log("❌ Server build output directory missing");
