@@ -19,11 +19,11 @@ export const scheduleInterview: RequestHandler = async (req, res) => {
     console.log("📅 Scheduling interview - Raw request:", req.body);
     console.log("📅 Scheduling interview - Parsed data:", interviewData);
 
-    // Only HR and Admin can schedule interviews
-    if (user.role !== "hr" && user.role !== "admin") {
+    // Only HR, Admin, and Manager can schedule interviews
+    if (user.role !== "hr" && user.role !== "admin" && user.role !== "manager") {
       return res.status(403).json({
         success: false,
-        error: "Only HR personnel can schedule interviews",
+        error: "Only HR, Admin, or Manager can schedule interviews",
       } as ApiResponse<never>);
     }
 
@@ -466,8 +466,8 @@ export const getAvailableInterviewers: RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
     const user = authReq.user!;
 
-    // Only HR and Admin can get this list
-    if (user.role !== "hr" && user.role !== "admin") {
+    // Only HR, Admin, and Manager can get this list
+    if (user.role !== "hr" && user.role !== "admin" && user.role !== "manager") {
       return res.status(403).json({
         success: false,
         error: "Access denied",
