@@ -297,7 +297,7 @@ export default function Interviews() {
             <h1 className="text-3xl font-bold text-gray-900">Interviews</h1>
             <p className="text-gray-600">Manage mock interviews and feedback</p>
           </div>
-          {(user.role === 'hr' || user.role === 'admin') && (
+          {(user.role === 'hr' || user.role === 'admin' || user.role === 'manager') && (
             <Button onClick={() => setShowScheduleModal(true)} className="bg-blue-600 hover:bg-blue-700">
               <Plus className="h-4 w-4 mr-2" />
               Schedule Interview
@@ -458,7 +458,7 @@ export default function Interviews() {
               <DialogDescription>
                 {viewFeedback.interview && (
                   <>
-                    Candidate: {viewFeedback.interview.candidate?.firstName} {viewFeedback.interview.candidate?.lastName} · Interviewer: {viewFeedback.interview.interviewer?.firstName} {viewFeedback.interview.interviewer?.lastName}
+                    Candidate: {viewFeedback.interview.candidate?.firstName} {viewFeedback.interview.candidate?.lastName} �� Interviewer: {viewFeedback.interview.interviewer?.firstName} {viewFeedback.interview.interviewer?.lastName}
                   </>
                 )}
               </DialogDescription>
