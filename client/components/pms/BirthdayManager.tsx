@@ -41,7 +41,7 @@ interface Props {
   onRefresh: () => void;
 }
 
-export default function BirthdayManager({ birthdays, onRefresh }: Props) {
+export default function BirthdayManager({ birthdays = { all: [], upcoming: [] }, onRefresh }: Props) {
   const { token, user } = useAuth();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -209,9 +209,9 @@ export default function BirthdayManager({ birthdays, onRefresh }: Props) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {birthdays.upcoming.filter(b => isToday(b.birthday)).length > 0 ? (
+          {(birthdays?.upcoming ?? []).filter(b => isToday(b.birthday)).length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {birthdays.upcoming.filter(b => isToday(b.birthday)).map((birthday) => (
+              {(birthdays?.upcoming ?? []).filter(b => isToday(b.birthday)).map((birthday) => (
                 <div key={birthday._id} className="bg-white border-2 border-blue-200 rounded-lg p-4 shadow-sm">
                   <div className="flex justify-between items-start mb-3">
                     <div>
@@ -412,9 +412,9 @@ export default function BirthdayManager({ birthdays, onRefresh }: Props) {
           )}
         </CardHeader>
         <CardContent>
-          {birthdays.upcoming.filter(b => !isToday(b.birthday)).length > 0 ? (
+          {(birthdays?.upcoming ?? []).filter(b => !isToday(b.birthday)).length > 0 ? (
             <div className="space-y-3">
-              {birthdays.upcoming
+              {(birthdays?.upcoming ?? [])
                 .filter(b => !isToday(b.birthday))
                 .sort((a, b) => getDaysUntilBirthday(a.birthday) - getDaysUntilBirthday(b.birthday))
                 .map((birthday) => {
