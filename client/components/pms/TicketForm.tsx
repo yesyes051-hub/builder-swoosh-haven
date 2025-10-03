@@ -171,13 +171,15 @@ export default function TicketForm({ onTicketCreated }: Props) {
       setLoading(true);
 
       const ticketData = {
+        ticketId: `TKT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2,6).toUpperCase()}`,
         projectId: formData.projectId,
         title: formData.title,
         description: formData.description,
         assignedTo:
           formData.assignedTo === "unassigned"
-            ? undefined
+            ? (user?.id || user?._id || undefined)
             : formData.assignedTo,
+        reportedBy: user?.id || (user as any)?._id || user?.email || "system",
         type: formData.type,
         priority: formData.priority,
         status: formData.status,
