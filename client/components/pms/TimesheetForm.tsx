@@ -1006,7 +1006,7 @@ export default function TimesheetForm({ onRefresh }: Props) {
                   </TableCell>
                   <TableCell>{getStatusBadge(entry.status)}</TableCell>
                   <TableCell className="flex gap-1">
-                    {(user?.role === 'manager' || user?.role === 'admin') && entry.status === 'Submitted' && (
+                    {(user?.role === 'manager' || user?.role === 'admin') && entry.status !== 'Approved' && (
                       <Button variant="secondary" size="sm" onClick={() => entry._id && handleApproveEntry(entry._id)} disabled={loading}>
                         Approve
                       </Button>
