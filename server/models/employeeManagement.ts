@@ -43,8 +43,12 @@ const EmployeeUserSchema = new Schema<IEmployeeUser>({
 });
 
 // Create connection to trackzen database
+const EMP_URI = process.env.EMP_MONGO_URI || process.env.MONGODB_URI;
+if (!EMP_URI) {
+  console.warn('EMP_MONGO_URI/MONGODB_URI is not set. Employee management DB connection will fail until configured.');
+}
 const employeeManagementConnection = mongoose.createConnection(
-  'mongodb+srv://Nisarg:Shah@cluster0.ggpuny2.mongodb.net/trackzen'
+  EMP_URI || ''
 );
 
 // Add connection event listeners
