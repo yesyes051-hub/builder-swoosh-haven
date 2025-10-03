@@ -156,7 +156,7 @@ export function createServer() {
   app.post(
     "/api/interviews",
     authenticateToken,
-    requireRole(["hr", "admin"]),
+    requireRole(["hr", "admin", "manager"]),
     scheduleInterview,
   );
   app.get("/api/interviews", authenticateToken, getInterviews);
@@ -174,7 +174,7 @@ export function createServer() {
   app.get(
     "/api/interviews/interviewers",
     authenticateToken,
-    requireRole(["hr", "admin"]),
+    requireRole(["hr", "admin", "manager"]),
     getAvailableInterviewers,
   );
   app.get(
