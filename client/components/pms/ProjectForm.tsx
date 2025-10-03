@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,28 +20,21 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { SafeCalendar as Calendar } from "@/components/ui/safe-calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Plus,
-  Calendar as CalendarIcon,
   CheckCircle,
   AlertTriangle,
   Loader2,
   FolderOpen,
 } from "lucide-react";
-import { format } from "date-fns";
 import { ApiResponse } from "@shared/api";
+import { Badge } from "@/components/ui/badge";
 
 interface ProjectDetail {
   _id: string;
   projectName: string;
   projectManager: string;
-  startDate: string;
+  startDate?: string;
   endDate?: string;
   status: "Planning" | "In Progress" | "In Review" | "Completed" | "On Hold";
   priority: "Low" | "Medium" | "High" | "Critical";
@@ -61,16 +54,17 @@ export default function ProjectForm({ onProjectCreated }: Props) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Form state
+  // Form state with dates
   const [formData, setFormData] = useState({
     projectName: "",
     projectManager: user?.id || "",
-    startDate: undefined as Date | undefined,
-    endDate: undefined as Date | undefined,
     status: "Planning" as const,
     priority: "Medium" as const,
     description: "",
-    teamMembers: [""],
+    startDate: "",
+    endDate: "",
+    teamMembers: [] as string[],
+    selectedEmployeeId: "",
     budget: "",
   });
 
@@ -80,21 +74,22 @@ export default function ProjectForm({ onProjectCreated }: Props) {
     setSuccess("");
 
     if (!formData.projectName || !formData.description || !formData.startDate) {
-      setError(
-        "Please fill in all required fields including project name, description, and start date",
-      );
+      setError("Please fill in all required fields including project name, description, and start date");
       return;
     }
 
-    // Validate dates
-    if (formData.endDate && formData.endDate <= formData.startDate) {
-      setError("End date must be after start date");
-      return;
+    if (formData.endDate) {
+      const start = new Date(formData.startDate);
+      const end = new Date(formData.endDate);
+      if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end < start) {
+        setError("End date cannot be before start date");
+        return;
+      }
     }
 
-    const filteredTeamMembers = formData.teamMembers.filter(
-      (member) => member.trim() !== "",
-    );
+    const filteredTeamMembers = Array.from(new Set(
+      (formData.teamMembers || []).map((m) => m.trim()).filter((m) => m),
+    ));
 
     try {
       setLoading(true);
@@ -102,16 +97,14 @@ export default function ProjectForm({ onProjectCreated }: Props) {
       const projectData = {
         projectName: formData.projectName,
         projectManager: formData.projectManager,
-        startDate: formData.startDate.toISOString(),
-        endDate: formData.endDate?.toISOString(),
         status: formData.status,
         priority: formData.priority,
         description: formData.description,
+        startDate: formData.startDate ? new Date(formData.startDate).toISOString() : undefined,
+        endDate: formData.endDate ? new Date(formData.endDate).toISOString() : undefined,
         teamMembers: filteredTeamMembers,
         budget: formData.budget ? parseFloat(formData.budget) : undefined,
       };
-
-      console.log("🔍 Creating project with data:", projectData);
 
       const response = await fetch("/api/pms/projects", {
         method: "POST",
@@ -132,12 +125,13 @@ export default function ProjectForm({ onProjectCreated }: Props) {
       setFormData({
         projectName: "",
         projectManager: user?.id || "",
-        startDate: undefined,
-        endDate: undefined,
         status: "Planning",
         priority: "Medium",
         description: "",
-        teamMembers: [""],
+        startDate: "",
+        endDate: "",
+        teamMembers: [],
+        selectedEmployeeId: "",
         budget: "",
       });
 
@@ -150,31 +144,47 @@ export default function ProjectForm({ onProjectCreated }: Props) {
         setSuccess("");
       }, 2000);
     } catch (err) {
-      console.error("Create project error:", err);
+      console.error("Create project error", err);
       setError(err instanceof Error ? err.message : "Failed to create project");
     } finally {
       setLoading(false);
     }
   };
 
-  const addTeamMember = () => {
-    setFormData({
-      ...formData,
-      teamMembers: [...formData.teamMembers, ""],
-    });
-  };
+  interface EmployeeOption { id: string; firstName: string; lastName: string; email: string; role: string }
+  const [employees, setEmployees] = useState<EmployeeOption[]>([]);
+  const [employeesLoading, setEmployeesLoading] = useState(false);
+  const [employeesError, setEmployeesError] = useState("");
+
+  useEffect(() => {
+    const load = async () => {
+      if (!isModalOpen) return;
+      try {
+        setEmployeesLoading(true);
+        setEmployeesError("");
+        const res = await fetch("/api/employees", { headers: { Authorization: `Bearer ${token}` } });
+        const data: ApiResponse<EmployeeOption[]> = await res.json();
+        if (!res.ok || !data.success || !data.data) throw new Error(data.error || "Failed to load employees");
+        setEmployees(data.data);
+      } catch (e) {
+        setEmployeesError(e instanceof Error ? e.message : "Failed to load employees");
+      } finally {
+        setEmployeesLoading(false);
+      }
+    };
+    load();
+  }, [isModalOpen, token]);
 
   const removeTeamMember = (index: number) => {
-    if (formData.teamMembers.length > 1) {
-      const newTeamMembers = formData.teamMembers.filter((_, i) => i !== index);
-      setFormData({ ...formData, teamMembers: newTeamMembers });
-    }
+    const newTeamMembers = formData.teamMembers.filter((_, i) => i !== index);
+    setFormData({ ...formData, teamMembers: newTeamMembers });
   };
 
-  const updateTeamMember = (index: number, value: string) => {
-    const newTeamMembers = [...formData.teamMembers];
-    newTeamMembers[index] = value;
-    setFormData({ ...formData, teamMembers: newTeamMembers });
+  const addSelectedEmployee = () => {
+    const id = formData.selectedEmployeeId;
+    if (!id) return;
+    if (formData.teamMembers.includes(id)) return;
+    setFormData({ ...formData, teamMembers: [...formData.teamMembers, id], selectedEmployeeId: "" });
   };
 
   return (
@@ -252,74 +262,6 @@ export default function ProjectForm({ onProjectCreated }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Start Date *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={`w-full justify-start text-left font-normal ${
-                      !formData.startDate && "text-muted-foreground"
-                    }`}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.startDate
-                      ? format(formData.startDate, "PPP")
-                      : "Pick start date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.startDate}
-                    onSelect={(date) =>
-                      setFormData({ ...formData, startDate: date })
-                    }
-                    disabled={(date) =>
-                      date < new Date(new Date().setHours(0, 0, 0, 0))
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div>
-              <Label>End Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={`w-full justify-start text-left font-normal ${
-                      !formData.endDate && "text-muted-foreground"
-                    }`}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.endDate
-                      ? format(formData.endDate, "PPP")
-                      : "Pick end date (optional)"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.endDate}
-                    onSelect={(date) =>
-                      setFormData({ ...formData, endDate: date })
-                    }
-                    disabled={(date) =>
-                      formData.startDate
-                        ? date < formData.startDate
-                        : date < new Date(new Date().setHours(0, 0, 0, 0))
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="status">Status</Label>
@@ -377,38 +319,68 @@ export default function ProjectForm({ onProjectCreated }: Props) {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="startDate">Start Date *</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="endDate">End Date</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={formData.endDate}
+                min={formData.startDate || undefined}
+                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+              />
+            </div>
+          </div>
+
           <div>
             <Label>Team Members</Label>
             <div className="space-y-2">
-              {formData.teamMembers.map((member, index) => (
-                <div key={index} className="flex space-x-2">
-                  <Input
-                    value={member}
-                    onChange={(e) => updateTeamMember(index, e.target.value)}
-                    placeholder="Enter team member ID or name"
-                    className="flex-1"
-                  />
-                  {formData.teamMembers.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => removeTeamMember(index)}
-                    >
-                      ×
-                    </Button>
-                  )}
+              <div className="flex gap-2 items-center">
+                <Select
+                  value={formData.selectedEmployeeId}
+                  onValueChange={(v) => setFormData({ ...formData, selectedEmployeeId: v })}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={employeesLoading ? "Loading employees..." : "Select an employee"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {employees.map((emp) => (
+                      <SelectItem key={emp.id} value={emp.id}>
+                        {emp.firstName} {emp.lastName} ({emp.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button type="button" variant="outline" onClick={addSelectedEmployee} disabled={!formData.selectedEmployeeId}>
+                  Add
+                </Button>
+              </div>
+              {employeesError && (
+                <div className="text-xs text-red-600">{employeesError}</div>
+              )}
+              {formData.teamMembers.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {formData.teamMembers.map((id, index) => {
+                    const emp = employees.find((e) => e.id === id);
+                    const label = emp ? `${emp.firstName} ${emp.lastName} (${emp.email})` : id;
+                    return (
+                      <div key={`${id}-${index}`} className="inline-flex items-center gap-1">
+                        <Badge variant="outline">{label}</Badge>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removeTeamMember(index)}>×</Button>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addTeamMember}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Team Member
-              </Button>
+              )}
             </div>
           </div>
 

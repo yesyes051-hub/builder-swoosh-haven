@@ -83,6 +83,33 @@ class MemoryDatabase {
     return dailyUpdate;
   }
 
+  async updateDailyUpdate(
+    id: string,
+    updates: Partial<Omit<DailyUpdate, "id" | "createdAt">>,
+  ): Promise<DailyUpdate | null> {
+    const current = this.dailyUpdates.get(id);
+    if (!current) return null;
+    const updated: DailyUpdate = {
+      ...current,
+      ...updates,
+      updatedAt: new Date(),
+    } as DailyUpdate;
+    this.dailyUpdates.set(id, updated);
+    return updated;
+  }
+
+  async getDailyUpdateByDate(userId: string, date: Date): Promise<DailyUpdate | null> {
+    const target = new Date(date);
+    target.setHours(0,0,0,0);
+    for (const du of this.dailyUpdates.values()) {
+      if (du.userId !== userId) continue;
+      const d = new Date(du.date);
+      d.setHours(0,0,0,0);
+      if (d.getTime() === target.getTime()) return du;
+    }
+    return null;
+  }
+
   async getDailyUpdatesByUser(
     userId: string,
     limit = 10,

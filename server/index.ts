@@ -53,6 +53,9 @@ import {
   updateTimesheetEntry,
   submitTimesheet,
   approveTimesheet,
+  updateProjectDetail,
+  submitWeeklyTimesheets,
+  deleteTimesheetEntry,
 } from "./routes/pmsNew";
 import { createUser, getAllUsers } from "./routes/users";
 import { getUserStats, getAllUsersForManagement } from "./routes/userStats";
@@ -73,18 +76,28 @@ import {
 import { authenticateToken, requireRole } from "./middleware/auth";
 import { seedPMSData } from "./db/seedPMS";
 import { seedEmployeeManagementData } from "./db/seedEmployeeManagement";
+import { connectToDatabase } from "./db/mongodb";
 
 export function createServer() {
   const app = express();
 
+  // Initialize default MongoDB connection for models using the default connection (e.g., Interview)
+  connectToDatabase().catch((e) => console.error("Mongo connection error:", e));
+
   // Middleware
   app.use(
     cors({
-      origin:
-        process.env.CORS_ORIGIN ||
-        (process.env.NODE_ENV === "production"
-          ? "https://your-vercel-app.vercel.app"
-          : "http://localhost:5173"),
+      origin: (origin, callback) => {
+        const allowed = process.env.CORS_ORIGIN;
+        if (!allowed) return callback(null, true);
+        const list = allowed
+          .split(",")
+          .map((v) => v.trim())
+          .filter(Boolean);
+        if (!origin) return callback(null, true);
+        if (list.includes(origin)) return callback(null, true);
+        return callback(new Error(`CORS blocked: ${origin}`));
+      },
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
@@ -137,7 +150,7 @@ export function createServer() {
   app.post(
     "/api/daily-updates",
     authenticateToken,
-    requireRole(["employee", "manager", "admin"]),
+    requireRole(["employee", "manager", "admin", "hr"]),
     createDailyUpdate,
   );
   app.get("/api/daily-updates", authenticateToken, getUserDailyUpdates);
@@ -157,7 +170,7 @@ export function createServer() {
   app.post(
     "/api/interviews",
     authenticateToken,
-    requireRole(["hr", "admin"]),
+    requireRole(["hr", "admin", "manager"]),
     scheduleInterview,
   );
   app.get("/api/interviews", authenticateToken, getInterviews);
@@ -175,7 +188,7 @@ export function createServer() {
   app.get(
     "/api/interviews/interviewers",
     authenticateToken,
-    requireRole(["hr", "admin"]),
+    requireRole(["hr", "admin", "manager"]),
     getAvailableInterviewers,
   );
   app.get(
@@ -207,6 +220,12 @@ export function createServer() {
     authenticateToken,
     requireRole(["admin", "manager"]),
     createProjectDetail,
+  );
+  app.put(
+    "/api/pms/projects/:id",
+    authenticateToken,
+    requireRole(["admin", "manager"]),
+    updateProjectDetail,
   );
 
   // Ticket Tracking
@@ -277,7 +296,7 @@ export function createServer() {
   app.get(
     "/api/pms/employees",
     authenticateToken,
-    requireRole(["admin", "hr"]),
+    requireRole(["admin", "hr", "manager"]),
     getEmployees,
   );
   app.post(
@@ -350,6 +369,16 @@ export function createServer() {
     authenticateToken,
     requireRole(["admin", "manager"]),
     approveTimesheet,
+  );
+  app.post(
+    "/api/pms-new/timesheets/submit-week",
+    authenticateToken,
+    submitWeeklyTimesheets,
+  );
+  app.delete(
+    "/api/pms-new/timesheets/:id",
+    authenticateToken,
+    deleteTimesheetEntry,
   );
 
   // Project Assignment routes (Manager Only)

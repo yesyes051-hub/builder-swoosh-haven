@@ -33,8 +33,16 @@ export default function DailyUpdates() {
 
   const fetchUpdates = async () => {
     try {
+      setError('');
       setLoading(true);
-      const response = await fetch('/api/daily-updates', {
+
+      // RBAC-aware endpoint selection:
+      // - Admin/Manager: organization-wide view via team endpoint (server enforces roles)
+      // - HR/Employee: own updates only via user endpoint
+      const isPrivileged = user?.role === 'admin' || user?.role === 'manager';
+      const url = isPrivileged ? '/api/daily-updates/team' : '/api/daily-updates';
+
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -43,20 +51,26 @@ export default function DailyUpdates() {
       const data: ApiResponse<DailyUpdate[]> = await response.json();
 
       if (!response.ok || !data.success) {
+        // Provide clearer UX for 403 cases
+        if (response.status === 403) {
+          throw new Error('You are not authorized to view this data');
+        }
         throw new Error(data.error || 'Failed to fetch updates');
       }
 
       setUpdates(data.data || []);
     } catch (err) {
       console.error('Fetch updates error:', err);
+      setUpdates([]);
       setError(err instanceof Error ? err.message : 'Failed to load updates');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdateSuccess = (newUpdate: DailyUpdate) => {
-    setUpdates([newUpdate, ...updates]);
+  const handleUpdateSuccess = (_newUpdate: DailyUpdate) => {
+    // Reload from server to avoid duplicate keys and ensure upserted record replaces prior one
+    fetchUpdates();
     setShowForm(false);
   };
 
@@ -87,10 +101,35 @@ export default function DailyUpdates() {
     });
   };
 
-  const todaysUpdate = getTodaysUpdate();
+  // Compute today's update only for the logged-in user, regardless of org-wide list
+  const todaysUpdate = (() => {
+    const myUpdates = updates.filter(u => u.userId === user.id);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const found = myUpdates.find(update => {
+      const d = new Date(update.date);
+      d.setHours(0,0,0,0);
+      return d.getTime() === today.getTime();
+    });
+    return found;
+  })();
 
   if (!user) {
     return null;
+  }
+
+  // Edge case: Missing/undefined role -> deny access with clear message
+  if (!user?.role) {
+    return (
+      <DashboardLayout user={user}>
+        <div className="space-y-6">
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>Access denied: missing role. Please contact an administrator.</AlertDescription>
+          </Alert>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   if (showForm) {
@@ -98,8 +137,8 @@ export default function DailyUpdates() {
       <DashboardLayout user={user}>
         <div className="space-y-6">
           <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowForm(false)}
               className="flex items-center space-x-2"
             >
@@ -108,7 +147,7 @@ export default function DailyUpdates() {
             </Button>
             <h1 className="text-2xl font-bold">Submit Daily Update</h1>
           </div>
-          <DailyUpdateForm 
+          <DailyUpdateForm
             onSuccess={handleUpdateSuccess}
             onCancel={() => setShowForm(false)}
           />
@@ -117,6 +156,8 @@ export default function DailyUpdates() {
     );
   }
 
+  const isPrivileged = user.role === 'admin' || user.role === 'manager';
+
   return (
     <DashboardLayout user={user}>
       <div className="space-y-6">
@@ -124,15 +165,16 @@ export default function DailyUpdates() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Daily Updates</h1>
-            <p className="text-gray-600">Track your daily progress and accomplishments</p>
+            <p className="text-gray-600">
+              {isPrivileged ? 'Organization-wide view' : 'Track your daily progress and accomplishments'}
+            </p>
           </div>
-          <Button 
+          <Button
             onClick={() => setShowForm(true)}
             className="bg-blue-600 hover:bg-blue-700"
-            disabled={!!todaysUpdate}
           >
             <Plus className="h-4 w-4 mr-2" />
-            {todaysUpdate ? "Today's Update Submitted" : "Submit Today's Update"}
+            {todaysUpdate ? "Add/Update Daily Update" : "Submit Daily Update"}
           </Button>
         </div>
 
@@ -199,6 +241,13 @@ export default function DailyUpdates() {
                         <CardDescription>
                           Submitted at {formatTime(update.createdAt)}
                         </CardDescription>
+                        {/* Show employee identity for privileged roles when viewing org-wide */}
+                        {isPrivileged && (update as any).user && (
+                          <div className="text-sm text-gray-700 mt-1">
+                            Employee: {((update as any).user.firstName || '')} {((update as any).user.lastName || '')}
+                            {((update as any).user.email ? ` · ${ (update as any).user.email }` : '')}
+                          </div>
+                        )}
                       </div>
                       <Badge 
                         variant={update.progressScore >= 8 ? 'default' : 

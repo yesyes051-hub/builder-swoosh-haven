@@ -121,6 +121,21 @@ export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
     </div>
   );
 
+  // Build recent dates (today + previous 3 days)
+  const buildRecentDates = () => {
+    const arr: Date[] = [];
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    for (let i = 0; i < 4; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      arr.push(d);
+    }
+    return arr;
+  };
+  const recentDates = buildRecentDates();
+  const [selectedDate, setSelectedDate] = useState<string>(recentDates[0].toISOString());
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -157,6 +172,7 @@ export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
         challenges: filteredChallenges,
         nextDayPlans: filteredNextDayPlans,
         progressScore: progressScore[0],
+        date: new Date(selectedDate),
       };
 
       const response = await fetch("/api/daily-updates", {
@@ -220,6 +236,22 @@ export default function DailyUpdateForm({ onSuccess, onCancel }: Props) {
               <AlertDescription>{success}</AlertDescription>
             </Alert>
           )}
+
+          {/* Date Selector (last 3 days including today) */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Select Date (last 3 days)</Label>
+            <select
+              className="border rounded px-3 py-2 text-sm"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+            >
+              {recentDates.map((d) => (
+                <option key={d.toISOString()} value={d.toISOString()}>
+                  {d.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Tasks */}

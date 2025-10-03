@@ -22,8 +22,8 @@ This is a quick reference guide for deploying TrackZen. For detailed instruction
 1. Go to [render.com](https://render.com) and connect GitHub
 2. Create "New Web Service" from your repository
 3. Configure:
-   - Build Command: `npm run build:server`
-   - Start Command: `npm start`
+   - Build Command: `npm --prefix server run build`
+   - Start Command: `npm --prefix server run start`
 4. Add environment variables:
    ```
    NODE_ENV=production

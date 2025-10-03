@@ -63,6 +63,8 @@ import TimesheetForm from "@/components/pms/TimesheetForm";
 import TicketForm from "@/components/pms/TicketForm";
 import UserManagement from "@/components/pms/UserManagement";
 import { ApiResponse } from "@shared/api";
+import ProjectViewModal from "@/components/pms/ProjectViewModal";
+import ProjectEditModal from "@/components/pms/ProjectEditModal";
 
 interface ProjectDetail {
   _id: string;
@@ -143,6 +145,12 @@ export default function PMSNew() {
   const [timesheets, setTimesheets] = useState<TimesheetData[]>([]);
   const [accessories, setAccessories] = useState<AccessoryData[]>([]);
 
+  // View/Edit state
+  const [viewProject, setViewProject] = useState<ProjectDetail | null>(null);
+  const [editProject, setEditProject] = useState<ProjectDetail | null>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+
   // Form states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("projects");
@@ -201,11 +209,38 @@ export default function PMSNew() {
       const response = await fetch("/api/pms/birthdays", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data: ApiResponse<{ all: Birthday[]; upcoming: Birthday[] }> =
-        await response.json();
-      if (data.success) setBirthdays(data.data || { all: [], upcoming: [] });
+      const raw = await response.json();
+      if (raw && raw.success) {
+        const payload = raw.data;
+        if (Array.isArray(payload)) {
+          // Server returned a flat list; transform into { all, upcoming }
+          const all: Birthday[] = payload;
+          const today = new Date();
+          const inNext30 = (dateStr: string) => {
+            const d = new Date(dateStr);
+            const currentYear = today.getFullYear();
+            d.setFullYear(currentYear);
+            if (d < today) d.setFullYear(currentYear + 1);
+            const diff = d.getTime() - today.getTime();
+            const days = diff / (1000 * 60 * 60 * 24);
+            return days <= 30;
+          };
+          const upcoming = all.filter((b) => inNext30(b.birthday));
+          setBirthdays({ all, upcoming });
+        } else if (
+          payload &&
+          typeof payload === "object" &&
+          "all" in payload &&
+          "upcoming" in payload
+        ) {
+          setBirthdays(payload as { all: Birthday[]; upcoming: Birthday[] });
+        } else {
+          setBirthdays({ all: [], upcoming: [] });
+        }
+      }
     } catch (err) {
       console.error("Error fetching birthdays:", err);
+      setBirthdays({ all: [], upcoming: [] });
     }
   };
 
@@ -445,12 +480,29 @@ export default function PMSNew() {
                             <TableCell>{project.teamMembers.length}</TableCell>
                             <TableCell>
                               <div className="flex space-x-2">
-                                <Button size="sm" variant="outline">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setViewProject(project);
+                                    setIsViewOpen(true);
+                                  }}
+                                >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                <Button size="sm" variant="outline">
-                                  <Edit className="h-4 w-4" />
-                                </Button>
+                                {user?.role === "admin" ||
+                                user?.role === "manager" ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setEditProject(project);
+                                      setIsEditOpen(true);
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                ) : null}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -728,6 +780,30 @@ export default function PMSNew() {
             </TabsContent>
           </Tabs>
         )}
+        <ProjectViewModal
+          open={isViewOpen}
+          onOpenChange={(v) => {
+            setIsViewOpen(v);
+            if (!v) setViewProject(null);
+          }}
+          project={viewProject}
+        />
+        <ProjectEditModal
+          open={isEditOpen}
+          onOpenChange={(v) => {
+            setIsEditOpen(v);
+            if (!v) setEditProject(null);
+          }}
+          project={editProject}
+          onUpdated={(p) => {
+            setProjects((prev) =>
+              prev.map((x) => (x._id === p._id ? { ...x, ...p } : x)),
+            );
+            setViewProject((prev) =>
+              prev && prev._id === p._id ? { ...prev, ...p } : prev,
+            );
+          }}
+        />
       </div>
     </DashboardLayout>
   );

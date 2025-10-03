@@ -89,9 +89,11 @@ export default function EmployeeDashboard({ data }: Props) {
       const result: ApiResponse<InterviewWithDetails[]> = await response.json();
 
       if (response.ok && result.success && result.data) {
-        // Filter interviews where the current user is the candidate
+        // Filter interviews where the current user is the candidate or interviewer
         const userInterviews = result.data.filter(
-          (interview) => interview.candidateId === data.user.id,
+          (interview) =>
+            interview.candidateId === data.user.id ||
+            interview.interviewerId === data.user.id,
         );
         setMyInterviews(userInterviews);
       }

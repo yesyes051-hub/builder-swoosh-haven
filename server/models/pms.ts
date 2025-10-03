@@ -41,7 +41,7 @@ const PMSUserSchema = new Schema<IPMSUser>({
 export interface IProjectDetail extends Document {
   projectName: string;
   projectManager: string;
-  startDate: Date;
+  startDate?: Date;
   endDate?: Date;
   status: 'Planning' | 'In Progress' | 'In Review' | 'Completed' | 'On Hold';
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
@@ -55,7 +55,7 @@ export interface IProjectDetail extends Document {
 const ProjectDetailSchema = new Schema<IProjectDetail>({
   projectName: { type: String, required: true },
   projectManager: { type: String, required: true },
-  startDate: { type: Date, required: true },
+  startDate: { type: Date, default: Date.now },
   endDate: { type: Date },
   status: { type: String, enum: ['Planning', 'In Progress', 'In Review', 'Completed', 'On Hold'], default: 'Planning' },
   priority: { type: String, enum: ['Low', 'Medium', 'High', 'Critical'], default: 'Medium' },

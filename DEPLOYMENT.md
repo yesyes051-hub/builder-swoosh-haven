@@ -25,9 +25,9 @@ This guide explains how to deploy TrackZen with the frontend on Vercel and the b
 
 2. **Configure Build Settings** (Vercel should auto-detect these)
 
-   - Build Command: `npm run build:client`
-   - Output Directory: `dist/spa`
-   - Install Command: `npm install`
+   - Build Command: `npm --prefix client run build`
+   - Output Directory: `client/dist`
+   - Install Command: `npm --prefix client install`
    - Node.js Version: `18.x`
 
 3. **Environment Variables**
@@ -71,8 +71,8 @@ The project includes a `vercel.json` file with:
 
    - Name: `trackzen-api` (or your preferred name)
    - Runtime: `Node`
-   - Build Command: `npm run build:server`
-   - Start Command: `npm start`
+   - Build Command: `npm --prefix server run build`
+   - Start Command: `npm --prefix server run start`
    - Plan: `Starter` (free tier)
 
 3. **Environment Variables**
