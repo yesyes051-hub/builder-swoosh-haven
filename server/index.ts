@@ -286,7 +286,7 @@ export function createServer() {
   app.get(
     "/api/pms/employees",
     authenticateToken,
-    requireRole(["admin", "hr"]),
+    requireRole(["admin", "hr", "manager"]),
     getEmployees,
   );
   app.post(
