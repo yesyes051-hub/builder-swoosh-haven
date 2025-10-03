@@ -382,6 +382,29 @@ export default function TimesheetForm({ onRefresh }: Props) {
     }
   };
 
+  const handleApproveEntry = async (id: string) => {
+    try {
+      setError("");
+      setSuccess("");
+      setLoading(true);
+      const res = await fetch(`/api/pms-new/timesheets/${id}/approve`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      const text = await res.text();
+      let data: ApiResponse<any> | null = null;
+      try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+      if (!res.ok || !data || !data.success) {
+        throw new Error((data && (data as any).error) || text || 'Failed to approve');
+      }
+      setSuccess('Entry approved');
+      await loadTimesheets();
+      onRefresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to approve entry');
+    } finally {
+      setLoading(false);
+      setTimeout(() => setSuccess(""), 1500);
+    }
+  };
+
   const groupPendingByUserWeek = () => {
     const map = new Map<string, { userId: string; userName: string; userEmail: string; weekStart: string; count: number }>();
     timesheets.filter((t) => t.status === 'Submitted').forEach((t) => {
@@ -964,7 +987,12 @@ export default function TimesheetForm({ onRefresh }: Props) {
                     <div className="truncate" title={entry.taskDescription}>{entry.taskDescription}</div>
                   </TableCell>
                   <TableCell>{getStatusBadge(entry.status)}</TableCell>
-                  <TableCell>
+                  <TableCell className="flex gap-1">
+                    {(user?.role === 'manager' || user?.role === 'admin') && entry.status === 'Submitted' && (
+                      <Button variant="secondary" size="sm" onClick={() => entry._id && handleApproveEntry(entry._id)} disabled={loading}>
+                        Approve
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
