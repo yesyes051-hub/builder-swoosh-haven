@@ -858,7 +858,7 @@ export default function TimesheetForm({ onRefresh }: Props) {
           <CardContent>
             {(() => {
               const groups = timesheets
-                .filter((t) => t.status === 'Submitted')
+                .filter((t) => managerStatusFilter === 'All' ? (t.status === 'Submitted' || t.status === 'Approved') : t.status === managerStatusFilter)
                 .reduce((acc: Record<string, { userId: string; userName: string; userEmail: string; items: typeof timesheets }>, t) => {
                   const key = t.userId;
                   if (!acc[key]) acc[key] = { userId: t.userId, userName: t.userName, userEmail: t.userEmail, items: [] as any } as any;
