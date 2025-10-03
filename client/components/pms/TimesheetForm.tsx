@@ -835,8 +835,25 @@ export default function TimesheetForm({ onRefresh }: Props) {
       {(user?.role === 'manager' || user?.role === 'admin') && (
         <Card>
           <CardHeader>
-            <CardTitle>Pending Approvals</CardTitle>
-            <CardDescription>Review submitted entries employee-wise and approve.</CardDescription>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <CardTitle>Timesheets (Manager View)</CardTitle>
+                <CardDescription>Review entries employee-wise, approve, or filter by status.</CardDescription>
+              </div>
+              <div className="w-44">
+                <Label className="mb-1 block">Status Filter</Label>
+                <Select value={managerStatusFilter} onValueChange={(v) => setManagerStatusFilter(v as any)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Submitted" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Submitted">Submitted (Pending)</SelectItem>
+                    <SelectItem value="Approved">Approved</SelectItem>
+                    <SelectItem value="All">All</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {(() => {
