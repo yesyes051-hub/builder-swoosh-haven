@@ -315,7 +315,7 @@ export default function TicketForm({ onTicketCreated }: Props) {
               </Select>
               {employees.length === 0 && (
                 <p className="text-sm text-gray-500 mt-1">
-                  💡 Tip: Admin or HR role required to see employee list for
+                  💡 Tip: Admin, HR, or Manager role required to see employee list for
                   assignment
                 </p>
               )}
